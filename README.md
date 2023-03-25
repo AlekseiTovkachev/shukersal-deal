@@ -17,3 +17,6 @@ The best online marketplace
 
 ### Customer Service
 ![uml](https://github.com/Taltalonix/shukersal-deal/blob/main/docs/Diagrams/CustomerService_ClassDiagram.png)
+
+### Notifiactions + Orders Services
+![uml](https://github.com/Taltalonix/shukersal-deal/blob/main/docs/Diagrams/NotificationService_and_OrderService_ClassDiagram.png)
