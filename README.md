@@ -9,6 +9,9 @@ The best online marketplace
 
 ## Class diagrams
 
+### User Service
+![uml](https://github.com/Taltalonix/shukersal-deal/blob/main/docs/Diagrams/UserService_ClassDiagram.png)
+
 ### Seller Service
 ![uml](https://github.com/Taltalonix/shukersal-deal/blob/main/docs/Diagrams/SellerService_ClassDiagram.png)
 
