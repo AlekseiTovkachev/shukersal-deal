@@ -6,4 +6,4 @@ The best online marketplace
 ## Class diagrams
 
 ### Seller Service
-![uml](https://github.com/Taltalonix/shukersal-deal/blob/main/docs/SellerService Class Diagram.png)
+![uml]("https://github.com/Taltalonix/shukersal-deal/blob/main/docs/SellerService Class Diagram.png")
