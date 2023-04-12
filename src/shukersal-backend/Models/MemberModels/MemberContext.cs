@@ -6,12 +6,13 @@ namespace shukersal_backend.Models
 {
     public class MemberContext : DbContext
     {
+        public MemberContext() { }
         public MemberContext(DbContextOptions<MemberContext> options)
             : base(options)
         {
 
         }
 
-        public DbSet<Member> Members { get; set; } = null!;
+        public virtual DbSet<Member> Members { get; set; } = null!;
     }
 }

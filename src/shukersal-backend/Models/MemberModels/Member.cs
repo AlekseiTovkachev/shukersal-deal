@@ -17,6 +17,8 @@ namespace shukersal_backend.Models
         [JsonIgnore]
         public virtual ShoppingCart ShoppingCart { get; set; }
 
+        public Member() { } 
+
         public Member(string username, string password)
         {
             Username = username;
