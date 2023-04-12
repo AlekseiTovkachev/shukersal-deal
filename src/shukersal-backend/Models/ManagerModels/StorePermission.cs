@@ -3,10 +3,16 @@
     public class StorePermission
     {
         public long Id { get; set; }
-        public long StoreId { get; set; }
-        public Store Store { get; set; }
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public ICollection<StoreManager> StoreManagers { get; set; }
+        public int PermissionType { get; set; }
+        public long StoreManagerId { get; set; }
+        public StoreManager StoreManager { get; set; }
+
+        public StorePermission(long id, StoreManager storeManager, int permissionType)
+        {
+            Id = id;
+            StoreManagerId = storeManager.Id;
+            StoreManager = storeManager;
+            PermissionType = permissionType;
+        }
     }
 }
