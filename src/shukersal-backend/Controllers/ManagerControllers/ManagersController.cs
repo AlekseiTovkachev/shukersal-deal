@@ -8,11 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using shukersal_backend.Models;
 using shukersal_backend.Models.ShoppingCartModels;
 
-namespace shukersal_backend.Controllers.ManagerControllers
+namespace shukersal_backend.Controllers.ManagersController
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ManagerControllers : ControllerBase
+    public class ManagersController : ControllerBase
     {
         public const int MANAGER_PERMISSION = 0;
         public const int MANAGE_PRODUCTS_PERMISSION = 1;
@@ -34,7 +34,7 @@ namespace shukersal_backend.Controllers.ManagerControllers
         private long nextPermissionId;
         private long nextManagerId;
 
-        public ManagerControllers(ManagerContext context, MemberContext memberContext, StoreContext storeContext)
+        public ManagersController(ManagerContext context, MemberContext memberContext, StoreContext storeContext)
         {
 
             _context = context;
