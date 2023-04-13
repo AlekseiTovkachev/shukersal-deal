@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using shukersal_backend.Models;
 using shukersal_backend.Models.ShoppingCartModels;
 
@@ -44,8 +45,13 @@ namespace shukersal_backend.Controllers.ManagersController
             nextManagerId = 0; //TODO: READ FROM DB THE MAX VALUE AT VER3
         }
 
-        public async Task<IActionResult> AddOwner(Member appointer, Member boss, Member member, Store store)
+        [HttpPost]
+        public async Task<IActionResult> AddOwner(OwnerManagerPost post)
         {
+            var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
+            var boss = await _memberContext.Members.FindAsync(post.BossId);
+            var member = await _memberContext.Members.FindAsync(post.MemberId);
+            var store = await _storeContext.Stores.FindAsync(post.StoreId);
             nextPermissionId++;
             nextManagerId++;
             if (_context.StoreManagers == null)
@@ -90,8 +96,13 @@ namespace shukersal_backend.Controllers.ManagersController
             }
         }
 
-        public async Task<IActionResult> AddManager(Member appointer, Member boss, Member member, Store store)
+        [HttpPost]
+        public async Task<IActionResult> AddManager(OwnerManagerPost post)
         {
+            var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
+            var boss = await _memberContext.Members.FindAsync(post.BossId);
+            var member = await _memberContext.Members.FindAsync(post.MemberId);
+            var store = await _storeContext.Stores.FindAsync(post.StoreId);
             nextPermissionId++;
             nextManagerId++;
             if (_context.StoreManagers == null)
@@ -138,8 +149,11 @@ namespace shukersal_backend.Controllers.ManagersController
             }
         }
 
-        public async Task<IActionResult> AddFounder(Member member, Store store)
+        [HttpPost]
+        public async Task<IActionResult> AddFounder(FounderPost post)
         {
+            var member = await _memberContext.Members.FindAsync(post.MemberId);
+            var store = await _storeContext.Stores.FindAsync(post.StoreId);
             nextPermissionId++;
             nextManagerId++;
             if (_context.StoreManagers == null)
@@ -168,9 +182,12 @@ namespace shukersal_backend.Controllers.ManagersController
                 return BadRequest(ModelState);
             }
         }
-
-        public async Task<IActionResult> GivePermission(Member appointer, Member target, Store store, int permissionType)
+        [HttpPost]
+        public async Task<IActionResult> GivePermission(PermissionsPost post)
         {
+            var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
+            var target = await _memberContext.Members.FindAsync(post.TargetId);
+            var store = await _storeContext.Stores.FindAsync(post.StoreId);
             nextPermissionId++;
             if (_context.StoreManagers == null)
             {
@@ -195,10 +212,10 @@ namespace shukersal_backend.Controllers.ManagersController
                 if (!CheckPermission(appointerManager, EDIT_MANAGER_PERMISSIONS_PERMISSION))
                     return Problem("TODO");
 
-                if (!CheckPermission(targetManager, permissionType))
+                if (!CheckPermission(targetManager, post.PermissionType))
                     return Problem("TODO");
 
-                var permission = new StorePermission(nextPermissionId, targetManager, permissionType);
+                var permission = new StorePermission(nextPermissionId, targetManager, post.PermissionType);
 
                 _context.StorePermissions.Add(permission);
 
@@ -211,10 +228,13 @@ namespace shukersal_backend.Controllers.ManagersController
                 return BadRequest(ModelState);
             }
         }
-
-        public async Task<IActionResult> RemovePermission(Member appointer, Member target, Store store, int permissionType)
+        [HttpPost]
+        public async Task<IActionResult> RemovePermission(PermissionsPost post)
         {
-            if (permissionType == MANAGER_PERMISSION)
+            var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
+            var target = await _memberContext.Members.FindAsync(post.TargetId);
+            var store = await _storeContext.Stores.FindAsync(post.StoreId);
+            if (post.PermissionType == MANAGER_PERMISSION)
                 return Problem("TODO");
             if (_context.StoreManagers == null)
             {
@@ -239,11 +259,11 @@ namespace shukersal_backend.Controllers.ManagersController
                 if (!CheckPermission(appointerManager, EDIT_MANAGER_PERMISSIONS_PERMISSION))
                     return Problem("TODO");
 
-                if (CheckPermission(targetManager, permissionType))
+                if (CheckPermission(targetManager, post.PermissionType))
                     return Problem("TODO");
 
                 foreach (StorePermission permission in targetManager.StorePermissions)
-                    if (permission.PermissionType == permissionType)
+                    if (permission.PermissionType == post.PermissionType)
                         _context.StorePermissions.Remove(permission);
 
                 await _context.SaveChangesAsync();
@@ -255,9 +275,11 @@ namespace shukersal_backend.Controllers.ManagersController
                 return BadRequest(ModelState);
             }
         }
-
-        public async Task<ActionResult<IEnumerable<StoreManager>>> GetManagersPermissions(Store store, Member member)
+        [HttpGet("{storeId, memberId}")]
+        public async Task<ActionResult<IEnumerable<StoreManager>>> GetManagersPermissions(long StoreId, long MemberId)
         {
+            var member = await _memberContext.Members.FindAsync(MemberId);
+            var store = await _storeContext.Stores.FindAsync(StoreId);
             if (_context.StoreManagers == null)
             {
                 return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
@@ -288,7 +310,7 @@ namespace shukersal_backend.Controllers.ManagersController
             return null;
         }
 
-        public bool CheckPermission(StoreManager? manager, int permissionType)
+        private bool CheckPermission(StoreManager? manager, int permissionType)
         {
             if (manager == null)
                 return false;
