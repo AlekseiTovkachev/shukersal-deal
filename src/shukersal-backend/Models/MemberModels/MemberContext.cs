@@ -12,7 +12,6 @@ namespace shukersal_backend.Models
         {
 
         }
-
         public virtual DbSet<Member> Members { get; set; } = null!;
     }
 }

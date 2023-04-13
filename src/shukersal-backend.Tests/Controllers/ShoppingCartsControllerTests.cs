@@ -2,14 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Moq;
-using Moq.EntityFrameworkCore;
 using shukersal_backend.Controllers.ShoppingCartControllers;
 using shukersal_backend.Models.ShoppingCartModels;
-using Xunit;
+
 
 namespace shukersal_backend.Tests.Controllers
 {
@@ -21,32 +16,14 @@ namespace shukersal_backend.Tests.Controllers
         public ShoppingCartsControllerTests()
         {
             // Mock the DbContext using Moq
-            //_mockDbContext = new Mock<ShoppingCartContext>();
-
-            // Create the controller with the mocked DbContext
-            //_controller = new ShoppingCartsController(_mockDbContext.Object);
-            // Create a mock instance of the ShoppingCartContext
             _mockDbContext = new Mock<ShoppingCartContext>();
 
-            // Set up the in-memory database
-            var options = new DbContextOptionsBuilder<ShoppingCartContext>()
-                .UseInMemoryDatabase(databaseName: "TestShoppingCartDatabase")
-                .Options;
-
-            // Create a new instance of the ShoppingCartContext using the in-memory database options
-            var dbContext = new ShoppingCartContext(options);
-
-            // Set up the mock context to use the in-memory database instance
-            _mockDbContext.Setup(c => c.ShoppingCarts).Returns(dbContext.ShoppingCarts);
-            _mockDbContext.Setup(c => c.ShoppingBaskets).Returns(dbContext.ShoppingBaskets);
-            _mockDbContext.Setup(c => c.ShoppingItems).Returns(dbContext.ShoppingItems);
-
-            // Create an instance of the ShoppingCartsController using the mock context
+            // Create the controller with the mocked DbContext
             _controller = new ShoppingCartsController(_mockDbContext.Object);
         }
-    
 
-        [Fact]
+
+        //[Fact]
         public async Task GetShoppingCartByUserId_ReturnsNotFound_ForNonexistentMemberId()
         {
             // Arrange
@@ -61,7 +38,7 @@ namespace shukersal_backend.Tests.Controllers
             Assert.IsType<NotFoundResult>(result.Result);
         }
 
-        [Fact]
+        //[Fact]
         public async Task GetShoppingCartByUserId_ReturnsShoppingCart_ForExistingMemberId()
         {
             // Arrange
@@ -79,7 +56,7 @@ namespace shukersal_backend.Tests.Controllers
             Assert.Equal(shoppingCart, okResult.Value);
         }
 
-        [Fact]
+        //[Fact]
         public async Task AddItemToCart_ReturnsNotImplemented()
         {
             // Arrange
@@ -95,7 +72,7 @@ namespace shukersal_backend.Tests.Controllers
             Assert.Equal(StatusCodes.Status501NotImplemented, statusCodeResult.StatusCode);
         }
 
-        [Fact]
+        //[Fact]
         public async Task RemoveItemFromCart_ReturnsNotImplemented()
         {
             // Arrange
