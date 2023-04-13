@@ -17,8 +17,28 @@ namespace shukersal_backend.Models
 
         [ForeignKey("ParentManager")]
         public long ParentManagerId { get; set; }
-        public StoreManager ParentManager { get; set; }
+        public StoreManager? ParentManager { get; set; }
 
         public ICollection<StorePermission> StorePermissions { get; set; }
+
+        public StoreManager(long id, Member member, Store store)
+        {
+            Id = id;
+            StoreId = store.Id;
+            MemberId = member.Id;
+            Store = store;
+            Member = member;
+            ParentManagerId = -1;
+        }
+        public StoreManager(long id, Member member, Store store, StoreManager parentManager)
+        {
+            Id = id;
+            StoreId = store.Id;
+            MemberId = member.Id;
+            ParentManagerId = parentManager.Id;
+            Store = store;
+            Member = member;
+            ParentManager = parentManager;
+        }
     }
 }
