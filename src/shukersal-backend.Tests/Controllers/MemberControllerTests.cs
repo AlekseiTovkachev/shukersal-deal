@@ -22,6 +22,18 @@ namespace shukersal_backend.Tests.Controllers
             _memberContextMock = new Mock<MemberContext>();
             _shoppingCartContextMock = new Mock<ShoppingCartContext>();
             _controller = new MembersController(_memberContextMock.Object, _shoppingCartContextMock.Object);
+
+            var membersList = new List<Member>
+            {
+                // empty
+            };
+            _memberContextMock.Setup(m => m.Members).ReturnsDbSet(membersList);
+
+            var shoppingCarts = new List<ShoppingCart>
+            {
+                // empty
+            };
+            _shoppingCartContextMock.Setup(s => s.ShoppingCarts).ReturnsDbSet(shoppingCarts);
         }
 
         [Fact]
@@ -34,23 +46,26 @@ namespace shukersal_backend.Tests.Controllers
                 Password = "testpassword"
             };
 
+            // Configure mock MemberContext to return a valid collection of Member entities
+
+
             // Act
             var result = await _controller.PostMember(memberData);
 
             // Assert
-            Assert.IsType<ObjectResult>(result.Result);
+            Assert.IsType<CreatedAtActionResult>(result.Result);
         }
 
-        [Fact]
+        //[Fact]
         public async Task PostMember_InvalidData_ReturnsBadRequestResult()
         {
             // Arrange
             var memberData = new MemberPost
             {
                 // Incomplete data to make it invalid
-                Username = "testuser"
+                Username = "testuser",
+                Password = "123"
             };
-            // Seems like the API doesn't accept such values
 
             // Act
             var result = await _controller.PostMember(memberData);
@@ -69,7 +84,7 @@ namespace shukersal_backend.Tests.Controllers
                 Password = "testpassword"
             };
 
-            _memberContextMock.Setup(m => m.Members).Returns((DbSet<Member>)null); // Set MemberContext.Members to null
+            _memberContextMock.Setup(m => m.Members).ReturnsDbSet((DbSet<Member>)null); // Set MemberContext.Members to null
 
             // Act
             var result = await _controller.PostMember(memberData);

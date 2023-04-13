@@ -9,7 +9,7 @@ namespace shukersal_backend.Tests
         {
             this.output = output;
         }
-        [Fact]
+        //[Fact]
         public void Test1()
         {
             output.WriteLine("hello world");
