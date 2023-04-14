@@ -11,12 +11,15 @@ namespace shukersal_backend.Controllers.StoreControllers
     public class StoreController : ControllerBase
     {
         private readonly StoreContext _context;
-        private StoreManager _managerDummy;
+        private readonly ManagerContext _managerContext;
+        private readonly MemberContext _memberContext;
 
-        public StoreController(StoreContext context)
+
+        public StoreController(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
         {
             _context = context;
-            _managerDummy = new StoreManager();
+            _managerContext = managerContext;
+            _memberContext = memberContext;
         }
 
         // GET: api/Store
@@ -49,29 +52,62 @@ namespace shukersal_backend.Controllers.StoreControllers
         [HttpPost]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
-            //TODO: check if the manager already exists in the system
-            //TODO: retrieve the manager from manager context in manager controller
             if (_context.Stores == null)
+            {
+                return Problem("Entity set 'MemberContext.Members'  is null.");
+            }
+            if (_managerContext.StoreManagers == null)
+            {
+                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+            }
+            if (_managerContext.StorePermissions == null)
+            {
+                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
+            }
+            if (_memberContext.Members == null)
             {
                 return Problem("Entity set 'MemberContext.Members'  is null.");
             }
             if (ModelState.IsValid)
             {
+
                 var store = new Store(
                         storeData.Name,
                         storeData.Description,
-                        storeData.RootManagerId
+                        storeData.RootManagerMemberId
                         );
-
+                //TODO: add authentication
+                var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
+                if (member == null)
+                {
+                    return Problem("Illegal user id");
+                }
+                var storeManager = new StoreManager
+                {
+                    StoreId = store.Id,
+                    Store = store,
+                    MemberId = member.Id,
+                    Member = member,
+                    StorePermissions = new List<StorePermission>()
+                };
+                storeManager.StorePermissions.Add(new StorePermission
+                {
+                    StoreManager = storeManager,
+                    StoreManagerId = storeManager.Id,
+                    PermissionType = PermissionType.Manager_permission
+                });
                 _context.Stores.Add(store);
                 await _context.SaveChangesAsync();
+
+                _managerContext.StoreManagers.Add(storeManager);
+                await _managerContext.SaveChangesAsync();
 
                 return CreatedAtAction("GetStore", new { id = store.Id }, store);
             }
             else
             {
                 return BadRequest(ModelState);
-            }           
+            }
         }
 
         // PUT: api/Store/5

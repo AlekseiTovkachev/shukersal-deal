@@ -21,27 +21,32 @@ namespace shukersal_backend.Models
 
         public ICollection<StorePermission> StorePermissions { get; set; }
 
-        public StoreManager(/*long id,*/ Member member, Store store)
+        public StoreManager()
         {
-            //Id = id;
-            StoreId = store.Id;
-            MemberId = member.Id;
-            Store = store;
-            Member = member;
-            ParentManagerId = -1;
-            StorePermissions = new List<StorePermission>();
+
         }
-        public StoreManager(/*long id, */Member member, Store store, StoreManager parentManager)
-        {
-            //Id = id;
-            StoreId = store.Id;
-            MemberId = member.Id;
-            ParentManagerId = parentManager.Id;
-            Store = store;
-            Member = member;
-            ParentManager = parentManager;
-            StorePermissions = new List<StorePermission>();
-        }
+
+        //public StoreManager(/*long id,*/ Member member, Store store)
+        //{
+        //    //Id = id;
+        //    StoreId = store.Id;
+        //    MemberId = member.Id;
+        //    Store = store;
+        //    Member = member;
+        //    ParentManagerId = -1;
+        //    StorePermissions = new List<StorePermission>();
+        //}
+        //public StoreManager(/*long id, */Member member, Store store, StoreManager parentManager)
+        //{
+        //    //Id = id;
+        //    StoreId = store.Id;
+        //    MemberId = member.Id;
+        //    ParentManagerId = parentManager.Id;
+        //    Store = store;
+        //    Member = member;
+        //    ParentManager = parentManager;
+        //    StorePermissions = new List<StorePermission>();
+        //}
 
     }
 }

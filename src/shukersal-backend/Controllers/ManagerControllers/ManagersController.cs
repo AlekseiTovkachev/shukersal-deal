@@ -72,9 +72,28 @@ namespace shukersal_backend.Controllers
             {
                 return Problem("Illegal appointer id or boss id");
             }
-            var storeManager = new StoreManager(member, store, boss);
-            storeManager.StorePermissions.Add(new StorePermission(storeManager, PermissionType.Reply_permission));
-            storeManager.StorePermissions.Add(new StorePermission(storeManager, PermissionType.Get_history_permission));
+            var storeManager = new StoreManager
+            {
+                Member = member,
+                MemberId = post.MemberId,
+                StoreId = post.StoreId,
+                Store = store,
+                ParentManager = boss,
+                ParentManagerId = boss.Id,
+                StorePermissions = new List<StorePermission>()
+            };
+            storeManager.StorePermissions.Add(new StorePermission
+            {
+                StoreManager = storeManager,
+                StoreManagerId = storeManager.Id,
+                PermissionType = PermissionType.Reply_permission
+            });
+            storeManager.StorePermissions.Add(new StorePermission
+            {
+                StoreManager = storeManager,
+                StoreManagerId = storeManager.Id,
+                PermissionType = PermissionType.Get_history_permission
+            });
 
             _context.StoreManagers.Add(storeManager);
             await _context.SaveChangesAsync();
@@ -113,9 +132,22 @@ namespace shukersal_backend.Controllers
             {
                 return Problem("Illegal appointer id or boss id");
             }
-            var storeManager = new StoreManager(member, store, boss);
-            storeManager.StorePermissions.Add(new StorePermission(storeManager, PermissionType.Manager_permission));
-
+            var storeManager = new StoreManager
+            {
+                Member = member,
+                MemberId = post.MemberId,
+                StoreId = post.StoreId,
+                Store = store,
+                ParentManager = boss,
+                ParentManagerId = boss.Id,
+                StorePermissions = new List<StorePermission>()
+            };
+            storeManager.StorePermissions.Add(new StorePermission
+            {
+                StoreManager = storeManager,
+                StoreManagerId = storeManager.Id,
+                PermissionType = PermissionType.Manager_permission
+            });
 
             _context.StoreManagers.Add(storeManager);
             await _context.SaveChangesAsync();
@@ -199,7 +231,12 @@ namespace shukersal_backend.Controllers
                 return NotFound();
             }
 
-            manager.StorePermissions.Add(new StorePermission(manager, permission));
+            manager.StorePermissions.Add(new StorePermission
+            {
+                StoreManager = manager,
+                StoreManagerId = manager.Id,
+                PermissionType = permission
+            });
             await _context.SaveChangesAsync();
 
             return Ok();

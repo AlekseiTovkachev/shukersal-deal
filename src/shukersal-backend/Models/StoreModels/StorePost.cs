@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
@@ -10,7 +9,7 @@ namespace shukersal_backend.Models
         public string Name { get; set; }
         public string Description { get; set; }
         [Required]
-        public long RootManagerId { get; set; }
+        public long RootManagerMemberId { get; set; } //Member Id of the store founder
 
     }
 }

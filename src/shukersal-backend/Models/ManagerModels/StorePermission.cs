@@ -24,12 +24,6 @@
         public long StoreManagerId { get; set; }
         public StoreManager StoreManager { get; set; }
 
-        public StorePermission(/*long id,*/ StoreManager storeManager, PermissionType type)
-        {
-            //Id = id;
-            StoreManagerId = storeManager.Id;
-            StoreManager = storeManager;
-            PermissionType = type;
-        }
+        public StorePermission() { }
     }
 }
