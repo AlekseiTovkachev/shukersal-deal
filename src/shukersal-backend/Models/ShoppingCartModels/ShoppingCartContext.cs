@@ -4,13 +4,14 @@ namespace shukersal_backend.Models.ShoppingCartModels
 {
     public class ShoppingCartContext : DbContext
     {
+        public ShoppingCartContext() { }
         public ShoppingCartContext(DbContextOptions<ShoppingCartContext> options)
             : base(options)
         {
 
         }
 
-        public DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
+        public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
         public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
         public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
 
