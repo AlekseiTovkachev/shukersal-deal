@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.Models
+﻿using System.Text.Json.Serialization;
+
+namespace shukersal_backend.Models
 {
     public class Product
     {
@@ -8,7 +10,9 @@
         public double Price { get; set; }
         public string ImageUrl { get; set; }
         public bool IsListed { get; set; } // Indicates if the product is available for normal purchase
+
         public long StoreId { get; set; }
+        [JsonIgnore]
         public Store Store { get; set; }
     }
 }
