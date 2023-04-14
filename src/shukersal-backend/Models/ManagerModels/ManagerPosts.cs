@@ -1,6 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using shukersal_backend.Models.ShoppingCartModels;
 
 namespace shukersal_backend.Models
 {
@@ -16,13 +14,13 @@ namespace shukersal_backend.Models
         public long StoreId { get; set; }
     }
 
-    public class FounderPost
-    {
-        [Required]
-        public long MemberId { get; set; }
-        [Required]
-        public long StoreId { get; set; }
-    }
+    //public class FounderPost
+    //{
+    //    [Required]
+    //    public long MemberId { get; set; }
+    //    [Required]
+    //    public long StoreId { get; set; }
+    //}
 
     public class PermissionsPost
     {
