@@ -15,18 +15,7 @@ namespace shukersal_backend.Controllers.ManagersController
     [ApiController]
     public class ManagersController : ControllerBase
     {
-        public const int MANAGER_PERMISSION = 0;
-        public const int MANAGE_PRODUCTS_PERMISSION = 1;
-        public const int MANAGE_DISCOUNTS_PERMISSION = 2;
-        public const int MANAGE_LIMITS_PERMISSION = 3;
-        public const int APPOINT_OWNER_PERMISSION = 4;
-        public const int REMOVE_OWNER_PERMISSION = 5;
-        public const int APPOINT_MANAGER_PERMISSION = 6;
-        public const int EDIT_MANAGER_PERMISSIONS_PERMISSION = 7;
-        public const int REMOVE_MANAGER_PERMISSION = 8;
-        public const int GET_MANAGER_INFO_PERMISSION = 11;
-        public const int REPLY_PERMISSION = 12;
-        public const int GET_HISTORY_PERMISSION = 13;
+        
 
         private readonly ManagerContext _context;
         private readonly MemberContext _memberContext;
@@ -75,12 +64,12 @@ namespace shukersal_backend.Controllers.ManagersController
                     return Problem("TODO");
 
                 //permission test
-                if (!CheckPermission(SearchManager(store, appointer), APPOINT_OWNER_PERMISSION))
+                if (!CheckPermission(SearchManager(store, appointer), _context.APPOINT_OWNER_PERMISSION))
                     return Problem("TODO");
 
 
                 var owner = new StoreManager(nextManagerId, member, store, parent);
-                var permission = new StorePermission(nextPermissionId, owner, MANAGER_PERMISSION);
+                var permission = new StorePermission(nextPermissionId, owner, _context.MANAGER_PERMISSION);
 
                 // Add the shopping cart and member to the database
                 _context.StoreManagers.Add(owner);
@@ -126,13 +115,13 @@ namespace shukersal_backend.Controllers.ManagersController
                     return Problem("TODO");
 
                 //permission test
-                if (!CheckPermission(SearchManager(store, appointer), APPOINT_MANAGER_PERMISSION))
+                if (!CheckPermission(SearchManager(store, appointer), _context.APPOINT_MANAGER_PERMISSION))
                     return Problem("TODO");
 
                 var manager = new StoreManager(nextManagerId, member, store, parent);
-                var permission1 = new StorePermission(nextPermissionId, manager, REPLY_PERMISSION);
+                var permission1 = new StorePermission(nextPermissionId, manager, _context.REPLY_PERMISSION);
                 nextPermissionId++;
-                var permission2 = new StorePermission(nextPermissionId, manager, GET_HISTORY_PERMISSION);
+                var permission2 = new StorePermission(nextPermissionId, manager, _context.GET_HISTORY_PERMISSION);
 
                 // Add the shopping cart and member to the database
                 _context.StoreManagers.Add(manager);
@@ -167,7 +156,7 @@ namespace shukersal_backend.Controllers.ManagersController
             if (ModelState.IsValid)
             {
                 var founder = new StoreManager(nextManagerId, member, store);
-                var permission = new StorePermission(nextPermissionId, founder, MANAGER_PERMISSION);
+                var permission = new StorePermission(nextPermissionId, founder, _context.MANAGER_PERMISSION);
 
                 // Add the shopping cart and member to the database
                 _context.StoreManagers.Add(founder);
@@ -209,7 +198,7 @@ namespace shukersal_backend.Controllers.ManagersController
                     return Problem("TODO");
 
                 //permission test
-                if (!CheckPermission(appointerManager, EDIT_MANAGER_PERMISSIONS_PERMISSION))
+                if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
                     return Problem("TODO");
 
                 if (!CheckPermission(targetManager, post.PermissionType))
@@ -234,7 +223,7 @@ namespace shukersal_backend.Controllers.ManagersController
             var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
             var target = await _memberContext.Members.FindAsync(post.TargetId);
             var store = await _storeContext.Stores.FindAsync(post.StoreId);
-            if (post.PermissionType == MANAGER_PERMISSION)
+            if (post.PermissionType == _context.MANAGER_PERMISSION)
                 return Problem("TODO");
             if (_context.StoreManagers == null)
             {
@@ -256,7 +245,7 @@ namespace shukersal_backend.Controllers.ManagersController
                     return Problem("TODO");
 
                 //permission test
-                if (!CheckPermission(appointerManager, EDIT_MANAGER_PERMISSIONS_PERMISSION))
+                if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
                     return Problem("TODO");
 
                 if (CheckPermission(targetManager, post.PermissionType))
@@ -290,7 +279,7 @@ namespace shukersal_backend.Controllers.ManagersController
             }
             if (ModelState.IsValid)
             {
-                if (!CheckPermission(SearchManager(store, member), GET_MANAGER_INFO_PERMISSION))
+                if (!CheckPermission(SearchManager(store, member), _context.GET_MANAGER_INFO_PERMISSION))
                     return Problem("TODO");
                 var storeManagers = await _context.StoreManagers.Where(m => m.Store == store).Include(m => m.StorePermissions).ToListAsync();
 
@@ -315,7 +304,7 @@ namespace shukersal_backend.Controllers.ManagersController
             if (manager == null)
                 return false;
             foreach (StorePermission permission in manager.StorePermissions)
-                if (permission.PermissionType == MANAGER_PERMISSION || permission.PermissionType == permissionType)
+                if (permission.PermissionType == _context.MANAGER_PERMISSION || permission.PermissionType == permissionType)
                     return true;
             return false;
         }
