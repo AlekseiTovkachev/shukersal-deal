@@ -36,7 +36,6 @@
     <Folder Include="Controllers\EventControllers\" />
     <Folder Include="Controllers\MemberControllers\" />
     <Folder Include="Controllers\ReviewControllers\" />
-    <Folder Include="Controllers\PurchaseControllers\" />
     <Folder Include="Controllers\NotificationControllers\" />
   </ItemGroup>
 
