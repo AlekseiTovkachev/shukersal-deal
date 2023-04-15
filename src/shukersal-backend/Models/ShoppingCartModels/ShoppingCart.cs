@@ -8,6 +8,7 @@ namespace shukersal_backend.Models.ShoppingCartModels
         public long MemberId { get; set; }
         [JsonIgnore]
         public Member Member { get; set; }
+        public ShoppingCart() { }
         public ICollection<ShoppingBasket> ShoppingBaskets { get; set; }
     }
 }

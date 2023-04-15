@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
@@ -9,16 +10,44 @@ namespace shukersal_backend.Models
 
         [ForeignKey("Store")]
         public long StoreId { get; set; }
-        public Store Store { get; set; }
+        [JsonIgnore]
+        public Store? Store { get; set; }
 
         [ForeignKey("Member")]
         public long MemberId { get; set; }
-        public Member Member { get; set; }
+        [JsonIgnore]
+        public Member? Member { get; set; }
 
         [ForeignKey("ParentManager")]
+        [JsonIgnore]
         public long ParentManagerId { get; set; }
-        public StoreManager ParentManager { get; set; }
+        public StoreManager? ParentManager { get; set; }
 
-        public ICollection<StorePermission> StorePermissions { get; set; }
+        public ICollection<StorePermission>? StorePermissions { get; set; }
+
+        public StoreManager() { }
+
+        //public StoreManager(/*long id,*/ Member member, Store store)
+        //{
+        //    //Id = id;
+        //    StoreId = store.Id;
+        //    MemberId = member.Id;
+        //    Store = store;
+        //    Member = member;
+        //    ParentManagerId = -1;
+        //    StorePermissions = new List<StorePermission>();
+        //}
+        //public StoreManager(/*long id, */Member member, Store store, StoreManager parentManager)
+        //{
+        //    //Id = id;
+        //    StoreId = store.Id;
+        //    MemberId = member.Id;
+        //    ParentManagerId = parentManager.Id;
+        //    Store = store;
+        //    Member = member;
+        //    ParentManager = parentManager;
+        //    StorePermissions = new List<StorePermission>();
+        //}
+
     }
 }

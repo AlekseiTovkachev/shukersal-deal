@@ -12,5 +12,10 @@ namespace shukersal_backend.Models
 
         public DbSet<StoreManager> StoreManagers { get; set; } = null!;
         public DbSet<StorePermission> StorePermissions { get; set; } = null!;
+
+
     }
 }
+
+
+  
