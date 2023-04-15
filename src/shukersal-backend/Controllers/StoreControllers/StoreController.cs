@@ -30,7 +30,8 @@ namespace shukersal_backend.Controllers.StoreControllers
             {
                 return NotFound();
             }
-            var stores = await _context.Stores.ToListAsync();
+            var stores = await _context.Stores.Include(s => s.Products).Include(s => s.DiscountRules).ToListAsync();
+            //var stores = await _context.Stores.ToListAsync();
             return stores;
         }
 
@@ -38,8 +39,9 @@ namespace shukersal_backend.Controllers.StoreControllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Store>> GetStore(long id)
         {
-            var store = await _context.Stores.FindAsync(id);
 
+            //var store = await _context.Stores.FindAsync(id);
+            var store = await _context.Stores.Include(s => s.Products).Include(s => s.DiscountRules).FirstOrDefaultAsync(s => s.Id == id);
             if (store == null)
             {
                 return NotFound();
@@ -70,12 +72,20 @@ namespace shukersal_backend.Controllers.StoreControllers
             }
             if (ModelState.IsValid)
             {
-
-                var store = new Store(
-                        storeData.Name,
-                        storeData.Description,
-                        storeData.RootManagerMemberId
-                        );
+                var store = new Store
+                {
+                    Name = storeData.Name,
+                    Description = storeData.Description,
+                    RootManagerId = storeData.RootManagerMemberId,
+                    RootManager = null,
+                    Products = new List<Product>(),
+                    DiscountRules = new List<DiscountRule>()
+                };
+                //var store = new Store(
+                //        storeData.Name,
+                //        storeData.Description,
+                //        storeData.RootManagerMemberId
+                //        );
                 //TODO: add authentication
                 var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
                 if (member == null)
@@ -96,6 +106,9 @@ namespace shukersal_backend.Controllers.StoreControllers
                     StoreManagerId = storeManager.Id,
                     PermissionType = PermissionType.Manager_permission
                 });
+
+                store.RootManager = storeManager;
+
                 _context.Stores.Add(store);
                 await _context.SaveChangesAsync();
 
@@ -112,12 +125,21 @@ namespace shukersal_backend.Controllers.StoreControllers
 
         // PUT: api/Store/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStore(long id, Store store)
+        public async Task<IActionResult> UpdateStore(long id, StorePost post)
         {
-            if (id != store.Id)
+            if (id != post.Id)
             {
                 return BadRequest();
             }
+            var store = await _context.Stores.FindAsync(id);
+            if (store == null)
+            {
+                return BadRequest();
+            }
+            store.Description = post.Description;
+            store.Name = post.Name;
+            //var rootManager = await _managerContext.StoreManagers.FindAsync(store.RootManagerId);
+            //store.RootManager = rootManager;
 
             _context.Entry(store).State = EntityState.Modified;
 
@@ -165,8 +187,8 @@ namespace shukersal_backend.Controllers.StoreControllers
         [HttpPost("stores/{storeId}/products")]
         public async Task<IActionResult> AddProduct(long storeId, Product product)
         {
-            var store = await _context.Stores.FindAsync(storeId);
-
+            //var store = await _context.Stores.FindAsync(storeId);
+            var store = await _context.Stores.Include(s => s.Products).FirstOrDefaultAsync(s => s.Id == storeId);
             if (store == null)
             {
                 return NotFound("Store not found.");
@@ -175,7 +197,11 @@ namespace shukersal_backend.Controllers.StoreControllers
             // Associate the product with the store
             product.StoreId = storeId;
             product.Store = store;
+
+            store.Products.Add(product);
+
             _context.Products.Add(product);
+
             await _context.SaveChangesAsync();
 
             return Ok("Product added successfully.");
@@ -203,7 +229,7 @@ namespace shukersal_backend.Controllers.StoreControllers
             existingProduct.Name = product.Name;
             existingProduct.Description = product.Description;
             existingProduct.Price = product.Price;
-
+            _context.Entry(store).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return Ok("Product updated successfully.");
@@ -226,9 +252,10 @@ namespace shukersal_backend.Controllers.StoreControllers
             {
                 return NotFound("Product not found in the specified store.");
             }
-
+            store.Products.Remove(product);
             // Remove the product from the store
             _context.Products.Remove(product);
+            _context.Entry(store).State = EntityState.Modified;
             await _context.SaveChangesAsync();
 
             return Ok("Product deleted successfully.");

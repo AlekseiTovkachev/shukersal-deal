@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.Models
+﻿using System.Text.Json.Serialization;
+
+namespace shukersal_backend.Models
 {
 
     public enum PermissionType
@@ -22,6 +24,7 @@
         public long Id { get; set; }
         public PermissionType PermissionType { get; set; }
         public long StoreManagerId { get; set; }
+        [JsonIgnore]
         public StoreManager StoreManager { get; set; }
 
         public StorePermission() { }
