@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using shukersal_backend.Models;
-using shukersal_backend.Controllers;
+﻿using shukersal_backend.Controllers;
 using shukersal_backend.Controllers.StoreControllers;
+using shukersal_backend.Models;
 using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.Controllers
@@ -25,8 +20,10 @@ namespace shukersal_backend.Tests.Controllers
             _managerContext = new Mock<ManagerContext>();
             _memberContext = new Mock<MemberContext>();
             _storeContext = new Mock<StoreContext>();
+
             _controller = new StoreManagersController(_managerContext.Object, _memberContext.Object, _storeContext.Object);
             _storeController = new StoreController(_storeContext.Object, _managerContext.Object, _memberContext.Object);
+
 
             var membersList = new List<Member>
             {
@@ -45,6 +42,8 @@ namespace shukersal_backend.Tests.Controllers
                 // empty
             };
             _storeContext.Setup(s => s.Stores).ReturnsDbSet(stores);
+
+
         }
 
         [Fact]
@@ -53,8 +52,8 @@ namespace shukersal_backend.Tests.Controllers
             Assert.True(true);
         }
 
-       
 
-        
+
+
     }
 }
