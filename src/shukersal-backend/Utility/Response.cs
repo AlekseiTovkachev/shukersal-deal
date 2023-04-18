@@ -30,5 +30,10 @@ namespace shukersal_backend.Utility
                 ErrorMessage = errorMessage
             };
         }
+
+        public Response()
+        {
+
+        }
     }
 }

@@ -135,7 +135,7 @@ namespace shukersal_backend.Controllers.StoreControllers
             {
                 return NotFound();
             }
-            return Ok(response.Result);
+            return NoContent();
         }
     }
 }
