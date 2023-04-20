@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
@@ -8,8 +10,12 @@ namespace shukersal_backend.Models
 
         // TODO: Connect billing/delivery service via invoice id / delivery id etc.
         public long Id { get; set; }
-        public long MemberId { get; set; }
-        public Member? Member { get; set; }
+
+        [ForeignKey("Member_")]
+        [JsonIgnore]
+        public long Member_Id_ { get; set; }
+        [JsonIgnore]
+        public Member? Member_ { get; set; }
         public DateTime PurchaseDate { get; set; }
         public double TotalPrice { get; set; }
         public ICollection<PurchaseItem> PurchaseItems { get; set; }

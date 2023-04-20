@@ -34,7 +34,7 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).ToListAsync();
+                .Include(s => s.PurchaseItems).Include(m=>m.Member_).ToListAsync();
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
         }
 
@@ -46,6 +46,7 @@ namespace shukersal_backend.Domain
             }
             var purchase = await _context.Purchases
                 .Include(s => s.PurchaseItems)
+                .Include(m=>m.Member_)
                 .FirstOrDefaultAsync(s => s.Id == Purchaseid);
             
             if (purchase == null)
@@ -69,24 +70,24 @@ namespace shukersal_backend.Domain
 
             var purchase = new Purchase
             {
-                MemberId = purchasePost.MemberId,
-                Member =null,
+                Member_Id_ = purchasePost.Member__ID,
+                Member_ =null,
                 PurchaseDate = purchasePost.PurchaseDate,
                 TotalPrice = purchasePost.TotalPrice,
                 PurchaseItems =new List<PurchaseItem>(),
             };
 
-            var member = await _memberContext.Members.FindAsync(purchasePost.MemberId);
+            var member = await _memberContext.Members.FindAsync(purchasePost.Member__ID);
             if (member == null)
             {
                 return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
-            purchase.Member = member;
+            purchase.Member_ = member;
 
             var shoppingCart = await _shoppingCartContext.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
                 .ThenInclude(b => b.ShoppingItems)
-                .FirstOrDefaultAsync(c => c.MemberId == purchasePost.MemberId);
+                .FirstOrDefaultAsync(c => c.MemberId == purchasePost.Member__ID);
 
             if (shoppingCart == null)
             {
@@ -129,7 +130,7 @@ namespace shukersal_backend.Domain
                     return Response<Purchase>.Error(HttpStatusCode.BadRequest, compliesWithPurchasePolicy.ErrorMessage);
                 }
 
-                var discountsApplied = await ApplyDiscounts(basket.StoreId, purchaseBaskets[basket.StoreId], purchasePost.MemberId);
+                var discountsApplied = await ApplyDiscounts(basket.StoreId, purchaseBaskets[basket.StoreId], purchasePost.Member__ID);
                 if (!discountsApplied.Result)
                 {
                     return Response<Purchase>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
@@ -176,7 +177,7 @@ namespace shukersal_backend.Domain
             }
 
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).Where(s=>s.MemberId==memberId).ToListAsync();
+                .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
         }
 
@@ -195,14 +196,14 @@ namespace shukersal_backend.Domain
 
 
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
+                .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
             var purchaseHistory=new List<Purchase>();
             foreach( var purchase in purchases)
             {
                 Purchase p = new Purchase {
                     Id = purchase.Id,
-                    MemberId = purchase.MemberId,
-                    Member = purchase.Member,
+                    Member_Id_ = purchase.Member_Id_,
+                    Member_ = purchase.Member_,
                     PurchaseDate = purchase.PurchaseDate,
                     TotalPrice = purchase.TotalPrice,
                     PurchaseItems = purchase.PurchaseItems.Where(i=>i.StoreId==shopId).ToList(),
@@ -263,6 +264,9 @@ namespace shukersal_backend.Domain
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Purchase not found");
             }
 
+            foreach (var item in _context.PurchaseItems) {
+                if(item.PurchaseId == id) { _context.PurchaseItems.Remove(item); }
+            }
             _context.Purchases.Remove(purchase);
             await _context.SaveChangesAsync();
 

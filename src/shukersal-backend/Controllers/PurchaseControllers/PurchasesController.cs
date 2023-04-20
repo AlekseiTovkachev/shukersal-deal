@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
         }
 
         // GET: api/Purchases/5
-        [HttpGet("{Purchaseid}")]
+        [HttpGet("Purchaseid")]
         public async Task<ActionResult<Purchase>> GetPurchase(long PurchaseId)
         {
             var response = await purchaseService.GetPurchase(PurchaseId);
@@ -62,10 +63,10 @@ namespace shukersal_backend.Controllers.PurchaseControllers
                 var response = await purchaseService.PurchaseAShoppingCart(purchasePost);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
                 var purchase = response.Result;
-                return CreatedAtAction("GetPurchase", new { id = purchase.Id }, purchase);
+                return CreatedAtAction(nameof(GetPurchase), new { id=purchase.Id }, purchase);
             }
             else
             {
@@ -74,7 +75,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
         }
         
         // DELETE: api/Purchases/5
-        [HttpDelete("{purchaseId}")]
+        [HttpDelete("purchaseid/{purchaseId}")]
         public async Task<IActionResult> DeletePurchase(long purchaseId)
         {
             var response = await purchaseService.DeletePurchase(purchaseId);
@@ -87,7 +88,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
 
 
         // PUT: api/Purchase/5
-        [HttpPut("{purchaseid}")]
+        [HttpPut("purchaseid/{purchaseid}")]
         public async Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post)
         {
             if (ModelState.IsValid)
@@ -100,7 +101,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
                         return NotFound(ModelState);
                     }
                 }
-                return NoContent();
+                return Ok(response.Result);
 
             }
             return BadRequest();
@@ -120,7 +121,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
                         return NotFound(ModelState);
                     }
                 }
-                return NoContent();
+                return Ok(response.Result);
 
             }
             return BadRequest();
@@ -132,7 +133,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
         {
             if (ModelState.IsValid)
             {
-                var response = await purchaseService.BrowesePurchaseHistory(storeId);
+                var response = await purchaseService.BroweseShopPurchaseHistory(storeId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -140,23 +141,11 @@ namespace shukersal_backend.Controllers.PurchaseControllers
                         return NotFound(ModelState);
                     }
                 }
-                return NoContent();
+                return Ok(response.Result);
 
             }
             return BadRequest();
         }
 
-
-
-
-
-
-
-
-
-
     }
-
-        
-
 }
