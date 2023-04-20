@@ -5,7 +5,7 @@
         public long Id { get; set; }
         public long MemberId { get; set; }
         public DateTime PurchaseDate { get; set; }
-        public decimal TotalPrice { get; set; }
+        public double TotalPrice { get; set; }
 
 
     }

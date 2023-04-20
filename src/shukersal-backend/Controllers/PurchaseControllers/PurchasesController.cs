@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
+using shukersal_backend.Domain;
 using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
 using shukersal_backend.Models.ShoppingCartModels;
@@ -15,165 +18,144 @@ namespace shukersal_backend.Controllers.PurchaseControllers
     [ApiController]
     public class PurchasesController : ControllerBase
     {
-        private readonly PurchaseContext _context;
-        private readonly StoreContext _storeContext;
-        private readonly MemberContext _memberContext;
+        private readonly PurchaseService purchaseService;
 
 
-        public PurchasesController(PurchaseContext context, StoreContext storeContext, MemberContext memberContext)
+        public PurchasesController(PurchaseContext context, StoreContext storeContext, MemberContext memberContext, ShoppingCartContext shoppingCartContext)
         {
-            _context = context;
-            _storeContext = storeContext;
-            _memberContext = memberContext;
+            purchaseService=new PurchaseService(context, storeContext, memberContext, shoppingCartContext);
         }
 
         // GET: api/Purchases
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Purchase>>> GetPurchases()
         {
-          if (_context.Purchases == null)
-          {
-              return NotFound();
-          }
-            return await _context.Purchases.ToListAsync();
-        }
-
-        // GET: api/Purchases/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Purchase>> GetPurchase(long id)
-        {
-          if (_context.Purchases == null)
-          {
-              return NotFound();
-          }
-            var purchase = await _context.Purchases.FindAsync(id);
-
-            if (purchase == null)
+            var response = await purchaseService.GetPurchases();
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            return purchase;
+            return Ok(response.Result);
         }
 
-        // PUT: api/Purchases/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPurchase(long id, Purchase purchase)
+        // GET: api/Purchases/5
+        [HttpGet("{Purchaseid}")]
+        public async Task<ActionResult<Purchase>> GetPurchase(long PurchaseId)
         {
-            if (id != purchase.Id)
+            var response = await purchaseService.GetPurchase(PurchaseId);
+            if (!response.IsSuccess)
             {
-                return BadRequest();
+                return NotFound();
             }
-
-            _context.Entry(purchase).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PurchaseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(response.Result);
         }
+
+      
 
         // POST: api/Purchases
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost)
         {
-          if (_context.Purchases == null)
-          {
-              return Problem("Entity set 'PurchaseContext.Purchases'  is null.");
-          }
-
-            if (_context.PurchaseItems == null)
-            {
-                return Problem("Entity set 'PurchaseContext.PurchaseItems'  is null.");
-            }
-
-
             if (ModelState.IsValid)
             {
-
-                var member = await _memberContext.Members.FindAsync(purchasePost.MemberId);
-                if (member == null)
+                var response = await purchaseService.PurchaseAShoppingCart(purchasePost);
+                if (!response.IsSuccess || response.Result == null)
                 {
-                    return Problem("Illegal user id");
+                    return BadRequest(ModelState);
                 }
-
-                var purchase = new Purchase(purchasePost.MemberId,member,purchasePost.PurchaseDate);
-                ShoppingCart cart = member.ShoppingCart;
-
-                decimal totalPrice = 0;
-                foreach(ShoppingBasket basket in cart.ShoppingBaskets)
-                {
-
-
-                    foreach (ShoppingItem shoppingItem in basket.ShoppingItems)
-                    {
-
-                        //TO DO: update final price
-                        //TO DO: check purchase policy
-                        //TO DO: apply discount
-
-                        var item = new PurchaseItem(purchase.Id,purchase,shoppingItem.Id,shoppingItem.Product,shoppingItem.Quantity,shoppingItem.Product.Price);
-                        purchase.PurchaseItems.Add(item);
-
-                        totalPrice = totalPrice + item.Price;
-                    }
-
-                }
-
-                foreach(PurchaseItem purchaseItem in purchase.PurchaseItems)
-                {
-                    _context.PurchaseItems.Add(purchaseItem);
-                    await _context.SaveChangesAsync();
-                }
-
-                _context.Purchases.Add(purchase);
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("GetPurchase", new { id = purchase.Id }, purchase);
-
+                var purchase = response.Result;
+                return CreatedAtAction("GetPurchase", new { id = purchasePost.Id }, purchase);
             }
-            else { return BadRequest(ModelState); }
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
-
+        
         // DELETE: api/Purchases/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePurchase(long id)
+        [HttpDelete("{purchaseId}")]
+        public async Task<IActionResult> DeletePurchase(long purchaseId)
         {
-            if (_context.Purchases == null)
+            var response = await purchaseService.DeletePurchase(purchaseId);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            var purchase = await _context.Purchases.FindAsync(id);
-            if (purchase == null)
-            {
-                return NotFound();
-            }
-
-            _context.Purchases.Remove(purchase);
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        private bool PurchaseExists(long id)
+
+        // PUT: api/Purchase/5
+        [HttpPut("{purchaseid}")]
+        public async Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post)
         {
-            return (_context.Purchases?.Any(e => e.Id == id)).GetValueOrDefault();
+            if (ModelState.IsValid)
+            {
+                var response = await purchaseService.UpdatePurchase(purchaseid, post);
+                if (!response.IsSuccess)
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return NotFound(ModelState);
+                    }
+                }
+                return NoContent();
+
+            }
+            return BadRequest();
         }
+
+        // GET: api/Purchases/memberId/5
+        [HttpGet("memberId/{memberId}")]
+        public async Task<ActionResult<Purchase>> BrowesePurchaseHistory(long memberId)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await purchaseService.BrowesePurchaseHistory(memberId);
+                if (!response.IsSuccess)
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return NotFound(ModelState);
+                    }
+                }
+                return NoContent();
+
+            }
+            return BadRequest();
+        }
+
+        // GET: api/Purchases/storeId/5
+        [HttpGet("storeId/{storeId}")]
+        public async Task<ActionResult<Purchase>> BroweseShopPurchaseHistory(long storeId)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await purchaseService.BrowesePurchaseHistory(storeId);
+                if (!response.IsSuccess)
+                {
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return NotFound(ModelState);
+                    }
+                }
+                return NoContent();
+
+            }
+            return BadRequest();
+        }
+
+
+
+
+
+
+
+
+
     }
 
+        
 
 }
