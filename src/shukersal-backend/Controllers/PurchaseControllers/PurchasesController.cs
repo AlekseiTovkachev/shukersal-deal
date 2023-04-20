@@ -65,7 +65,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
                     return BadRequest(ModelState);
                 }
                 var purchase = response.Result;
-                return CreatedAtAction("GetPurchase", new { id = purchasePost.Id }, purchase);
+                return CreatedAtAction("GetPurchase", new { id = purchase.Id }, purchase);
             }
             else
             {
@@ -145,6 +145,7 @@ namespace shukersal_backend.Controllers.PurchaseControllers
             }
             return BadRequest();
         }
+
 
 
 

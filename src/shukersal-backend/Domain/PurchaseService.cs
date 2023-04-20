@@ -105,7 +105,7 @@ namespace shukersal_backend.Domain
                     var purchaseItem = new PurchaseItem
                     {
                         PurchaseId= purchase.Id,
-                        Purchase= purchase,
+                       // Purchase= purchase,
                         ProductId = item.ProductId,
                         StoreId = item.Product.StoreId,
                         ProductName = item.Product.Name,
@@ -116,14 +116,27 @@ namespace shukersal_backend.Domain
                     purchaseBaskets[basket.StoreId].Add(purchaseItem);
                 }
 
-                //TO DO:  check: desired quantity<=quntity in stock
+                
+                var allAvailable = await CheckAvailabilityInStock(basket.StoreId, purchaseBaskets[basket.StoreId]);
+                if (!allAvailable.Result)
+                {
+                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
+                }
 
-                //TO DO:  CheckPurchasePolicy(basket.StoreId,purchaseBaskets[basket.StoreId]);
+                var compliesWithPurchasePolicy= await CheckPurchasePolicy(basket.StoreId,purchaseBaskets[basket.StoreId]);
+                if (!compliesWithPurchasePolicy.Result)
+                {
+                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, compliesWithPurchasePolicy.ErrorMessage);
+                }
 
-                //TO DO:  ApplyDiscounts(basket.StoreId,purchaseItems,user??)
+                var discountsApplied = await ApplyDiscounts(basket.StoreId, purchaseBaskets[basket.StoreId], purchasePost.MemberId);
+                if (!discountsApplied.Result)
+                {
+                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
+                }
 
             }
-            purchase.TotalPrice = purchaseBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.Price));
+            purchase.TotalPrice = purchaseBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.Price*item.Quantity));
             
 
             //connction with external delivery service
@@ -136,9 +149,12 @@ namespace shukersal_backend.Domain
             foreach (var (storeId,items) in purchaseBaskets)
             {
                 purchase.PurchaseItems.AddRange(items);
-                //TO DO: updateStock(storeId,items);
+                var stockUpdated=await UpdateStock(storeId,items);
+                if (!stockUpdated.Result)
+                {
+                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
+                }
                 //TO DO: sendPurchaseNotification(storeId);
-                
             }
 
             _context.Purchases.Add(purchase);
@@ -251,6 +267,61 @@ namespace shukersal_backend.Domain
             await _context.SaveChangesAsync();
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
+        }
+
+        private async Task<Response<bool>> CheckPurchasePolicy(long storeId,List<PurchaseItem> purchaseItems)
+        {
+            var shop = await _storeContext.Stores.FindAsync(storeId);
+            if (shop == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+            }
+
+            return Response<bool>.Success(HttpStatusCode.NoContent, true);
+
+        }
+
+        private async Task<Response<bool>> ApplyDiscounts(long storeId, List<PurchaseItem> purchaseItems,long memberId)
+        {
+            var shop = await _storeContext.Stores.FindAsync(storeId);
+            if (shop == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+            }
+
+            var member = await _memberContext.Members.FindAsync(memberId);
+            if (member == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal member id");
+            }
+            return Response<bool>.Success(HttpStatusCode.NoContent, true);
+
+        }
+
+
+        private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<PurchaseItem> purchaseItems)
+        {
+            var shop = await _storeContext.Stores.FindAsync(storeId);
+            if (shop == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+            }
+
+            return Response<bool>.Success(HttpStatusCode.NoContent, true);
+
+        }
+
+
+        private async Task<Response<bool>> UpdateStock(long storeId, List<PurchaseItem> purchaseItems)
+        {
+            var shop = await _storeContext.Stores.FindAsync(storeId);
+            if (shop == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+            }
+
+            return Response<bool>.Success(HttpStatusCode.NoContent, true);
+
         }
 
 
