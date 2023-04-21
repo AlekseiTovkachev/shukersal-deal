@@ -1,7 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using shukersal_backend.Models;
-using shukersal_backend.Utility;
-using System.Net;
+﻿using System.Net;
 
 namespace shukersal_backend.Domain
 {
