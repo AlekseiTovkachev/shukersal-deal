@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
@@ -13,6 +14,7 @@ namespace shukersal_backend.Models
         public long RootManagerId { get; set; }
         [JsonIgnore]
         [Required]
+        [ForeignKey("RootManagerId")]
         public StoreManager? RootManager { get; set; }
         [Required]
         public virtual ICollection<Product> Products { get; set; }
@@ -24,13 +26,5 @@ namespace shukersal_backend.Models
 
         }
 
-        //public Store(string name, string description, long rootManagerId)
-        //{
-        //    Name = name;
-        //    Description = description;
-        //    RootManagerId = rootManagerId;
-        //    Products = new List<Product>();
-        //    DiscountRules = new List<DiscountRule>();
-        //}
     }
 }
