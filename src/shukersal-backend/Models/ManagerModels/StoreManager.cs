@@ -7,11 +7,10 @@ namespace shukersal_backend.Models
     {
         // TODO: Enforce graph legality in controller (no cycles for example)
         public long Id { get; set; }
-
         [ForeignKey("Store")]
         public long StoreId { get; set; }
         [JsonIgnore]
-        public Store? Store { get; set; }
+        public Store Store { get; set; }
 
         [ForeignKey("Member")]
         public long MemberId { get; set; }
@@ -19,35 +18,13 @@ namespace shukersal_backend.Models
         public Member? Member { get; set; }
 
         [ForeignKey("ParentManager")]
-        [JsonIgnore]
         public long ParentManagerId { get; set; }
+        [JsonIgnore]
         public StoreManager? ParentManager { get; set; }
 
         public ICollection<StorePermission>? StorePermissions { get; set; }
 
         public StoreManager() { }
-
-        //public StoreManager(/*long id,*/ Member member, Store store)
-        //{
-        //    //Id = id;
-        //    StoreId = store.Id;
-        //    MemberId = member.Id;
-        //    Store = store;
-        //    Member = member;
-        //    ParentManagerId = -1;
-        //    StorePermissions = new List<StorePermission>();
-        //}
-        //public StoreManager(/*long id, */Member member, Store store, StoreManager parentManager)
-        //{
-        //    //Id = id;
-        //    StoreId = store.Id;
-        //    MemberId = member.Id;
-        //    ParentManagerId = parentManager.Id;
-        //    Store = store;
-        //    Member = member;
-        //    ParentManager = parentManager;
-        //    StorePermissions = new List<StorePermission>();
-        //}
 
     }
 }

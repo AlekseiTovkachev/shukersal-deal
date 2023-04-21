@@ -30,7 +30,10 @@ namespace shukersal_backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
-            var storeManager = await _context.StoreManagers.FindAsync(id);
+            //addition for testing
+            var storeManager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (storeManager == null)
             {
