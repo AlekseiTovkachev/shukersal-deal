@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using shukersal_backend.Models;
 
 namespace shukersal_backend.Controllers
@@ -49,31 +50,31 @@ namespace shukersal_backend.Controllers
         {
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
             bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
                 && sm.StoreId == post.StoreId);
             if (isManagerOfStore)
             {
-                return Problem("The member already manages this store");
+                return NotFound();
             }
-            var member = await _memberContext.Members.FindAsync(post.MemberId);
-            var store = await _storeContext.Stores.FindAsync(post.StoreId);
+            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
-                return Problem("Illegal store id or member id");
+                return NotFound();
             }
 
-            var appointer = await _context.StoreManagers.FindAsync(post.AppointerId);
-            var boss = await _context.StoreManagers.FindAsync(post.BossId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
+            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
-                return Problem("Illegal appointer id or boss id");
+                return NotFound();
             }
             var storeManager = new StoreManager
             {
@@ -109,31 +110,31 @@ namespace shukersal_backend.Controllers
         {
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
             bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
                 && sm.StoreId == post.StoreId);
             if (isManagerOfStore)
             {
-                return Problem("The member already manages this store");
+                return NotFound();
             }
-            var member = await _memberContext.Members.FindAsync(post.MemberId);
-            var store = await _storeContext.Stores.FindAsync(post.StoreId);
+            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
-                return Problem("Illegal store id or member id");
+                return NotFound();
             }
 
-            var appointer = await _context.StoreManagers.FindAsync(post.AppointerId);
-            var boss = await _context.StoreManagers.FindAsync(post.BossId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
+            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
-                return Problem("Illegal appointer id or boss id");
+                return NotFound();
             }
             var storeManager = new StoreManager
             {
@@ -211,23 +212,23 @@ namespace shukersal_backend.Controllers
 
         // Add a permission to a shop manager
         [HttpPost("{id}/permissions")]
-        public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
+        public async Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission)
         {
             if (permission == PermissionType.Manager_permission)
             {
-                return Problem("TODO");
+                return NotFound();
             }
 
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
 
-            var manager = await _context.StoreManagers.FindAsync(id);
+            var manager = _context.StoreManagers.FirstOrDefault(sm => sm.Id == Id);
 
             if (manager == null)
             {
