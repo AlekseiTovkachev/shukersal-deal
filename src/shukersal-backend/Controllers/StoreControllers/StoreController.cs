@@ -63,12 +63,12 @@ namespace shukersal_backend.Controllers.StoreControllers
         }
 
         // PUT: api/Store/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateStore(long id, StorePost post)
+        [HttpPatch("{id}")]
+        public async Task<IActionResult> UpdateStore(long id, StorePatch patch)
         {
             if (ModelState.IsValid)
             {
-                var response = await storeService.UpdateStore(id, post);
+                var response = await storeService.UpdateStore(id, patch);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

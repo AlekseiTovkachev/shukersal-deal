@@ -1,4 +1,7 @@
-﻿using System.Net;
+﻿using Microsoft.EntityFrameworkCore;
+using shukersal_backend.Models;
+using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.Domain
 {
@@ -18,7 +21,7 @@ namespace shukersal_backend.Domain
             _context.Database.EnsureCreated();
         }
 
-        public StoreService(StoreContext context, ManagerContext managerContext, MemberContext memberContext, string test)
+        public StoreService(StoreContext context, MemberContext memberContext, string test)
         {
             _context = context;
             //_managerContext = managerContext;
@@ -105,7 +108,7 @@ namespace shukersal_backend.Domain
 
 
 
-        public async Task<Response<bool>> UpdateStore(long id, StorePost post)
+        public async Task<Response<bool>> UpdateStore(long id, StorePatch patch)
         {
 
             var store = await _context.Stores.FindAsync(id);
@@ -113,12 +116,11 @@ namespace shukersal_backend.Domain
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Store not found");
             }
-            store.Description = post.Description;
-            store.Name = post.Name;
-            //var rootManager = await _managerContext.StoreManagers.FindAsync(store.RootManagerId);
-            //store.RootManager = rootManager;
+            if (patch.Description != null) store.Description = patch.Description;
+            if (patch.Name != null) store.Name = patch.Name;
 
-            _context.Entry(store).State = EntityState.Modified;
+            //_context.Entry(store).State = EntityState.Modified;
+            _context.MarkAsModified(store);
 
             try
             {
@@ -143,7 +145,7 @@ namespace shukersal_backend.Domain
         {
             if (_context.Stores == null)
             {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores' is null.");
             }
             var store = await _context.Stores.FindAsync(id);
             if (store == null)
@@ -204,38 +206,6 @@ namespace shukersal_backend.Domain
             return Response<Product>.Success(HttpStatusCode.Created, product);
         }
 
-        //public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPost post)
-        //{
-        //    var existingProduct = await _context.Products.FindAsync(productId);
-
-        //    if (existingProduct == null || existingProduct.StoreId != storeId)
-        //    {
-        //        return Response<Product>.Error(HttpStatusCode.NotFound, "Product not found in the specified store.");
-        //    }
-        //    Category? category = null;
-        //    if (post.CategoryId != 0 && _context.Categories != null)
-        //    {
-        //        category = await _context.Categories.FindAsync(post.CategoryId);
-        //    }
-
-
-        //    // Update the existing product with the new data
-        //    if (post.Name != null) existingProduct.Name = post.Name;
-
-        //    if (post.Description != null) existingProduct.Description = post.Description;
-
-        //    if (category != null) existingProduct.Category = category;
-
-        //    if (post.Price != -1) existingProduct.Price = post.Price;
-
-        //    existingProduct.UnitsInStock = post.UnitsInStock;
-
-        //    _context.Entry(existingProduct).State = EntityState.Modified;
-        //    await _context.SaveChangesAsync();
-
-        //    return Response<Product>.Success(HttpStatusCode.NoContent, existingProduct);
-        //}
-
         public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch)
         {
             var existingProduct = await _context.Products.FindAsync(productId);
@@ -249,7 +219,6 @@ namespace shukersal_backend.Domain
             {
                 category = await _context.Categories.FindAsync(patch.CategoryId);
             }
-
 
             // Update the existing product with the new data
             if (patch.Name != null) existingProduct.Name = patch.Name;
@@ -265,7 +234,8 @@ namespace shukersal_backend.Domain
             if (category != null) existingProduct.Category = category;
 
 
-            _context.Entry(existingProduct).State = EntityState.Modified;
+            //_context.Entry(existingProduct).State = EntityState.Modified;
+            _context.MarkAsModified(existingProduct);
             await _context.SaveChangesAsync();
 
             return Response<Product>.Success(HttpStatusCode.NoContent, existingProduct);
@@ -291,7 +261,8 @@ namespace shukersal_backend.Domain
             store.Products.Remove(product);
             // Remove the product from the store
             _context.Products.Remove(product);
-            _context.Entry(store).State = EntityState.Modified;
+            //_context.Entry(store).State = EntityState.Modified;
+            _context.MarkAsModified(store);
             await _context.SaveChangesAsync();
 
             return Response<Product>.Success(HttpStatusCode.NotFound, product);

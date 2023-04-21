@@ -1,4 +1,8 @@
-﻿namespace shukersal_backend.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace shukersal_backend.Models
 {
     public class Store
     {
@@ -14,8 +18,6 @@
         public virtual ICollection<Product> Products { get; set; }
         [Required]
         public virtual ICollection<DiscountRule> DiscountRules { get; set; }
-
-        //public Store() { }
 
     }
 }

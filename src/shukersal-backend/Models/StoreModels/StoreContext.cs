@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace shukersal_backend.Models
 {
     public class StoreContext : DbContext
     {
@@ -45,6 +47,16 @@
             new Category { Id = 19, Name = "Arts & Crafts" },
             new Category { Id = 20, Name = "Travel & Luggage" }
             );
+        }
+
+        public virtual void MarkAsModified(Store store)
+        {
+            Entry(store).State = EntityState.Modified;
+        }
+
+        public virtual void MarkAsModified(Product product)
+        {
+            Entry(product).State = EntityState.Modified;
         }
 
     }
