@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace shukersal_backend.Models
 {
     public class ManagerContext : DbContext
     {

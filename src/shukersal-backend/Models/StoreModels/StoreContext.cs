@@ -1,18 +1,13 @@
-﻿namespace shukersal_backend.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace shukersal_backend.Models
 {
     public class StoreContext : DbContext
     {
-        public StoreContext()
-        {
+        public StoreContext() { }
 
-        }
         public StoreContext(DbContextOptions<StoreContext> options)
             : base(options)
-        {
-
-        }
-
-        public StoreContext()
         {
 
         }
@@ -22,6 +17,8 @@
         public virtual DbSet<Product> Products { get; set; } = null!;
         public virtual DbSet<Store> Stores { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
+        public virtual DbSet<StoreManager> StoreManagers { get; set; } = null!;
+        public virtual DbSet<StorePermission> StorePermissions { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

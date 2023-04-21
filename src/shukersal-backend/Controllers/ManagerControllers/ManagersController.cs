@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using shukersal_backend.Models;
 
 namespace shukersal_backend.Controllers
@@ -9,13 +8,16 @@ namespace shukersal_backend.Controllers
     [ApiController]
     public class StoreManagersController : ControllerBase
     {
-        private readonly ManagerContext _context;
+        //private readonly ManagerContext _context;
+        private readonly StoreContext _context;
         private readonly MemberContext _memberContext;
         private readonly StoreContext _storeContext;
 
+
         public StoreManagersController(ManagerContext context, MemberContext memberContext, StoreContext storeContext)
         {
-            _context = context;
+            //_context = context;
+            _context = storeContext;
             _memberContext = memberContext;
             _storeContext = storeContext;
         }
@@ -277,145 +279,5 @@ namespace shukersal_backend.Controllers
 
             return Ok();
         }
-
-
-        //[HttpPost]
-        //public async Task<IActionResult> GivePermission(PermissionsPost post)
-        //{
-        //    var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
-        //    var target = await _memberContext.Members.FindAsync(post.TargetId);
-        //    var store = await _storeContext.Stores.FindAsync(post.StoreId);
-        //    nextPermissionId++;
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        var appointerManager = SearchManager(store, appointer);
-        //        var targetManager = SearchManager(store, target);
-
-        //        //member no found error
-        //        if (appointerManager == null)
-        //            return Problem("TODO");
-        //        if (targetManager == null)
-        //            return Problem("TODO");
-
-        //        //permission test
-        //        if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
-        //            return Problem("TODO");
-
-        //        if (!CheckPermission(targetManager, post.PermissionType))
-        //            return Problem("TODO");
-
-        //        var permission = new StorePermission(nextPermissionId, targetManager, post.PermissionType);
-
-        //        _context.StorePermissions.Add(permission);
-
-        //        await _context.SaveChangesAsync();
-
-        //        return NoContent();
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-        //[HttpPost]
-        //public async Task<IActionResult> RemovePermission(PermissionsPost post)
-        //{
-        //    var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
-        //    var target = await _memberContext.Members.FindAsync(post.TargetId);
-        //    var store = await _storeContext.Stores.FindAsync(post.StoreId);
-        //    if (post.PermissionType == _context.MANAGER_PERMISSION)
-        //        return Problem("TODO");
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        var appointerManager = SearchManager(store, appointer);
-        //        var targetManager = SearchManager(store, target);
-
-        //        //member no found error
-        //        if (appointerManager == null)
-        //            return Problem("TODO");
-        //        if (targetManager == null)
-        //            return Problem("TODO");
-
-        //        //permission test
-        //        if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
-        //            return Problem("TODO");
-
-        //        if (CheckPermission(targetManager, post.PermissionType))
-        //            return Problem("TODO");
-
-        //        foreach (StorePermission permission in targetManager.StorePermissions)
-        //            if (permission.PermissionType == post.PermissionType)
-        //                _context.StorePermissions.Remove(permission);
-
-        //        await _context.SaveChangesAsync();
-
-        //        return NoContent();
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-        //[HttpGet("{storeId, memberId}")]
-        //public async Task<ActionResult<IEnumerable<StoreManager>>> GetManagersPermissions(long StoreId, long MemberId)
-        //{
-        //    var member = await _memberContext.Members.FindAsync(MemberId);
-        //    var store = await _storeContext.Stores.FindAsync(StoreId);
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        if (!CheckPermission(SearchManager(store, member), _context.GET_MANAGER_INFO_PERMISSION))
-        //            return Problem("TODO");
-        //        var storeManagers = await _context.StoreManagers.Where(m => m.Store == store).Include(m => m.StorePermissions).ToListAsync();
-
-        //        return storeManagers;
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-
-        //private StoreManager? SearchManager(Store store, Member member)
-        //{
-        //    foreach (StoreManager manager in _context.StoreManagers)
-        //        if (manager.Member == member && manager.Store == store)
-        //            return manager;
-        //    return null;
-        //}
-
-        //private bool CheckPermission(StoreManager? manager, int permissionType)
-        //{
-        //    if (manager == null)
-        //        return false;
-        //    foreach (StorePermission permission in manager.StorePermissions)
-        //        if (permission.PermissionType == _context.MANAGER_PERMISSION || permission.PermissionType == permissionType)
-        //            return true;
-        //    return false;
-        //}
     }
-
 }

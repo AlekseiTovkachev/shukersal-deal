@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
@@ -6,25 +7,29 @@ namespace shukersal_backend.Models
     public class StoreManager
     {
         // TODO: Enforce graph legality in controller (no cycles for example)
+        [Key]
         public long Id { get; set; }
-        [ForeignKey("Store")]
+        [Required]
         public long StoreId { get; set; }
         [JsonIgnore]
-        public Store Store { get; set; }
-
-        [ForeignKey("Member")]
+        [ForeignKey("StoreId")]
+        [Required]
+        public virtual Store Store { get; set; }
+        [Required]
         public long MemberId { get; set; }
         [JsonIgnore]
-        public Member? Member { get; set; }
+        [Required]
+        [ForeignKey("MemberId")]
+        public virtual Member Member { get; set; }
 
-        [ForeignKey("ParentManager")]
         public long ParentManagerId { get; set; }
         [JsonIgnore]
-        public StoreManager? ParentManager { get; set; }
+        [ForeignKey("ParentManagerId")]
+        public virtual StoreManager? ParentManager { get; set; }
 
-        public ICollection<StorePermission>? StorePermissions { get; set; }
+        public virtual ICollection<StorePermission>? StorePermissions { get; set; }
 
-        public StoreManager() { }
+        //public StoreManager() { }
 
     }
 }

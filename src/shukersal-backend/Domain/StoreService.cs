@@ -8,13 +8,14 @@ namespace shukersal_backend.Domain
     public class StoreService
     {
         private readonly StoreContext _context;
-        private readonly ManagerContext _managerContext;
+        //private readonly ManagerContext _managerContext;
+        //private readonly ManagerContext _managerContext;
         private readonly MemberContext _memberContext;
 
         public StoreService(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
         {
             _context = context;
-            _managerContext = managerContext;
+            //_managerContext = managerContext;
             _memberContext = memberContext;
 
             _context.Database.EnsureCreated();
@@ -23,7 +24,7 @@ namespace shukersal_backend.Domain
         public StoreService(StoreContext context, ManagerContext managerContext, MemberContext memberContext, string test)
         {
             _context = context;
-            _managerContext = managerContext;
+            //_managerContext = managerContext;
             _memberContext = memberContext;
         }
 
@@ -76,39 +77,36 @@ namespace shukersal_backend.Domain
 
             _context.Stores.Add(store);
 
-
             var storeManager = new StoreManager
             {
                 MemberId = member.Id,
-                Member = member,
+                //Member = member,
                 StoreId = store.Id,
                 Store = store,
                 StorePermissions = new List<StorePermission>()
             };
 
-            storeManager.StorePermissions.Add(new StorePermission
+            _context.StoreManagers.Add(storeManager);
+
+            var permission = new StorePermission
             {
                 StoreManager = storeManager,
                 StoreManagerId = storeManager.Id,
                 PermissionType = PermissionType.Manager_permission
-            });
+            };
 
-            _managerContext.StoreManagers.Add(storeManager);
-
-            await _managerContext.SaveChangesAsync();
-            await _context.SaveChangesAsync();
+            storeManager.StorePermissions.Add(permission);
+            _context.StorePermissions.Add(permission);
 
             store.RootManager = storeManager;
             store.RootManagerId = storeManager.Id;
 
-            //storeManager.Store = store;
-            //storeManager.StoreId = store.Id;
-
-            //_managerContext.Entry(storeManager).State = EntityState.Modified;
-            _context.Entry(store).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
 
             return Response<Store>.Success(HttpStatusCode.Created, store);
         }
+
+
 
         public async Task<Response<bool>> UpdateStore(long id, StorePost post)
         {

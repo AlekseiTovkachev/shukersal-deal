@@ -10,21 +10,16 @@ namespace shukersal_backend.Models
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
-        [Required]
         public long RootManagerId { get; set; }
         [JsonIgnore]
-        [Required]
         [ForeignKey("RootManagerId")]
-        public StoreManager? RootManager { get; set; }
+        public virtual StoreManager? RootManager { get; set; }
         [Required]
         public virtual ICollection<Product> Products { get; set; }
         [Required]
         public virtual ICollection<DiscountRule> DiscountRules { get; set; }
 
-        public Store()
-        {
-
-        }
+        //public Store() { }
 
     }
 }
