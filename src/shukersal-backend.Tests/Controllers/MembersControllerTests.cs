@@ -1,34 +1,31 @@
 ﻿using shukersal_backend.Controllers.MemberControllers;
 using shukersal_backend.Models;
-using shukersal_backend.Models.ShoppingCartModels;
 using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.Controllers
 {
-    public class MemberControllerTests
+    public class MembersControllerTests
     {
         private readonly MembersController _controller;
-        private readonly Mock<MemberContext> _memberContextMock;
-        private readonly Mock<ShoppingCartContext> _shoppingCartContextMock;
+        private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper output;
-        public MemberControllerTests(ITestOutputHelper output)
+        public MembersControllerTests(ITestOutputHelper output)
         {
             this.output = output;
-            _memberContextMock = new Mock<MemberContext>();
-            _shoppingCartContextMock = new Mock<ShoppingCartContext>();
-            _controller = new MembersController(_memberContextMock.Object, _shoppingCartContextMock.Object);
+            _context = new Mock<MarketDbContext>();
+            _controller = new MembersController(_context.Object);
 
             var membersList = new List<Member>
             {
                 // empty
             };
-            _memberContextMock.Setup(m => m.Members).ReturnsDbSet(membersList);
+            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
 
             var shoppingCarts = new List<ShoppingCart>
             {
                 // empty
             };
-            _shoppingCartContextMock.Setup(s => s.ShoppingCarts).ReturnsDbSet(shoppingCarts);
+            _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(shoppingCarts);
         }
 
         //[Fact]
@@ -79,7 +76,7 @@ namespace shukersal_backend.Tests.Controllers
                 Password = "testpassword"
             };
 
-            _memberContextMock.Setup(m => m.Members).ReturnsDbSet((DbSet<Member>)null); // Set MemberContext.Members to null
+            _context.Setup(m => m.Members).ReturnsDbSet((DbSet<Member>)null); // Set MemberContext.Members to null
 
             // Act
             var result = await _controller.PostMember(memberData);

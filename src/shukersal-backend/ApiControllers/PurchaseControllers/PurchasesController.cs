@@ -4,27 +4,27 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using shukersal_backend.Domain;
 using shukersal_backend.Models;
-using shukersal_backend.Models.PurchaseModels;
-using shukersal_backend.Models.ShoppingCartModels;
 
 namespace shukersal_backend.Controllers.PurchaseControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowOrigin")]
     public class PurchasesController : ControllerBase
     {
         private readonly PurchaseService purchaseService;
 
 
-        public PurchasesController(PurchaseContext context, StoreContext storeContext, MemberContext memberContext, ShoppingCartContext shoppingCartContext)
+        public PurchasesController(MarketDbContext context)
         {
-            purchaseService=new PurchaseService(context, storeContext, memberContext, shoppingCartContext);
+            purchaseService = new PurchaseService(context);
         }
 
         // GET: api/Purchases

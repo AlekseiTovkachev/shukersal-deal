@@ -10,21 +10,17 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
     public class ManagerTestBase
     {
         protected readonly StoreManagersController _controller;
-        protected readonly StoreController _storeController;
-        protected readonly Mock<ManagerContext> _managerContext;
-        protected readonly Mock<MemberContext> _memberContext;
-        protected readonly Mock<StoreContext> _storeContext;
+        protected readonly StoresController _storeController;
+        protected readonly Mock<MarketDbContext> _context;
         protected readonly ITestOutputHelper output;
         public ManagerTestBase(ITestOutputHelper output)
         {
             this.output = output;
 
-            _managerContext = new Mock<ManagerContext>();
-            _memberContext = new Mock<MemberContext>();
-            _storeContext = new Mock<StoreContext>();
-
-            _controller = new StoreManagersController(_managerContext.Object, _memberContext.Object, _storeContext.Object);
-            _storeController = new StoreController(_storeContext.Object, _managerContext.Object, _memberContext.Object);
+            _context = new Mock<MarketDbContext>();
+            
+            _controller = new StoreManagersController(_context.Object);
+            _storeController = new StoresController(_context.Object);
 
 
             var membersList = new List<Member>
@@ -33,28 +29,28 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
                 {
                     Id = 1,
                     Username = "Test",
-                    Password = "password"
+                    PasswordHash = "password"
                 },
                 new Member
                 {
                     Id = 2,
                     Username = "Test2",
-                    Password = "password"
+                    PasswordHash = "password"
                 },
                 new Member
                 {
                     Id = 3,
                     Username = "Test3",
-                    Password = "password"
+                    PasswordHash = "password"
                 },
                 new Member
                 {
                     Id = 4,
                     Username = "Test4",
-                    Password = "password"
+                    PasswordHash = "password"
                 }
             };
-            _memberContext.Setup(m => m.Members).ReturnsDbSet(membersList);
+            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
 
             var p1 = new StorePermission
             {
@@ -92,13 +88,13 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
                     StorePermissions = new List<StorePermission>{p2, p3}
                 }
             };
-            _managerContext.Setup(m => m.StoreManagers).ReturnsDbSet(managers);
+            _context.Setup(m => m.StoreManagers).ReturnsDbSet(managers);
 
             var permission = new List<StorePermission>
             {
                 p1
             };
-            _managerContext.Setup(m => m.StorePermissions).ReturnsDbSet(permission);
+            _context.Setup(m => m.StorePermissions).ReturnsDbSet(permission);
 
             var stores = new List<Store>
             {
@@ -109,9 +105,9 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
                     Name = "Test"
                 }
             };
-            _storeContext.Setup(s => s.Stores).ReturnsDbSet(stores);
+            _context.Setup(s => s.Stores).ReturnsDbSet(stores);
             var products = new List<Product> { };
-            _storeContext.Setup(p => p.Products).ReturnsDbSet(products);
+            _context.Setup(p => p.Products).ReturnsDbSet(products);
 
 
         }

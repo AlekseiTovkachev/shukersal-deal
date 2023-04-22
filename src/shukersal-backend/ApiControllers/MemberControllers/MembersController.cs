@@ -1,27 +1,31 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using HotelBackend.Util;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using shukersal_backend.Models;
-using shukersal_backend.Models.ShoppingCartModels;
+using shukersal_backend.Utility;
 
 namespace shukersal_backend.Controllers.MemberControllers
 {
+    // TODO: Move logic to service (like in store)
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowOrigin")]
     public class MembersController : ControllerBase
     {
-        private readonly MemberContext _context;
-        private readonly ShoppingCartContext _shoppingCartContext;
+        private readonly MarketDbContext _context;
 
-        public MembersController(MemberContext context, ShoppingCartContext shoppingCartContext)
+        public MembersController(MarketDbContext context)
         {
-
             _context = context;
-            _shoppingCartContext = shoppingCartContext;
         }
 
         // GET: api/Members
@@ -66,10 +70,11 @@ namespace shukersal_backend.Controllers.MemberControllers
             }
             if (ModelState.IsValid)
             {
-                var member = new Member(
-                        memberData.Username,
-                        memberData.Password
-                        );
+                var member = new Member {
+                    Username = memberData.Username,
+                    PasswordHash = HashingUtilities.HashPassword(memberData.Password),
+                    Role = memberData.Role
+                        };
                 // Create a new shopping cart and associate it with the new member
                 var shoppingCart = new ShoppingCart
                 {
@@ -78,11 +83,10 @@ namespace shukersal_backend.Controllers.MemberControllers
                 };
 
                 // Add the shopping cart and member to the database
-                _shoppingCartContext.ShoppingCarts.Add(shoppingCart);
+                _context.ShoppingCarts.Add(shoppingCart);
                 _context.Members.Add(member);
 
                 await _context.SaveChangesAsync();
-                await _shoppingCartContext.SaveChangesAsync();
 
                 return CreatedAtAction(nameof(GetMember), new { id = member.Id }, member);
             }
@@ -94,6 +98,7 @@ namespace shukersal_backend.Controllers.MemberControllers
 
         // DELETE: api/Members/5
         [HttpDelete("{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<IActionResult> DeleteMember(long id)
         {
             if (_context.Members == null)
@@ -105,13 +110,13 @@ namespace shukersal_backend.Controllers.MemberControllers
             {
                 return NotFound();
             }
-            var shoppingCart = await _shoppingCartContext.ShoppingCarts.FirstOrDefaultAsync(c => c.MemberId == id);
+            var shoppingCart = await _context.ShoppingCarts.FirstOrDefaultAsync(c => c.MemberId == id);
             if (shoppingCart != null)
             {
-                _shoppingCartContext.ShoppingCarts.Remove(shoppingCart); // remove ShoppingCart entity
+                _context.ShoppingCarts.Remove(shoppingCart); // remove ShoppingCart entity
             }
             _context.Members.Remove(member);
-            await _shoppingCartContext.SaveChangesAsync();
+
             await _context.SaveChangesAsync();
 
             return NoContent();

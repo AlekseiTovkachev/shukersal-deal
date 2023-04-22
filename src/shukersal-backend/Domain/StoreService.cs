@@ -5,29 +5,9 @@ using System.Net;
 
 namespace shukersal_backend.Domain
 {
-    public class StoreService
+    public class StoreService : BaseService
     {
-        private readonly StoreContext _context;
-        //private readonly ManagerContext _managerContext;
-        //private readonly ManagerContext _managerContext;
-        private readonly MemberContext _memberContext;
-
-        public StoreService(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
-        {
-            _context = context;
-            //_managerContext = managerContext;
-            _memberContext = memberContext;
-
-            _context.Database.EnsureCreated();
-        }
-
-        public StoreService(StoreContext context, MemberContext memberContext, string test)
-        {
-            _context = context;
-            //_managerContext = managerContext;
-            _memberContext = memberContext;
-        }
-
+        public StoreService(MarketDbContext context) : base(context) {}
 
         public async Task<Response<IEnumerable<Store>>> GetStores()
         {
@@ -61,7 +41,7 @@ namespace shukersal_backend.Domain
 
         public async Task<Response<Store>> CreateStore(StorePost storeData)
         {
-            var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
+            var member = await _context.Members.FindAsync(storeData.RootManagerMemberId);
             if (member == null)
             {
                 return Response<Store>.Error(HttpStatusCode.BadRequest, "Illegal user id");

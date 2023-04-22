@@ -1,29 +1,20 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using shukersal_backend.Models.ShoppingCartModels;
 
 namespace shukersal_backend.Models
 {
     public class Member
     {
         public long Id { get; set; }
-        [StringLength(50)]
         public string Username { get; set; }
         [JsonIgnore]
-        // TODO: Store as hash
-        [StringLength(50)]
-        public string Password { get; set; }
+        public string PasswordHash { get; set; }
+        [Required]
+        public string Role { get; set; } // Member or Administrator
 
         [JsonIgnore]
         public virtual ShoppingCart ShoppingCart { get; set; }
-
-        public Member() { } 
-
-        public Member(string username, string password)
-        {
-            Username = username;
-            Password = password;
-        }
     }
 
 }

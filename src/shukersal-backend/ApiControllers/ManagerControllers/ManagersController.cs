@@ -1,25 +1,23 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using shukersal_backend.Models;
 
 namespace shukersal_backend.Controllers
 {
+    // TODO: Move logic to service (like in store)
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowOrigin")]
     public class StoreManagersController : ControllerBase
     {
         //private readonly ManagerContext _context;
-        private readonly StoreContext _context;
-        private readonly MemberContext _memberContext;
-        private readonly StoreContext _storeContext;
+        private readonly MarketDbContext _context;
 
 
-        public StoreManagersController(ManagerContext context, MemberContext memberContext, StoreContext storeContext)
+        public StoreManagersController(MarketDbContext context)
         {
-            //_context = context;
-            _context = storeContext;
-            _memberContext = memberContext;
-            _storeContext = storeContext;
+            _context = context;
         }
 
         // GET: api/StoreManagers
@@ -64,8 +62,8 @@ namespace shukersal_backend.Controllers
             {
                 return NotFound();
             }
-            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
-            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
+            var member = _context.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _context.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
@@ -124,8 +122,8 @@ namespace shukersal_backend.Controllers
             {
                 return NotFound();
             }
-            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
-            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
+            var member = _context.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _context.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
