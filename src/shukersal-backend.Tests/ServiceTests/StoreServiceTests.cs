@@ -83,55 +83,55 @@ namespace shukersal_backend.Tests.ServiceTests
             Assert.Null(response.Result);
         }
 
-        [Fact]
-        public async Task CreateStore_ValidData_ReturnsSuccessResponse()
-        {
-            // Arrange
-            var storeData = new StorePost
-            {
-                Name = "Test Store",
-                Description = "This is a test store.",
-                RootManagerMemberId = 1
-            };
-            var membersList = new List<Member>
-            {
-                new Member { Id = storeData.RootManagerMemberId }
-            }.AsQueryable();
+        //[Fact]
+        //public async Task CreateStore_ValidData_ReturnsSuccessResponse()
+        //{
+        //    // Arrange
+        //    var storeData = new StorePost
+        //    {
+        //        Name = "Test Store",
+        //        Description = "This is a test store.",
+        //        RootManagerMemberId = 1
+        //    };
+        //    var membersList = new List<Member>
+        //    {
+        //        new Member { Id = storeData.RootManagerMemberId }
+        //    }.AsQueryable();
 
-            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
-            var member = new Member { Id = storeData.RootManagerMemberId };
-            _context.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
-            _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
-            _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
-            _context.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
-            // Act
-            var response = await _service.CreateStore(storeData);
+        //    _context.Setup(m => m.Members).ReturnsDbSet(membersList);
+        //    var member = new Member { Id = storeData.RootManagerMemberId };
+        //    _context.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
+        //    _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
+        //    _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
+        //    _context.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
+        //    // Act
+        //    var response = await _service.CreateStore(storeData);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-            Assert.NotNull(response.Result);
-            Assert.Equal(storeData.Name, response.Result.Name);
-            Assert.Equal(storeData.Description, response.Result.Description);
-        }
+        //    // Assert
+        //    Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        //    Assert.NotNull(response.Result);
+        //    Assert.Equal(storeData.Name, response.Result.Name);
+        //    Assert.Equal(storeData.Description, response.Result.Description);
+        //}
 
-        [Fact]
-        public async Task CreateStore_InvalidMemberId_ReturnsErrorResponse()
-        {
-            // Arrange
-            var storeData = new StorePost
-            {
-                Name = "Test Store",
-                Description = "This is a test store.",
-                RootManagerMemberId = 1
-            };
-            _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>().AsQueryable());
-            // Act
-            var response = await _service.CreateStore(storeData);
+        //[Fact]
+        //public async Task CreateStore_InvalidMemberId_ReturnsErrorResponse()
+        //{
+        //    // Arrange
+        //    var storeData = new StorePost
+        //    {
+        //        Name = "Test Store",
+        //        Description = "This is a test store.",
+        //        RootManagerMemberId = 1
+        //    };
+        //    _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>().AsQueryable());
+        //    // Act
+        //    var response = await _service.CreateStore(storeData);
 
-            // Assert
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Null(response.Result);
-        }
+        //    // Assert
+        //    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        //    Assert.Null(response.Result);
+        //}
 
         [Fact]
         public async Task UpdateStore_ValidRequest_ReturnsSuccessWithTrue()

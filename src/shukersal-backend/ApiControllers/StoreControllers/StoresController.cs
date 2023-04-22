@@ -6,7 +6,7 @@ using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace shukersal_backend.Controllers.StoreControllers
+namespace shukersal_backend.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -50,7 +50,7 @@ namespace shukersal_backend.Controllers.StoreControllers
         {
             if (ModelState.IsValid)
             {
-                var response = await storeService.CreateStore(storeData);
+                var response = await storeService.CreateStore(storeData, HttpContext);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(ModelState);

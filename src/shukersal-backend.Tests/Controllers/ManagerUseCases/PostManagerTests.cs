@@ -1,9 +1,5 @@
-﻿using NuGet.Protocol;
-using shukersal_backend.Controllers;
-using shukersal_backend.Controllers.StoreControllers;
-using shukersal_backend.Models;
+﻿using shukersal_backend.Models;
 using Xunit.Abstractions;
-using System.Threading;
 
 namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 {
@@ -11,7 +7,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
     {
         public PostManagerTests(ITestOutputHelper output) : base(output)
         {
-            
+
         }
 
         [Fact]
@@ -41,7 +37,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
         [Fact]
         public void TestPostManager_StoreDoesntExistFailure()
         {
-            
+
             Assert.IsType<NotFoundResult>(_controller.PostStoreManager(
                 new OwnerManagerPost
                 {
@@ -50,7 +46,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
                     StoreId = 2,
                     MemberId = 3
                 }).Result.Result);
-            
+
         }
         [Fact]
         public void TestPostManager_NoPermissionFailure()

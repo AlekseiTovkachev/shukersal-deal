@@ -1,9 +1,6 @@
-﻿using NuGet.Protocol;
-using shukersal_backend.Controllers;
-using shukersal_backend.Controllers.StoreControllers;
+﻿using shukersal_backend.Controllers;
 using shukersal_backend.Models;
 using Xunit.Abstractions;
-using System.Threading;
 
 namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 {
@@ -18,7 +15,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
             this.output = output;
 
             _context = new Mock<MarketDbContext>();
-            
+
             _controller = new StoreManagersController(_context.Object);
             _storeController = new StoresController(_context.Object);
 

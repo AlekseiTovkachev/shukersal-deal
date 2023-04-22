@@ -7,7 +7,7 @@ namespace shukersal_backend.Domain
 {
     public class StoreService : BaseService
     {
-        public StoreService(MarketDbContext context) : base(context) {}
+        public StoreService(MarketDbContext context) : base(context) { }
 
         public async Task<Response<IEnumerable<Store>>> GetStores()
         {
@@ -39,13 +39,17 @@ namespace shukersal_backend.Domain
             return Response<Store>.Success(HttpStatusCode.OK, store);
         }
 
-        public async Task<Response<Store>> CreateStore(StorePost storeData)
+        //TODO: check if the user is a member
+        public async Task<Response<Store>> CreateStore(StorePost storeData, HttpContext httpContext)
         {
-            var member = await _context.Members.FindAsync(storeData.RootManagerMemberId);
+            var member = ApiControllerUtilities.GetCurrentMember(_context, httpContext);
             if (member == null)
             {
                 return Response<Store>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
+
+            //var member = await _context.Members.FindAsync(storeData.RootManagerMemberId);
+
 
             var store = new Store
             {
@@ -60,7 +64,7 @@ namespace shukersal_backend.Domain
             var storeManager = new StoreManager
             {
                 MemberId = member.Id,
-                //Member = member,
+                Member = member,
                 StoreId = store.Id,
                 Store = store,
                 StorePermissions = new List<StorePermission>()
@@ -87,7 +91,7 @@ namespace shukersal_backend.Domain
         }
 
 
-
+        //TODO: check if the user is a store manager (check permissions too)
         public async Task<Response<bool>> UpdateStore(long id, StorePatch patch)
         {
 
@@ -121,6 +125,7 @@ namespace shukersal_backend.Domain
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
+        //TODO: check if the user is a admin
         public async Task<Response<bool>> DeleteStore(long id)
         {
             if (_context.Stores == null)
@@ -144,7 +149,7 @@ namespace shukersal_backend.Domain
             return _context.Stores.Any(e => e.Id == id);
         }
 
-
+        //TODO: check if the user is a store manager (also check permissions)
         public async Task<Response<Product>> AddProduct(long storeId, ProductPost post)
         {
             var store = await _context.Stores
@@ -185,7 +190,7 @@ namespace shukersal_backend.Domain
 
             return Response<Product>.Success(HttpStatusCode.Created, product);
         }
-
+        //TODO: check if the user is a store manager (also check permissions)
         public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch)
         {
             var existingProduct = await _context.Products.FindAsync(productId);
@@ -222,7 +227,7 @@ namespace shukersal_backend.Domain
         }
 
 
-
+        //TODO: check if the user is a store manager (also check permissions)
         public async Task<Response<Product>> DeleteProduct(long storeId, long productId)
         {
             var store = await _context.Stores.FindAsync(storeId);
