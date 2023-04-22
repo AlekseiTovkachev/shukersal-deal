@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using shukersal_backend.Domain;
 using shukersal_backend.Models;
+using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -10,111 +11,49 @@ namespace shukersal_backend.Controllers.StoreControllers
     [Route("api/[controller]")]
     public class StoreController : ControllerBase
     {
-        private readonly StoreContext _context;
-        private readonly ManagerContext _managerContext;
-        private readonly MemberContext _memberContext;
-
+        private readonly StoreService storeService;
 
         public StoreController(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
         {
-            _context = context;
-            _managerContext = managerContext;
-            _memberContext = memberContext;
+            storeService = new StoreService(context, managerContext, memberContext);
         }
 
         // GET: api/Store
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
-            if (_context.Stores == null)
+            var response = await storeService.GetStores();
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            var stores = await _context.Stores.Include(s => s.Products).Include(s => s.DiscountRules).ToListAsync();
-            //var stores = await _context.Stores.ToListAsync();
-            return stores;
+            return Ok(response.Result);
         }
 
         // GET: api/Store/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Store>> GetStore(long id)
         {
-
-            //var store = await _context.Stores.FindAsync(id);
-            var store = await _context.Stores.Include(s => s.Products).Include(s => s.DiscountRules).FirstOrDefaultAsync(s => s.Id == id);
-            if (store == null)
+            var response = await storeService.GetStore(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            return store;
+            return Ok(response.Result);
         }
 
         // POST: api/Store
         [HttpPost]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
-            if (_context.Stores == null)
-            {
-                return Problem("Entity set 'MemberContext.Members'  is null.");
-            }
-            if (_managerContext.StoreManagers == null)
-            {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-            }
-            if (_managerContext.StorePermissions == null)
-            {
-                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
-            }
-            if (_memberContext.Members == null)
-            {
-                return Problem("Entity set 'MemberContext.Members'  is null.");
-            }
             if (ModelState.IsValid)
             {
-                var store = new Store
+                var response = await storeService.CreateStore(storeData);
+                if (!response.IsSuccess || response.Result == null)
                 {
-                    Name = storeData.Name,
-                    Description = storeData.Description,
-                    RootManagerId = storeData.RootManagerMemberId,
-                    RootManager = null,
-                    Products = new List<Product>(),
-                    DiscountRules = new List<DiscountRule>()
-                };
-                //var store = new Store(
-                //        storeData.Name,
-                //        storeData.Description,
-                //        storeData.RootManagerMemberId
-                //        );
-                //TODO: add authentication
-                var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
-                if (member == null)
-                {
-                    return Problem("Illegal user id");
+                    return BadRequest(ModelState);
                 }
-                var storeManager = new StoreManager
-                {
-                    StoreId = store.Id,
-                    Store = store,
-                    MemberId = member.Id,
-                    Member = member,
-                    StorePermissions = new List<StorePermission>()
-                };
-                storeManager.StorePermissions.Add(new StorePermission
-                {
-                    StoreManager = storeManager,
-                    StoreManagerId = storeManager.Id,
-                    PermissionType = PermissionType.Manager_permission
-                });
-
-                store.RootManager = storeManager;
-
-                _context.Stores.Add(store);
-                await _context.SaveChangesAsync();
-
-                _managerContext.StoreManagers.Add(storeManager);
-                await _managerContext.SaveChangesAsync();
-
+                var store = response.Result;
                 return CreatedAtAction("GetStore", new { id = store.Id }, store);
             }
             else
@@ -127,138 +66,76 @@ namespace shukersal_backend.Controllers.StoreControllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateStore(long id, StorePost post)
         {
-            if (id != post.Id)
+            if (ModelState.IsValid)
             {
-                return BadRequest();
-            }
-            var store = await _context.Stores.FindAsync(id);
-            if (store == null)
-            {
-                return BadRequest();
-            }
-            store.Description = post.Description;
-            store.Name = post.Name;
-            //var rootManager = await _managerContext.StoreManagers.FindAsync(store.RootManagerId);
-            //store.RootManager = rootManager;
-
-            _context.Entry(store).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StoreExists(id))
+                var response = await storeService.UpdateStore(id, post);
+                if (!response.IsSuccess)
                 {
-                    return NotFound();
+                    if (response.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        return NotFound(ModelState);
+                    }
                 }
-                else
-                {
-                    throw;
-                }
-            }
+                return NoContent();
 
-            return NoContent();
+            }
+            return BadRequest();
         }
 
         // DELETE: api/Store/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {
-            var store = await _context.Stores.FindAsync(id);
-            if (store == null)
+            var response = await storeService.DeleteStore(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            _context.Stores.Remove(store);
-            await _context.SaveChangesAsync();
-
             return NoContent();
-        }
-
-        private bool StoreExists(long id)
-        {
-            return _context.Stores.Any(e => e.Id == id);
         }
 
         // Action method for adding a product to a store
         [HttpPost("stores/{storeId}/products")]
         public async Task<IActionResult> AddProduct(long storeId, Product product)
         {
-            //var store = await _context.Stores.FindAsync(storeId);
-            var store = await _context.Stores.Include(s => s.Products).FirstOrDefaultAsync(s => s.Id == storeId);
-            if (store == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Store not found.");
+                var response = await storeService.AddProduct(storeId, product);
+                var res_product = response.Result;
+                return Ok(res_product);
             }
-
-            // Associate the product with the store
-            product.StoreId = storeId;
-            product.Store = store;
-
-            store.Products.Add(product);
-
-            _context.Products.Add(product);
-
-            await _context.SaveChangesAsync();
-
-            return Ok("Product added successfully.");
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
 
         // Action method for updating a product in a store
         [HttpPut("stores/{storeId}/products")]
         public async Task<IActionResult> UpdateProduct(long storeId, long productId, Product product)
         {
-            var store = await _context.Stores.FindAsync(storeId);
-
-            if (store == null)
+            if (ModelState.IsValid)
             {
-                return NotFound("Store not found.");
+                var response = await storeService.UpdateProduct(storeId, productId, product);
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    return NotFound();
+                }
+                return Ok(response.Result);
             }
-
-            var existingProduct = await _context.Products.FindAsync(productId);
-
-            if (existingProduct == null || existingProduct.StoreId != storeId)
-            {
-                return NotFound("Product not found in the specified store.");
-            }
-
-            // Update the existing product with the new data
-            existingProduct.Name = product.Name;
-            existingProduct.Description = product.Description;
-            existingProduct.Price = product.Price;
-            _context.Entry(store).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return Ok("Product updated successfully.");
+            return BadRequest();
         }
 
         // Action method for deleting a product from a store
         [HttpDelete("stores/{storeId}/products")]
         public async Task<IActionResult> DeleteProduct(long storeId, long productId)
         {
-            var store = await _context.Stores.FindAsync(storeId);
-
-            if (store == null)
+            var response = await storeService.DeleteProduct(storeId, productId);
+            if (response.StatusCode != HttpStatusCode.NotFound)
             {
-                return NotFound("Store not found.");
+                return NotFound();
             }
-
-            var product = await _context.Products.FindAsync(productId);
-
-            if (product == null || product.StoreId != storeId)
-            {
-                return NotFound("Product not found in the specified store.");
-            }
-            store.Products.Remove(product);
-            // Remove the product from the store
-            _context.Products.Remove(product);
-            _context.Entry(store).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-
-            return Ok("Product deleted successfully.");
+            return NoContent();
         }
     }
 }

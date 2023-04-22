@@ -9,8 +9,8 @@ namespace shukersal_backend.Models
         {
 
         }
-
         public DbSet<Purchase> Purchases { get; set; } = null!;
         public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+
     }
 }
