@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Cors;
+using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.Domain;
 using shukersal_backend.Models;
 using System.Net;
@@ -9,13 +10,14 @@ namespace shukersal_backend.Controllers.StoreControllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class StoreController : ControllerBase
+    [EnableCors("AllowOrigin")]
+    public class StoresController : ControllerBase
     {
         private readonly StoreService storeService;
 
-        public StoreController(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
+        public StoresController(MarketDbContext context)
         {
-            storeService = new StoreService(context, managerContext, memberContext);
+            storeService = new StoreService(context);
         }
 
         // GET: api/Store
@@ -169,8 +171,5 @@ namespace shukersal_backend.Controllers.StoreControllers
             var response = await storeService.GetCategories();
             return Ok(response.Result);
         }
-
-
-
     }
 }

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using shukersal_backend.Controllers.ShoppingCartControllers;
-using shukersal_backend.Models.ShoppingCartModels;
+using shukersal_backend.Models;
 
 
 namespace shukersal_backend.Tests.Controllers
@@ -11,15 +11,15 @@ namespace shukersal_backend.Tests.Controllers
     public class ShoppingCartsControllerTests
     {
         private ShoppingCartsController _controller;
-        private Mock<ShoppingCartContext> _mockDbContext;
+        private Mock<MarketDbContext> _context;
 
         public ShoppingCartsControllerTests()
         {
             // Mock the DbContext using Moq
-            _mockDbContext = new Mock<ShoppingCartContext>();
+            _context = new Mock<MarketDbContext>();
 
             // Create the controller with the mocked DbContext
-            _controller = new ShoppingCartsController(_mockDbContext.Object);
+            _controller = new ShoppingCartsController(_context.Object);
         }
 
 
@@ -28,7 +28,7 @@ namespace shukersal_backend.Tests.Controllers
         {
             // Arrange
             long nonExistentMemberId = 999;
-            _mockDbContext.Setup(db => db.ShoppingCarts)
+            _context.Setup(db => db.ShoppingCarts)
                 .ReturnsDbSet(new List<ShoppingCart>());
 
             // Act
@@ -44,7 +44,7 @@ namespace shukersal_backend.Tests.Controllers
             // Arrange
             long existingMemberId = 1;
             var shoppingCart = new ShoppingCart { MemberId = existingMemberId };
-            _mockDbContext.Setup(db => db.ShoppingCarts)
+            _context.Setup(db => db.ShoppingCarts)
                 .ReturnsDbSet(new List<ShoppingCart> { shoppingCart });
 
             // Act

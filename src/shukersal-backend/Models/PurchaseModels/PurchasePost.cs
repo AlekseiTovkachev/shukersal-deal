@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 
 
-namespace shukersal_backend.Models.PurchaseModels
+namespace shukersal_backend.Models
 {
     public class PurchasePost
     {

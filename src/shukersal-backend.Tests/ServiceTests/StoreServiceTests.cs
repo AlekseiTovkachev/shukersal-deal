@@ -9,9 +9,7 @@ namespace shukersal_backend.Tests.ServiceTests
 {
     public class StoreServiceTests
     {
-        private readonly Mock<MemberContext> _memberContextMock;
-        private readonly Mock<StoreContext> _storeContextMock;
-        private readonly Mock<StoreContext> _managerContextMock;
+        private readonly Mock<MarketDbContext> _context;
         private readonly StoreService _service;
         private readonly ITestOutputHelper output;
 
@@ -19,11 +17,9 @@ namespace shukersal_backend.Tests.ServiceTests
         public StoreServiceTests(ITestOutputHelper output)
         {
             this.output = output;
-            _memberContextMock = new Mock<MemberContext>();
-            _storeContextMock = new Mock<StoreContext>();
-            _managerContextMock = _storeContextMock;
-            //_storeContextMock.Setup(c => c.Database.EnsureCreated()).Returns(true);
-            _service = new StoreService(_storeContextMock.Object, _memberContextMock.Object, "test");
+            _context = new Mock<MarketDbContext>();
+            //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
+            _service = new StoreService(_context.Object);
         }
 
         [Fact]
@@ -37,7 +33,7 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
 
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
 
 
             // Act
@@ -62,7 +58,7 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 2, Name = "Store 2", RootManagerId = 2, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() },
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
 
             // Act
             var response = await _service.GetStore(store.Id);
@@ -77,7 +73,7 @@ namespace shukersal_backend.Tests.ServiceTests
         {
             // Arrange
             long nonExistingStoreId = 1;
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
 
             // Act
             var response = await _service.GetStore(nonExistingStoreId);
@@ -102,12 +98,12 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Member { Id = storeData.RootManagerMemberId }
             }.AsQueryable();
 
-            _memberContextMock.Setup(m => m.Members).ReturnsDbSet(membersList);
+            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
             var member = new Member { Id = storeData.RootManagerMemberId };
-            _memberContextMock.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
-            _storeContextMock.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
-            _managerContextMock.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
+            _context.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
+            _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
+            _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
+            _context.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
             // Act
             var response = await _service.CreateStore(storeData);
 
@@ -128,7 +124,7 @@ namespace shukersal_backend.Tests.ServiceTests
                 Description = "This is a test store.",
                 RootManagerMemberId = 1
             };
-            _memberContextMock.Setup(m => m.Members).ReturnsDbSet(new List<Member>().AsQueryable());
+            _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>().AsQueryable());
             // Act
             var response = await _service.CreateStore(storeData);
 
@@ -148,8 +144,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 Description = "New Description"
             };
             var store = new Store { Id = id, Name = "Old Name", Description = "Old Description" };
-            _storeContextMock.Setup(x => x.Stores.FindAsync(id)).ReturnsAsync(store);
-            _storeContextMock.Setup(x => x.MarkAsModified(store)).Verifiable();
+            _context.Setup(x => x.Stores.FindAsync(id)).ReturnsAsync(store);
+            _context.Setup(x => x.MarkAsModified(store)).Verifiable();
             // Act
             var result = await _service.UpdateStore(id, patch);
 
@@ -171,7 +167,7 @@ namespace shukersal_backend.Tests.ServiceTests
                 Name = "New Name",
                 Description = "New Description"
             };
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
 
 
             // Act
@@ -196,8 +192,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
 
-            _storeContextMock.Setup(c => c.Stores.FindAsync(store.Id)).ReturnsAsync(store);
-            _storeContextMock.Setup(x => x.MarkAsModified(store)).Verifiable();
+            _context.Setup(c => c.Stores.FindAsync(store.Id)).ReturnsAsync(store);
+            _context.Setup(x => x.MarkAsModified(store)).Verifiable();
 
             // Act
             var response = await _service.UpdateStore(store.Id, patch);
@@ -215,7 +211,7 @@ namespace shukersal_backend.Tests.ServiceTests
         {
             // Arrange
             var store = new Store { Id = 1 };
-            _storeContextMock.Setup(c => c.Stores.FindAsync(store.Id)).ReturnsAsync(store);
+            _context.Setup(c => c.Stores.FindAsync(store.Id)).ReturnsAsync(store);
 
 
             // Act
@@ -231,7 +227,7 @@ namespace shukersal_backend.Tests.ServiceTests
         {
             // Arrange
             var storeId = 1;
-            _storeContextMock.Setup(c => c.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
+            _context.Setup(c => c.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
 
             // Act
             var response = await _service.DeleteStore(storeId);
@@ -245,7 +241,7 @@ namespace shukersal_backend.Tests.ServiceTests
         public async Task DeleteStore_WhenStoreContextIsNull_ReturnsErrorResponse()
         {
             // Arrange
-            _storeContextMock.SetupGet(c => c.Stores).Returns((DbSet<Store>)null);
+            _context.SetupGet(c => c.Stores).Returns((DbSet<Store>)null);
 
 
             // Act
@@ -275,8 +271,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
 
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
-            _storeContextMock.Setup(c => c.Products).ReturnsDbSet(products.AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Products).ReturnsDbSet(products.AsQueryable());
 
             // Act
             var response = await _service.GetStoreProducts(store.Id);
@@ -304,8 +300,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
 
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
-            _storeContextMock.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
 
             // Act
             var response = await _service.GetStoreProducts(store.Id);
@@ -323,8 +319,8 @@ namespace shukersal_backend.Tests.ServiceTests
             // Arrange
             long storeId = 1;
             ProductPost post = new ProductPost { Name = "Product 1", Description = "Description 1", Price = 10.00 };
-            //_storeContextMock.Setup(c => c.Stores.FirstOrDefaultAsync(s => s.Id == storeId)).ReturnsAsync((Store)null);
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet((new List<Store>()).AsQueryable());
+            //_context.Setup(c => c.Stores.FirstOrDefaultAsync(s => s.Id == storeId)).ReturnsAsync((Store)null);
+            _context.Setup(c => c.Stores).ReturnsDbSet((new List<Store>()).AsQueryable());
             // Act
             var response = await _service.AddProduct(storeId, post);
 
@@ -346,14 +342,14 @@ namespace shukersal_backend.Tests.ServiceTests
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
             }.AsQueryable();
 
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
-            _storeContextMock.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
 
 
             ProductPost post = new ProductPost { Name = "Product 1", Description = "Description 1", Price = 10.00, CategoryId = 0 };
 
-            //_storeContextMock.Setup(c => c.Stores.Include(s => s.Products).FirstOrDefaultAsync(s => s.Id == storeId)).ReturnsAsync(store);
-            //_storeContextMock.Setup(c => c.Categories.FirstOrDefaultAsync(s => s.Id == post.CategoryId)).ReturnsAsync((Category)null);
+            //_context.Setup(c => c.Stores.Include(s => s.Products).FirstOrDefaultAsync(s => s.Id == storeId)).ReturnsAsync(store);
+            //_context.Setup(c => c.Categories.FirstOrDefaultAsync(s => s.Id == post.CategoryId)).ReturnsAsync((Category)null);
 
             // Act
             var response = await _service.AddProduct(store.Id, post);
@@ -362,7 +358,7 @@ namespace shukersal_backend.Tests.ServiceTests
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
             Assert.Null(response.Result.Category);
             Assert.Equal(1, store.Products.Count);
-            _storeContextMock.Verify(c => c.Products.Add(It.IsAny<Product>()), Times.Once);
+            _context.Verify(c => c.Products.Add(It.IsAny<Product>()), Times.Once);
         }
 
         [Fact]
@@ -381,9 +377,9 @@ namespace shukersal_backend.Tests.ServiceTests
             ProductPost post = new ProductPost { Name = "Product 1", Description = "Description 1", Price = 10.00, CategoryId = 2 };
             var category = new Category { Id = post.CategoryId, Name = "Category 1" };
 
-            _storeContextMock.Setup(c => c.Stores).ReturnsDbSet(stores);
-            _storeContextMock.Setup(c => c.Categories).ReturnsDbSet((new List<Category> { category }).AsQueryable());
-            _storeContextMock.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(c => c.Categories).ReturnsDbSet((new List<Category> { category }).AsQueryable());
+            _context.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
 
             // Act
             var result = await _service.AddProduct(store.Id, post);
@@ -392,7 +388,7 @@ namespace shukersal_backend.Tests.ServiceTests
             Assert.Equal(HttpStatusCode.Created, result.StatusCode);
             Assert.Equal(category.Id, result.Result.Category.Id);
             Assert.Equal(1, store.Products.Count);
-            _storeContextMock.Verify(c => c.Products.Add(It.IsAny<Product>()), Times.Once);
+            _context.Verify(c => c.Products.Add(It.IsAny<Product>()), Times.Once);
         }
 
 
@@ -412,8 +408,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 StoreId = 1,
                 Store = new Store { Id = 1, Name = "Store 1" }
             };
-            //_storeContextMock.Setup(x => x.Products.FindAsync(1)).ReturnsAsync(existingProduct);
-            _storeContextMock.Setup(x => x.Products.FindAsync(existingProduct.Id)).ReturnsAsync(existingProduct);
+            //_context.Setup(x => x.Products.FindAsync(1)).ReturnsAsync(existingProduct);
+            _context.Setup(x => x.Products.FindAsync(existingProduct.Id)).ReturnsAsync(existingProduct);
             var patch = new ProductPatch
             {
                 Name = "New Product Name",
@@ -442,7 +438,7 @@ namespace shukersal_backend.Tests.ServiceTests
             // Arrange
             var productId = 1;
             var storeId = 1;
-            _storeContextMock.Setup(x => x.Products.FindAsync(productId)).ReturnsAsync((Product)null);
+            _context.Setup(x => x.Products.FindAsync(productId)).ReturnsAsync((Product)null);
 
             var patch = new ProductPatch
             {
@@ -489,8 +485,8 @@ namespace shukersal_backend.Tests.ServiceTests
                 ImageUrl = "http://old-image.com",
             };
 
-            _storeContextMock.Setup(x => x.Products.FindAsync(productId)).ReturnsAsync(product);
-            _storeContextMock.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
+            _context.Setup(x => x.Products.FindAsync(productId)).ReturnsAsync(product);
+            _context.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
             // Act
             var result = await _service.UpdateProduct(store.Id, productId, patch);
 
@@ -510,12 +506,12 @@ namespace shukersal_backend.Tests.ServiceTests
             store.Products.Add(product);
 
             var products = new List<Product> { product };
-            _storeContextMock.Setup(c => c.Products).ReturnsDbSet(products.AsQueryable());
-            _storeContextMock.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
-            _storeContextMock.Setup(x => x.Products.FindAsync(product.Id)).ReturnsAsync(product);
+            _context.Setup(c => c.Products).ReturnsDbSet(products.AsQueryable());
+            _context.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
+            _context.Setup(x => x.Products.FindAsync(product.Id)).ReturnsAsync(product);
 
-            _storeContextMock.Setup(x => x.MarkAsModified(store)).Verifiable();
-            //_storeContextMock.Setup(x => x.SaveChangesAsync());
+            _context.Setup(x => x.MarkAsModified(store)).Verifiable();
+            //_context.Setup(x => x.SaveChangesAsync());
 
             // Act
             var result = await _service.DeleteProduct(store.Id, product.Id);
@@ -531,7 +527,7 @@ namespace shukersal_backend.Tests.ServiceTests
             // Arrange
             var storeId = 1;
             var productId = 1;
-            _storeContextMock.Setup(x => x.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
+            _context.Setup(x => x.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
 
             // Act
             var result = await _service.DeleteProduct(storeId, productId);
@@ -547,8 +543,8 @@ namespace shukersal_backend.Tests.ServiceTests
             // Arrange
             var store = new Store { Id = 1 };
             var product = new Product { Id = 1, StoreId = 2 };
-            _storeContextMock.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
-            _storeContextMock.Setup(x => x.Products.FindAsync(product.Id)).ReturnsAsync((Product)null);
+            _context.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
+            _context.Setup(x => x.Products.FindAsync(product.Id)).ReturnsAsync((Product)null);
 
             // Act
             var result = await _service.DeleteProduct(store.Id, product.Id);
@@ -567,7 +563,7 @@ namespace shukersal_backend.Tests.ServiceTests
             new Product { Id = 1, Name = "Product 1", Category = new Category { Id = 1, Name = "Category 1" } },
             new Product { Id = 2, Name = "Product 2", Category = new Category { Id = 2, Name = "Category 2" } }
             };
-            _storeContextMock.Setup(x => x.Products).ReturnsDbSet(products.AsQueryable());
+            _context.Setup(x => x.Products).ReturnsDbSet(products.AsQueryable());
 
 
             // Act
@@ -588,7 +584,7 @@ namespace shukersal_backend.Tests.ServiceTests
             new Category { Id = 2, Name = "Category 2" }
             };
 
-            _storeContextMock.Setup(x => x.Categories).ReturnsDbSet(categories.AsQueryable());
+            _context.Setup(x => x.Categories).ReturnsDbSet(categories.AsQueryable());
             // Act
             var result = await _service.GetCategories();
 

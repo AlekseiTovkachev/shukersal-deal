@@ -4,8 +4,6 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using shukersal_backend.Models;
-using shukersal_backend.Models.PurchaseModels;
-using shukersal_backend.Models.ShoppingCartModels;
 using shukersal_backend.Utility;
 using System.Net;
 
@@ -13,19 +11,12 @@ namespace shukersal_backend.Domain
 {
     public class PurchaseService
     {
-        private readonly PurchaseContext _context;
-        private readonly StoreContext _storeContext;
-        private readonly MemberContext _memberContext;
-        private readonly ShoppingCartContext _shoppingCartContext;
+        private readonly MarketDbContext _context;
 
-        public PurchaseService(PurchaseContext context, StoreContext storeContext, MemberContext memberContext, ShoppingCartContext shoppingCartContext)
+        public PurchaseService(MarketDbContext context)
         {
             _context = context;
-            _storeContext = storeContext;
-            _memberContext = memberContext;
-            _shoppingCartContext = shoppingCartContext;
         }
-
 
         public async Task<Response<IEnumerable<Purchase>>> GetPurchases()
         {
@@ -78,14 +69,14 @@ namespace shukersal_backend.Domain
                 PurchaseItems =new List<PurchaseItem>(),
             };
 
-            var member = await _memberContext.Members.FindAsync(purchasePost.Member__ID);
+            var member = await _context.Members.FindAsync(purchasePost.Member__ID);
             if (member == null)
             {
                 return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
             //purchase.Member_ = member;
 
-            var shoppingCart = await _shoppingCartContext.ShoppingCarts
+            var shoppingCart = await _context.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
                 .ThenInclude(b => b.ShoppingItems)
                 .FirstOrDefaultAsync(c => c.MemberId == purchasePost.Member__ID);
@@ -147,10 +138,10 @@ namespace shukersal_backend.Domain
             
 
             //connction with external delivery service
-            //To Do: confirmDelivery(purchaseItems,~delivery details~);
+            //TODO: confirmDelivery(purchaseItems,~delivery details~);
 
             //connction with external delivery service
-            //To Do: confirmPayment(amount,~payment details~);
+            //TODO: confirmPayment(amount,~payment details~);
 
        
             foreach (var (storeId,items) in purchaseBaskets)
@@ -161,11 +152,11 @@ namespace shukersal_backend.Domain
                 {
                     return Response<Purchase>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
                 }
-                //TO DO: sendPurchaseNotification(storeId);
+                //TODO: sendPurchaseNotification(storeId);
             }
 
             
-            //TO DO: remove all baskets from shopping cart
+            //TODO: remove all baskets from shopping cart
 
 
             _context.Purchases.Add(purchase);
@@ -180,7 +171,7 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
 
-            var member = await _memberContext.Members.FindAsync(memberId);
+            var member = await _context.Members.FindAsync(memberId);
             if (member == null)
             {
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal user id");
@@ -199,7 +190,7 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
 
-            var shop = await _storeContext.Stores.FindAsync(shopId);
+            var shop = await _context.Stores.FindAsync(shopId);
             if (shop == null)
             {
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
@@ -288,7 +279,7 @@ namespace shukersal_backend.Domain
 
         private async Task<Response<bool>> CheckPurchasePolicy(long storeId,List<PurchaseItem> purchaseItems)
         {
-            var shop = await _storeContext.Stores.FindAsync(storeId);
+            var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
@@ -300,13 +291,13 @@ namespace shukersal_backend.Domain
 
         private async Task<Response<bool>> ApplyDiscounts(long storeId, List<PurchaseItem> purchaseItems,long memberId)
         {
-            var shop = await _storeContext.Stores.FindAsync(storeId);
+            var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
             }
 
-            var member = await _memberContext.Members.FindAsync(memberId);
+            var member = await _context.Members.FindAsync(memberId);
             if (member == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal member id");
@@ -318,7 +309,7 @@ namespace shukersal_backend.Domain
 
         private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<PurchaseItem> purchaseItems)
         {
-            var shop = await _storeContext.Stores.FindAsync(storeId);
+            var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
@@ -326,7 +317,7 @@ namespace shukersal_backend.Domain
 
             foreach(var purchaseItem in purchaseItems)
             {
-                var product= await _storeContext.Products.FindAsync(purchaseItem.ProductId);
+                var product= await _context.Products.FindAsync(purchaseItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
                // if (product.UnitsInStock < purchaseItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
             }
@@ -338,7 +329,7 @@ namespace shukersal_backend.Domain
 
         private async Task<Response<bool>> UpdateStock(long storeId, List<PurchaseItem> purchaseItems)
         {
-            var shop = await _storeContext.Stores.FindAsync(storeId);
+            var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
@@ -346,13 +337,18 @@ namespace shukersal_backend.Domain
 
             foreach (var purchaseItem in purchaseItems)
             {
-                var product = await _storeContext.Products.FindAsync(purchaseItem.ProductId);
+                var product = await _context.Products.FindAsync(purchaseItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                //   if (product.UnitsInStock < purchaseItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
-                //  else { product.UnitsInStock = product.UnitsInStock - purchaseItem.Quantity; }
-                //await _storeContext.SaveChangesAsync();
+                if (product.UnitsInStock < purchaseItem.Quantity) 
+                { 
+                    return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); 
+                }
+                else 
+                { 
+                    product.UnitsInStock = product.UnitsInStock - purchaseItem.Quantity; 
+                }
             }
-
+            await _context.SaveChangesAsync();
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
 
         }
