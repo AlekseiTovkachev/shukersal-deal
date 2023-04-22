@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using shukersal_backend.Domain;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 
@@ -21,74 +22,53 @@ namespace shukersal_backend.Controllers.MemberControllers
     [EnableCors("AllowOrigin")]
     public class MembersController : ControllerBase
     {
-        private readonly MarketDbContext _context;
+
+        private readonly MemberService memberService;
 
         public MembersController(MarketDbContext context)
         {
-            _context = context;
+            memberService = new MemberService(context);
         }
 
         // GET: api/Members
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
         {
-            if (_context.Members == null)
+            var response = await memberService.GetMembers();
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            var members = await _context.Members.Include(m => m.ShoppingCart).ToListAsync();
-
-            return members;
+            return Ok(response.Result);
         }
 
         // GET: api/Members/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Member>> GetMember(long id)
         {
-            if (_context.Members == null)
+            var response = await memberService.GetMember(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            var member = await _context.Members.FindAsync(id);
-
-            if (member == null)
-            {
-                return NotFound();
-            }
-
-            return member;
+            return Ok(response.Result);
         }
 
         // POST: api/Members
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+
         [HttpPost]
-        public async Task<ActionResult<MemberPost>> PostMember(MemberPost memberData)
+        public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData)
         {
-            if (_context.Members == null)
-            {
-                return Problem("Entity set 'MemberContext.Members'  is null.");
-            }
             if (ModelState.IsValid)
             {
-                var member = new Member {
-                    Username = memberData.Username,
-                    PasswordHash = HashingUtilities.HashPassword(memberData.Password),
-                    Role = memberData.Role
-                        };
-                // Create a new shopping cart and associate it with the new member
-                var shoppingCart = new ShoppingCart
+                var response = await memberService.AddMember(memberData);
+                if (!response.IsSuccess || response.Result == null)
                 {
-                    Member = member,
-                    ShoppingBaskets = new List<ShoppingBasket>()
-                };
-
-                // Add the shopping cart and member to the database
-                _context.ShoppingCarts.Add(shoppingCart);
-                _context.Members.Add(member);
-
-                await _context.SaveChangesAsync();
-
-                return CreatedAtAction(nameof(GetMember), new { id = member.Id }, member);
+                    return BadRequest(ModelState);
+                }
+                var member = response.Result;
+                return CreatedAtAction("GetMember", new { id = member.Id }, member);
             }
             else
             {
@@ -101,30 +81,13 @@ namespace shukersal_backend.Controllers.MemberControllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<IActionResult> DeleteMember(long id)
         {
-            if (_context.Members == null)
+            var response = await memberService.DeleteMember(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            var member = await _context.Members.FindAsync(id);
-            if (member == null)
-            {
-                return NotFound();
-            }
-            var shoppingCart = await _context.ShoppingCarts.FirstOrDefaultAsync(c => c.MemberId == id);
-            if (shoppingCart != null)
-            {
-                _context.ShoppingCarts.Remove(shoppingCart); // remove ShoppingCart entity
-            }
-            _context.Members.Remove(member);
-
-            await _context.SaveChangesAsync();
-
             return NoContent();
         }
 
-        private bool MemberExists(long id)
-        {
-            return (_context.Members?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }
