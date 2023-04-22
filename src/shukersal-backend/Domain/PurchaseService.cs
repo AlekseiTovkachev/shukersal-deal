@@ -6,6 +6,7 @@ using NuGet.Packaging;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Net;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace shukersal_backend.Domain
 {
@@ -171,14 +172,7 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
 
-            var member = await _context.Members.FindAsync(memberId);
-            if (member == null)
-            {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal user id");
-            }
-
             var purchases = await _context.Purchases
-              //  .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
               .Include(s => s.PurchaseItems).Where(s => s.Member_Id_ == memberId).ToListAsync();
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
         }
@@ -190,31 +184,22 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
 
-            var shop = await _context.Stores.FindAsync(shopId);
-            if (shop == null)
+            var purchasesId =new List<long>();
+            var items = await _context.PurchaseItems.ToListAsync();
+            var group = items.GroupBy(it => new {it.StoreId,it.PurchaseId}) ;
+            foreach(var it in group)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                if (it.Key.StoreId == shopId)
+                {
+                    purchasesId.Add(it.Key.PurchaseId);
+                }
             }
+            purchasesId.Distinct();
 
+            List<Purchase> purchaseHistory = await _context.Purchases.Include(i => i.PurchaseItems).Where(p => purchasesId.Contains(p.Id)).ToListAsync();
 
-            var purchases = await _context.Purchases
-                //.Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
-                .Include(s => s.PurchaseItems).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
-
-            var purchaseHistory =new List<Purchase>();
-            foreach( var purchase in purchases)
-            {
-                Purchase p = new Purchase {
-                    Id = purchase.Id,
-                    Member_Id_ = purchase.Member_Id_,
-                   // Member_ = purchase.Member_,
-                    PurchaseDate = purchase.PurchaseDate,
-                    TotalPrice = purchase.TotalPrice,
-                    PurchaseItems = purchase.PurchaseItems.Where(i=>i.StoreId==shopId).ToList(),
-                };
-                purchaseHistory.Add(p);
-            }            
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchaseHistory);
+             
         }
 
 

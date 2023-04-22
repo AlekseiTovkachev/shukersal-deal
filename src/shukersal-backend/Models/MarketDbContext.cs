@@ -49,8 +49,8 @@ namespace shukersal_backend.Models
 
         #region Purchase Models
         // *------------------------------------------------- Purchase Models --------------------------------------------------*
-        public DbSet<Purchase> Purchases { get; set; } = null!;
-        public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+        public virtual DbSet<Purchase> Purchases { get; set; } = null!;
+        public virtual DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
         #endregion
 
         #region Review Models
