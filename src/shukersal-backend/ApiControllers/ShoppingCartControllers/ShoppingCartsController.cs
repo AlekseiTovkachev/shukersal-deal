@@ -2,20 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using shukersal_backend.Models.ShoppingCartModels;
+using shukersal_backend.Models;
 
 namespace shukersal_backend.Controllers.ShoppingCartControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableCors("AllowOrigin")]
     public class ShoppingCartsController : ControllerBase
     {
-        private readonly ShoppingCartContext _context;
+        private readonly MarketDbContext _context;
 
-        public ShoppingCartsController(ShoppingCartContext context)
+        public ShoppingCartsController(MarketDbContext context)
         {
             _context = context;
         }

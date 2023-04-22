@@ -1,21 +1,25 @@
-﻿namespace shukersal_backend.Models
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace shukersal_backend.Models
 {
     public class Purchase
     {
-        public Purchase(long memberId,Member member, DateTime purchaseDate)
-        {
-            MemberId = memberId;
-            Member = member;
-            PurchaseDate = purchaseDate;
-            PurchaseItems = new List<PurchaseItem>();
-        }
+        public Purchase() { PurchaseItems = new List<PurchaseItem>(); }
 
         // TODO: Connect billing/delivery service via invoice id / delivery id etc.
+        [Key]
         public long Id { get; set; }
-        public long MemberId { get; set; }
-        public Member Member { get; set; }
+        [Required]
+        public long Member_Id_ { get; set; }
+       // [JsonIgnore]
+        //[ForeignKey("Member_Id_")]
+        //[Required]
+       // public Member? Member_ { get; set; }
         public DateTime PurchaseDate { get; set; }
-        public decimal TotalPrice { get; set; }
-        public ICollection<PurchaseItem> PurchaseItems { get; set; }
+        public double TotalPrice { get; set; }
+        public virtual ICollection<PurchaseItem> PurchaseItems { get; set; }
     }
 }

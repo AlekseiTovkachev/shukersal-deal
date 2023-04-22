@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace shukersal_backend.Models.ShoppingCartModels
+namespace shukersal_backend.Models
 {
     public class ShoppingCart
     {

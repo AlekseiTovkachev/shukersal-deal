@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="7.0.5" />
@@ -33,10 +34,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\EventControllers\" />
-    <Folder Include="Controllers\MemberControllers\" />
-    <Folder Include="Controllers\ReviewControllers\" />
-    <Folder Include="Controllers\NotificationControllers\" />
+    <Folder Include="ApiControllers\EventControllers\" />
+    <Folder Include="ApiControllers\ReviewControllers\" />
+    <Folder Include="ApiControllers\NotificationControllers\" />
   </ItemGroup>
 
 </Project>
