@@ -8,24 +8,35 @@ namespace shukersal_backend.Domain
     public class StoreService
     {
         private readonly StoreContext _context;
-        private readonly ManagerContext _managerContext;
+        //private readonly ManagerContext _managerContext;
+        //private readonly ManagerContext _managerContext;
         private readonly MemberContext _memberContext;
 
         public StoreService(StoreContext context, ManagerContext managerContext, MemberContext memberContext)
         {
             _context = context;
-            _managerContext = managerContext;
+            //_managerContext = managerContext;
+            _memberContext = memberContext;
+
+            _context.Database.EnsureCreated();
+        }
+
+        public StoreService(StoreContext context, MemberContext memberContext, string test)
+        {
+            _context = context;
+            //_managerContext = managerContext;
             _memberContext = memberContext;
         }
 
+
         public async Task<Response<IEnumerable<Store>>> GetStores()
         {
-            if (_context.Stores == null)
-            {
-                return Response<IEnumerable<Store>>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
-            }
+            //if (_context.Stores == null)
+            //{
+            //    return Response<IEnumerable<Store>>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+            //}
             var stores = await _context.Stores
-                .Include(s => s.Products)
+                //.Include(s => s.Products)
                 .Include(s => s.DiscountRules).ToListAsync();
             return Response<IEnumerable<Store>>.Success(HttpStatusCode.OK, stores);
         }
@@ -38,7 +49,7 @@ namespace shukersal_backend.Domain
                 return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
             }
             var store = await _context.Stores
-                .Include(s => s.Products)
+                //.Include(s => s.Products)
                 .Include(s => s.DiscountRules)
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (store == null)
@@ -50,64 +61,54 @@ namespace shukersal_backend.Domain
 
         public async Task<Response<Store>> CreateStore(StorePost storeData)
         {
-            if (_context.Stores == null)
+            var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
+            if (member == null)
             {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
-            }
-            if (_managerContext.StoreManagers == null)
-            {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'ManagerContext.StoreManagers'  is null.");
-            }
-            if (_managerContext.StorePermissions == null)
-            {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'ManagerContext.StorePermissions'  is null.");
-            }
-            if (_memberContext.Members == null)
-            {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'MemberContext.Members'  is null.");
+                return Response<Store>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
 
             var store = new Store
             {
                 Name = storeData.Name,
                 Description = storeData.Description,
-                RootManagerId = storeData.RootManagerMemberId,
-                RootManager = null,
                 Products = new List<Product>(),
                 DiscountRules = new List<DiscountRule>()
             };
 
-            var member = await _memberContext.Members.FindAsync(storeData.RootManagerMemberId);
-            if (member == null)
-            {
-                return Response<Store>.Error(HttpStatusCode.BadRequest, "Illegal user id");
-            }
+            _context.Stores.Add(store);
+
             var storeManager = new StoreManager
             {
+                MemberId = member.Id,
+                //Member = member,
                 StoreId = store.Id,
                 Store = store,
-                MemberId = member.Id,
-                Member = member,
                 StorePermissions = new List<StorePermission>()
             };
-            storeManager.StorePermissions.Add(new StorePermission
+
+            _context.StoreManagers.Add(storeManager);
+
+            var permission = new StorePermission
             {
                 StoreManager = storeManager,
                 StoreManagerId = storeManager.Id,
                 PermissionType = PermissionType.Manager_permission
-            });
+            };
+
+            storeManager.StorePermissions.Add(permission);
+            _context.StorePermissions.Add(permission);
 
             store.RootManager = storeManager;
+            store.RootManagerId = storeManager.Id;
 
-            _context.Stores.Add(store);
             await _context.SaveChangesAsync();
 
-            _managerContext.StoreManagers.Add(storeManager);
-            await _managerContext.SaveChangesAsync();
             return Response<Store>.Success(HttpStatusCode.Created, store);
         }
 
-        public async Task<Response<bool>> UpdateStore(long id, StorePost post)
+
+
+        public async Task<Response<bool>> UpdateStore(long id, StorePatch patch)
         {
 
             var store = await _context.Stores.FindAsync(id);
@@ -115,12 +116,11 @@ namespace shukersal_backend.Domain
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Store not found");
             }
-            store.Description = post.Description;
-            store.Name = post.Name;
-            //var rootManager = await _managerContext.StoreManagers.FindAsync(store.RootManagerId);
-            //store.RootManager = rootManager;
+            if (patch.Description != null) store.Description = patch.Description;
+            if (patch.Name != null) store.Name = patch.Name;
 
-            _context.Entry(store).State = EntityState.Modified;
+            //_context.Entry(store).State = EntityState.Modified;
+            _context.MarkAsModified(store);
 
             try
             {
@@ -145,7 +145,7 @@ namespace shukersal_backend.Domain
         {
             if (_context.Stores == null)
             {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores' is null.");
             }
             var store = await _context.Stores.FindAsync(id);
             if (store == null)
@@ -164,17 +164,39 @@ namespace shukersal_backend.Domain
             return _context.Stores.Any(e => e.Id == id);
         }
 
-        public async Task<Response<Product>> AddProduct(long storeId, Product product)
+
+        public async Task<Response<Product>> AddProduct(long storeId, ProductPost post)
         {
-            var store = await _context.Stores.Include(s => s.Products).FirstOrDefaultAsync(s => s.Id == storeId);
+            var store = await _context.Stores
+                .Include(s => s.Products)
+                .FirstOrDefaultAsync(s => s.Id == storeId);
+            if (store == null)
+            {
+                return Response<Product>.Error(HttpStatusCode.NotFound, "Store not found.");
+            }
+            Category? category = null;
+            if (post.CategoryId != 0 && _context.Categories != null)
+            {
+                category = await _context.Categories
+                                .FirstOrDefaultAsync(s => s.Id == post.CategoryId);
+            }
             if (store == null)
             {
                 return Response<Product>.Error(HttpStatusCode.NotFound, "Store not found.");
             }
 
-            // Associate the product with the store
-            product.StoreId = storeId;
-            product.Store = store;
+            var product = new Product
+            {
+                Name = post.Name,
+                Description = post.Description,
+                Price = post.Price,
+                ImageUrl = post.ImageUrl,
+                IsListed = post.IsListed,
+                UnitsInStock = post.UnitsInStock,
+                Category = category,
+                StoreId = storeId,
+                Store = store
+            };
 
             store.Products.Add(product);
             _context.Products.Add(product);
@@ -184,31 +206,42 @@ namespace shukersal_backend.Domain
             return Response<Product>.Success(HttpStatusCode.Created, product);
         }
 
-        public async Task<Response<Product>> UpdateProduct(long storeId, long productId, Product product)
+        public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch)
         {
-            var store = await _context.Stores.FindAsync(storeId);
-
-            if (store == null)
-            {
-                return Response<Product>.Error(HttpStatusCode.NotFound, "Store not found.");
-            }
-
             var existingProduct = await _context.Products.FindAsync(productId);
 
             if (existingProduct == null || existingProduct.StoreId != storeId)
             {
                 return Response<Product>.Error(HttpStatusCode.NotFound, "Product not found in the specified store.");
             }
+            Category? category = null;
+            if (patch.CategoryId != -1 && _context.Categories != null)
+            {
+                category = await _context.Categories.FindAsync(patch.CategoryId);
+            }
 
             // Update the existing product with the new data
-            existingProduct.Name = product.Name;
-            existingProduct.Description = product.Description;
-            existingProduct.Price = product.Price;
-            _context.Entry(store).State = EntityState.Modified;
+            if (patch.Name != null) existingProduct.Name = patch.Name;
+
+            if (patch.Description != null) existingProduct.Description = patch.Description;
+
+            if (patch.Price != -1) existingProduct.Price = patch.Price;
+
+            if (patch.UnitsInStock != -1) existingProduct.UnitsInStock = patch.UnitsInStock;
+
+            if (patch.ImageUrl != null) existingProduct.ImageUrl = patch.ImageUrl;
+
+            if (category != null) existingProduct.Category = category;
+
+
+            //_context.Entry(existingProduct).State = EntityState.Modified;
+            _context.MarkAsModified(existingProduct);
             await _context.SaveChangesAsync();
 
             return Response<Product>.Success(HttpStatusCode.NoContent, existingProduct);
         }
+
+
 
         public async Task<Response<Product>> DeleteProduct(long storeId, long productId)
         {
@@ -228,11 +261,44 @@ namespace shukersal_backend.Domain
             store.Products.Remove(product);
             // Remove the product from the store
             _context.Products.Remove(product);
-            _context.Entry(store).State = EntityState.Modified;
+            //_context.Entry(store).State = EntityState.Modified;
+            _context.MarkAsModified(store);
             await _context.SaveChangesAsync();
 
             return Response<Product>.Success(HttpStatusCode.NotFound, product);
         }
+
+        public async Task<Response<IEnumerable<Product>>> GetStoreProducts(long id)
+        {
+            if (!StoreExists(id))
+            {
+                return Response<IEnumerable<Product>>.Error(HttpStatusCode.NotFound, "Store not found.");
+            }
+
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.StoreId == id)
+                .ToListAsync();
+
+            return Response<IEnumerable<Product>>.Success(HttpStatusCode.OK, products);
+        }
+
+        public async Task<Response<IEnumerable<Product>>> GetAllProducts()
+        {
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .ToListAsync();
+
+            return Response<IEnumerable<Product>>.Success(HttpStatusCode.OK, products);
+        }
+
+        public async Task<Response<IEnumerable<Category>>> GetCategories()
+        {
+            var categories = await _context.Categories.ToListAsync();
+            return Response<IEnumerable<Category>>.Success(HttpStatusCode.OK, categories);
+        }
+
+
     }
 
 }

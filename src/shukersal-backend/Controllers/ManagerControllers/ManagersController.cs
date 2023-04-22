@@ -8,13 +8,16 @@ namespace shukersal_backend.Controllers
     [ApiController]
     public class StoreManagersController : ControllerBase
     {
-        private readonly ManagerContext _context;
+        //private readonly ManagerContext _context;
+        private readonly StoreContext _context;
         private readonly MemberContext _memberContext;
         private readonly StoreContext _storeContext;
 
+
         public StoreManagersController(ManagerContext context, MemberContext memberContext, StoreContext storeContext)
         {
-            _context = context;
+            //_context = context;
+            _context = storeContext;
             _memberContext = memberContext;
             _storeContext = storeContext;
         }
@@ -30,7 +33,10 @@ namespace shukersal_backend.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
-            var storeManager = await _context.StoreManagers.FindAsync(id);
+            //addition for testing
+            var storeManager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
             if (storeManager == null)
             {
@@ -46,31 +52,31 @@ namespace shukersal_backend.Controllers
         {
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
             bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
                 && sm.StoreId == post.StoreId);
             if (isManagerOfStore)
             {
-                return Problem("The member already manages this store");
+                return NotFound();
             }
-            var member = await _memberContext.Members.FindAsync(post.MemberId);
-            var store = await _storeContext.Stores.FindAsync(post.StoreId);
+            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
-                return Problem("Illegal store id or member id");
+                return NotFound();
             }
 
-            var appointer = await _context.StoreManagers.FindAsync(post.AppointerId);
-            var boss = await _context.StoreManagers.FindAsync(post.BossId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
+            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
-                return Problem("Illegal appointer id or boss id");
+                return NotFound();
             }
             var storeManager = new StoreManager
             {
@@ -106,31 +112,31 @@ namespace shukersal_backend.Controllers
         {
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'ManagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
             bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
                 && sm.StoreId == post.StoreId);
             if (isManagerOfStore)
             {
-                return Problem("The member already manages this store");
+                return NotFound();
             }
-            var member = await _memberContext.Members.FindAsync(post.MemberId);
-            var store = await _storeContext.Stores.FindAsync(post.StoreId);
+            var member = _memberContext.Members.FirstOrDefault(m => m.Id == post.MemberId);
+            var store = _storeContext.Stores.FirstOrDefault(p => p.Id == post.StoreId);
 
             if (store == null || member == null)
             {
-                return Problem("Illegal store id or member id");
+                return NotFound();
             }
 
-            var appointer = await _context.StoreManagers.FindAsync(post.AppointerId);
-            var boss = await _context.StoreManagers.FindAsync(post.BossId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
+            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
-                return Problem("Illegal appointer id or boss id");
+                return NotFound();
             }
             var storeManager = new StoreManager
             {
@@ -208,23 +214,23 @@ namespace shukersal_backend.Controllers
 
         // Add a permission to a shop manager
         [HttpPost("{id}/permissions")]
-        public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
+        public async Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission)
         {
             if (permission == PermissionType.Manager_permission)
             {
-                return Problem("TODO");
+                return NotFound();
             }
 
             if (_context.StoreManagers == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return NotFound();
             }
             if (_context.StorePermissions == null)
             {
-                return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
+                return NotFound();
             }
 
-            var manager = await _context.StoreManagers.FindAsync(id);
+            var manager = _context.StoreManagers.FirstOrDefault(sm => sm.Id == Id);
 
             if (manager == null)
             {
@@ -273,145 +279,5 @@ namespace shukersal_backend.Controllers
 
             return Ok();
         }
-
-
-        //[HttpPost]
-        //public async Task<IActionResult> GivePermission(PermissionsPost post)
-        //{
-        //    var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
-        //    var target = await _memberContext.Members.FindAsync(post.TargetId);
-        //    var store = await _storeContext.Stores.FindAsync(post.StoreId);
-        //    nextPermissionId++;
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        var appointerManager = SearchManager(store, appointer);
-        //        var targetManager = SearchManager(store, target);
-
-        //        //member no found error
-        //        if (appointerManager == null)
-        //            return Problem("TODO");
-        //        if (targetManager == null)
-        //            return Problem("TODO");
-
-        //        //permission test
-        //        if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
-        //            return Problem("TODO");
-
-        //        if (!CheckPermission(targetManager, post.PermissionType))
-        //            return Problem("TODO");
-
-        //        var permission = new StorePermission(nextPermissionId, targetManager, post.PermissionType);
-
-        //        _context.StorePermissions.Add(permission);
-
-        //        await _context.SaveChangesAsync();
-
-        //        return NoContent();
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-        //[HttpPost]
-        //public async Task<IActionResult> RemovePermission(PermissionsPost post)
-        //{
-        //    var appointer = await _memberContext.Members.FindAsync(post.AppointerId);
-        //    var target = await _memberContext.Members.FindAsync(post.TargetId);
-        //    var store = await _storeContext.Stores.FindAsync(post.StoreId);
-        //    if (post.PermissionType == _context.MANAGER_PERMISSION)
-        //        return Problem("TODO");
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        var appointerManager = SearchManager(store, appointer);
-        //        var targetManager = SearchManager(store, target);
-
-        //        //member no found error
-        //        if (appointerManager == null)
-        //            return Problem("TODO");
-        //        if (targetManager == null)
-        //            return Problem("TODO");
-
-        //        //permission test
-        //        if (!CheckPermission(appointerManager, _context.EDIT_MANAGER_PERMISSIONS_PERMISSION))
-        //            return Problem("TODO");
-
-        //        if (CheckPermission(targetManager, post.PermissionType))
-        //            return Problem("TODO");
-
-        //        foreach (StorePermission permission in targetManager.StorePermissions)
-        //            if (permission.PermissionType == post.PermissionType)
-        //                _context.StorePermissions.Remove(permission);
-
-        //        await _context.SaveChangesAsync();
-
-        //        return NoContent();
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-        //[HttpGet("{storeId, memberId}")]
-        //public async Task<ActionResult<IEnumerable<StoreManager>>> GetManagersPermissions(long StoreId, long MemberId)
-        //{
-        //    var member = await _memberContext.Members.FindAsync(MemberId);
-        //    var store = await _storeContext.Stores.FindAsync(StoreId);
-        //    if (_context.StoreManagers == null)
-        //    {
-        //        return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
-        //    }
-        //    if (_context.StorePermissions == null)
-        //    {
-        //        return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-        //    }
-        //    if (ModelState.IsValid)
-        //    {
-        //        if (!CheckPermission(SearchManager(store, member), _context.GET_MANAGER_INFO_PERMISSION))
-        //            return Problem("TODO");
-        //        var storeManagers = await _context.StoreManagers.Where(m => m.Store == store).Include(m => m.StorePermissions).ToListAsync();
-
-        //        return storeManagers;
-        //    }
-        //    else
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-        //}
-
-        //private StoreManager? SearchManager(Store store, Member member)
-        //{
-        //    foreach (StoreManager manager in _context.StoreManagers)
-        //        if (manager.Member == member && manager.Store == store)
-        //            return manager;
-        //    return null;
-        //}
-
-        //private bool CheckPermission(StoreManager? manager, int permissionType)
-        //{
-        //    if (manager == null)
-        //        return false;
-        //    foreach (StorePermission permission in manager.StorePermissions)
-        //        if (permission.PermissionType == _context.MANAGER_PERMISSION || permission.PermissionType == permissionType)
-        //            return true;
-        //    return false;
-        //}
     }
-
 }
