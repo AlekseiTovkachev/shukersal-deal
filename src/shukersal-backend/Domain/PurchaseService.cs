@@ -34,7 +34,8 @@ namespace shukersal_backend.Domain
                 return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
             }
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).Include(m=>m.Member_).ToListAsync();
+               // .Include(s => s.PurchaseItems).Include(m=>m.Member_).ToListAsync();
+               .Include(s => s.PurchaseItems).ToListAsync();
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
         }
 
@@ -46,7 +47,7 @@ namespace shukersal_backend.Domain
             }
             var purchase = await _context.Purchases
                 .Include(s => s.PurchaseItems)
-                .Include(m=>m.Member_)
+                //.Include(m=>m.Member_)
                 .FirstOrDefaultAsync(s => s.Id == Purchaseid);
             
             if (purchase == null)
@@ -71,7 +72,7 @@ namespace shukersal_backend.Domain
             var purchase = new Purchase
             {
                 Member_Id_ = purchasePost.Member__ID,
-                Member_ =null,
+                //Member_ =null,
                 PurchaseDate = purchasePost.PurchaseDate,
                 TotalPrice = purchasePost.TotalPrice,
                 PurchaseItems =new List<PurchaseItem>(),
@@ -82,7 +83,7 @@ namespace shukersal_backend.Domain
             {
                 return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
-            purchase.Member_ = member;
+            //purchase.Member_ = member;
 
             var shoppingCart = await _shoppingCartContext.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
@@ -94,6 +95,10 @@ namespace shukersal_backend.Domain
                 return Response<Purchase>.Error(HttpStatusCode.BadRequest, "No shopping cart.");
             }
 
+            if(shoppingCart.ShoppingBaskets.Count == 0)
+            {
+                return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
+            }
 
             var purchaseBaskets = new Dictionary<long, List<PurchaseItem>>();
             foreach(ShoppingBasket basket in shoppingCart.ShoppingBaskets)
@@ -112,7 +117,8 @@ namespace shukersal_backend.Domain
                         ProductName = item.Product.Name,
                         ProductDescription = item.Product.Description,
                         Quantity = item.Quantity,
-                        Price = item.Product.Price,
+                        FullPrice = item.Product.Price,
+                        FinalPrice = item.Product.Price,
                     };
                     purchaseBaskets[basket.StoreId].Add(purchaseItem);
                 }
@@ -137,7 +143,7 @@ namespace shukersal_backend.Domain
                 }
 
             }
-            purchase.TotalPrice = purchaseBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.Price*item.Quantity));
+            purchase.TotalPrice = purchaseBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice*item.Quantity));
             
 
             //connction with external delivery service
@@ -158,6 +164,10 @@ namespace shukersal_backend.Domain
                 //TO DO: sendPurchaseNotification(storeId);
             }
 
+            
+            //TO DO: remove all baskets from shopping cart
+
+
             _context.Purchases.Add(purchase);
             await _context.SaveChangesAsync();
             return Response<Purchase>.Success(HttpStatusCode.Created, purchase);
@@ -177,7 +187,8 @@ namespace shukersal_backend.Domain
             }
 
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
+              //  .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
+              .Include(s => s.PurchaseItems).Where(s => s.Member_Id_ == memberId).ToListAsync();
             return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
         }
 
@@ -196,14 +207,16 @@ namespace shukersal_backend.Domain
 
 
             var purchases = await _context.Purchases
-                .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
-            var purchaseHistory=new List<Purchase>();
+                //.Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
+                .Include(s => s.PurchaseItems).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
+
+            var purchaseHistory =new List<Purchase>();
             foreach( var purchase in purchases)
             {
                 Purchase p = new Purchase {
                     Id = purchase.Id,
                     Member_Id_ = purchase.Member_Id_,
-                    Member_ = purchase.Member_,
+                   // Member_ = purchase.Member_,
                     PurchaseDate = purchase.PurchaseDate,
                     TotalPrice = purchase.TotalPrice,
                     PurchaseItems = purchase.PurchaseItems.Where(i=>i.StoreId==shopId).ToList(),
@@ -311,6 +324,13 @@ namespace shukersal_backend.Domain
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
             }
 
+            foreach(var purchaseItem in purchaseItems)
+            {
+                var product= await _storeContext.Products.FindAsync(purchaseItem.ProductId);
+                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
+               // if (product.UnitsInStock < purchaseItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
+            }
+
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
 
         }
@@ -322,6 +342,15 @@ namespace shukersal_backend.Domain
             if (shop == null)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+            }
+
+            foreach (var purchaseItem in purchaseItems)
+            {
+                var product = await _storeContext.Products.FindAsync(purchaseItem.ProductId);
+                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
+                //   if (product.UnitsInStock < purchaseItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
+                //  else { product.UnitsInStock = product.UnitsInStock - purchaseItem.Quantity; }
+                //await _storeContext.SaveChangesAsync();
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);

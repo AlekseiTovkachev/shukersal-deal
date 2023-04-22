@@ -14,6 +14,7 @@
         public string ProductDescription { get; set; }
 
         public int Quantity { get; set; }
-        public double Price { get; set; }
+        public double FullPrice { get; set; }
+        public double FinalPrice { get; set; }
     }
 }
