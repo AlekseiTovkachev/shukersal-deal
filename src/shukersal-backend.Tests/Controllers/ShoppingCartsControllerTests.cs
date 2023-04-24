@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using shukersal_backend.Controllers.ShoppingCartControllers;
 using shukersal_backend.Models;
-
+using shukersal_backend.ServiceLayer;
 
 namespace shukersal_backend.Tests.Controllers
 {
     public class ShoppingCartsControllerTests
     {
-        private ShoppingCartsController _controller;
+        private ShoppingCartService _controller;
         private Mock<MarketDbContext> _context;
 
         public ShoppingCartsControllerTests()
@@ -19,7 +18,7 @@ namespace shukersal_backend.Tests.Controllers
             _context = new Mock<MarketDbContext>();
 
             // Create the controller with the mocked DbContext
-            _controller = new ShoppingCartsController(_context.Object);
+            _controller = new ShoppingCartService(_context.Object);
         }
 
 

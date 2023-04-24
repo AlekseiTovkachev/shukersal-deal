@@ -10,31 +10,30 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using shukersal_backend.Domain;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 
-namespace shukersal_backend.Controllers.MemberControllers
+namespace shukersal_backend.ServiceLayer
 {
-    // TODO: Move logic to service (like in store)
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class MembersController : ControllerBase
+    public class MemberService : ControllerBase
     {
 
-        private readonly MemberService memberService;
+        private readonly MemberController memberController;
 
-        public MembersController(MarketDbContext context)
+        public MemberService(MarketDbContext context)
         {
-            memberService = new MemberService(context);
+            memberController = new MemberController(context);
         }
 
         // GET: api/Members
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
+        public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
-            var response = await memberService.GetMembers();
+            var response = await memberController.GetMembers();
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -44,9 +43,9 @@ namespace shukersal_backend.Controllers.MemberControllers
 
         // GET: api/Members/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Member>> GetMember(long id)
+        public async Task<ActionResult<Models.Member>> GetMember(long id)
         {
-            var response = await memberService.GetMember(id);
+            var response = await memberController.GetMember(id);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -62,7 +61,7 @@ namespace shukersal_backend.Controllers.MemberControllers
         {
             if (ModelState.IsValid)
             {
-                var response = await memberService.AddMember(memberData);
+                var response = await memberController.AddMember(memberData);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(ModelState);
@@ -81,7 +80,7 @@ namespace shukersal_backend.Controllers.MemberControllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<IActionResult> DeleteMember(long id)
         {
-            var response = await memberService.DeleteMember(id);
+            var response = await memberController.DeleteMember(id);
             if (!response.IsSuccess)
             {
                 return NotFound();

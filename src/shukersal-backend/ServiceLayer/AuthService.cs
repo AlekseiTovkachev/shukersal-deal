@@ -14,18 +14,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace shukersal_backend.ApiControllers.MemberControllers
+namespace shukersal_backend.ServiceLayer
 {
-    // TODO: Move logic to MembersService and AuthService
+    // TODO: Move logic to domain
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class AuthController : ControllerBase
+    public class AuthService : ControllerBase
     {
         private readonly MarketDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthController(IConfiguration configuration, MarketDbContext context)
+        public AuthService(IConfiguration configuration, MarketDbContext context)
         {
             _context = context;
             _configuration = configuration;

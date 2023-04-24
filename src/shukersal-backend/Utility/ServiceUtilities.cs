@@ -3,7 +3,7 @@ using System.Security.Claims;
 
 namespace shukersal_backend.Utility
 {
-    public static class ApiControllerUtilities
+    public static class ServiceUtilities
     {
         public static Member? GetCurrentMember(MarketDbContext context, HttpContext httpContext)
         {

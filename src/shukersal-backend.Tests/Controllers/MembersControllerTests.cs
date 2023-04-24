@@ -6,14 +6,14 @@ namespace shukersal_backend.Tests.Controllers
 {
     public class MembersControllerTests
     {
-        private readonly MembersController _controller;
+        private readonly MemberService _controller;
         private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper output;
         public MembersControllerTests(ITestOutputHelper output)
         {
             this.output = output;
             _context = new Mock<MarketDbContext>();
-            _controller = new MembersController(_context.Object);
+            _controller = new MemberService(_context.Object);
 
             var membersList = new List<Member>
             {

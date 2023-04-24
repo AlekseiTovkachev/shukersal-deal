@@ -13,20 +13,19 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
-using shukersal_backend.Domain;
 using System.ComponentModel.DataAnnotations;
 
-namespace shukersal_backend.Domain
+namespace shukersal_backend.DomainLayer.Controllers
 {
-    public class MemberService : BaseService
+    public class MemberController : AbstractController
     {
-        public MemberService(MarketDbContext context) : base(context) { }
+        public MemberController(MarketDbContext context) : base(context) { }
 
         public async Task<Response<IEnumerable<Member>>> GetMembers()
         {
             if (_context.Members == null)
             {
-                return Response<IEnumerable<Member>>.Error(HttpStatusCode.NotFound, "Entity set 'MemberContext.members'  is null."); 
+                return Response<IEnumerable<Member>>.Error(HttpStatusCode.NotFound, "Entity set 'MemberContext.members'  is null.");
             }
             var members = await _context.Members.Include(m => m.ShoppingCart).ToListAsync();
 
