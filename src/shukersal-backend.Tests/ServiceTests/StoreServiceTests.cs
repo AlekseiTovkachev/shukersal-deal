@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using shukersal_backend.Domain;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Net;
@@ -10,7 +10,7 @@ namespace shukersal_backend.Tests.ServiceTests
     public class StoreServiceTests
     {
         private readonly Mock<MarketDbContext> _context;
-        private readonly StoreService _service;
+        private readonly StoreController _service;
         private readonly ITestOutputHelper output;
 
         //private readonly Mock<ManagerContext> _managerContextMock;
@@ -19,7 +19,7 @@ namespace shukersal_backend.Tests.ServiceTests
             this.output = output;
             _context = new Mock<MarketDbContext>();
             //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
-            _service = new StoreService(_context.Object);
+            _service = new StoreController(_context.Object);
         }
 
         [Fact]
@@ -93,13 +93,13 @@ namespace shukersal_backend.Tests.ServiceTests
                 Description = "This is a test store.",
                 RootManagerMemberId = 1
             };
-            var membersList = new List<Member>
+            var membersList = new List<Models.Member>
             {
-                new Member { Id = storeData.RootManagerMemberId }
+                new Models.Member { Id = storeData.RootManagerMemberId }
             }.AsQueryable();
 
             _context.Setup(m => m.Members).ReturnsDbSet(membersList);
-            var member = new Member { Id = storeData.RootManagerMemberId };
+            var member = new Models.Member { Id = storeData.RootManagerMemberId };
             _context.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
             _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
             _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
@@ -124,7 +124,7 @@ namespace shukersal_backend.Tests.ServiceTests
                 Description = "This is a test store.",
                 RootManagerMemberId = 1
             };
-            _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>().AsQueryable());
+            _context.Setup(m => m.Members).ReturnsDbSet(new List<Models.Member>().AsQueryable());
             // Act
             var response = await _service.CreateStore(storeData);
 
@@ -586,7 +586,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
             _context.Setup(x => x.Categories).ReturnsDbSet(categories.AsQueryable());
             // Act
-            var result = await _service.GetCategories();
+            var result = await _service.GetStoreCategories();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);

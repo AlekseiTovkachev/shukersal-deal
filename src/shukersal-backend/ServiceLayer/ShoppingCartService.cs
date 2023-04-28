@@ -8,16 +8,17 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using shukersal_backend.Models;
 
-namespace shukersal_backend.Controllers.ShoppingCartControllers
+namespace shukersal_backend.ServiceLayer
 {
+    // TODO: Move logic to domain
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class ShoppingCartsController : ControllerBase
+    public class ShoppingCartService : ControllerBase
     {
         private readonly MarketDbContext _context;
 
-        public ShoppingCartsController(MarketDbContext context)
+        public ShoppingCartService(MarketDbContext context)
         {
             _context = context;
         }

@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 
-namespace shukersal_backend.Controllers
+namespace shukersal_backend.ServiceLayer
 {
-    // TODO: Move logic to service (like in store)
+    // TODO: Move logic to domain
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]

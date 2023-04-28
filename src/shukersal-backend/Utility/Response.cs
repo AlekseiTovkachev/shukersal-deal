@@ -1,5 +1,6 @@
 ﻿
 using System.Net;
+using Xunit.Sdk;
 
 namespace shukersal_backend.Utility
 {
@@ -28,6 +29,15 @@ namespace shukersal_backend.Utility
                 IsSuccess = false,
                 StatusCode = statusCode,
                 ErrorMessage = errorMessage
+            };
+        }
+        public static Response<T> Error<U>(Response<U> other)
+        {
+            return new Response<T>
+            {
+                IsSuccess = false,
+                StatusCode = other.StatusCode,
+                ErrorMessage = other.ErrorMessage
             };
         }
 

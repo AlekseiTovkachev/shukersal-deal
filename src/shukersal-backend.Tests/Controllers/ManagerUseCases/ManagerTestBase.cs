@@ -1,16 +1,15 @@
 ﻿using NuGet.Protocol;
-using shukersal_backend.Controllers;
-using shukersal_backend.Controllers.StoreControllers;
 using shukersal_backend.Models;
 using Xunit.Abstractions;
 using System.Threading;
+using shukersal_backend.ServiceLayer;
 
 namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 {
     public class ManagerTestBase
     {
         protected readonly StoreManagersController _controller;
-        protected readonly StoresController _storeController;
+        protected readonly StoreService _storeController;
         protected readonly Mock<MarketDbContext> _context;
         protected readonly ITestOutputHelper output;
         public ManagerTestBase(ITestOutputHelper output)
@@ -20,7 +19,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
             _context = new Mock<MarketDbContext>();
             
             _controller = new StoreManagersController(_context.Object);
-            _storeController = new StoresController(_context.Object);
+            _storeController = new StoreService(_context.Object);
 
 
             var membersList = new List<Member>

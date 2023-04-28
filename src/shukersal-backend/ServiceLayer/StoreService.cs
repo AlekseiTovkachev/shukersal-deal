@@ -1,23 +1,23 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using shukersal_backend.Domain;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace shukersal_backend.Controllers.StoreControllers
+namespace shukersal_backend.ServiceLayer
 {
     [ApiController]
     [Route("api/[controller]")]
     [EnableCors("AllowOrigin")]
-    public class StoresController : ControllerBase
+    public class StoreService : ControllerBase
     {
-        private readonly StoreService storeService;
+        private readonly StoreController storeService;
 
-        public StoresController(MarketDbContext context)
+        public StoreService(MarketDbContext context)
         {
-            storeService = new StoreService(context);
+            storeService = new StoreController(context);
         }
 
         // GET: api/Store
@@ -53,7 +53,7 @@ namespace shukersal_backend.Controllers.StoreControllers
                 var response = await storeService.CreateStore(storeData);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
                 var store = response.Result;
                 return CreatedAtAction("GetStore", new { id = store.Id }, store);
@@ -140,17 +140,17 @@ namespace shukersal_backend.Controllers.StoreControllers
             return NoContent();
         }
 
-        // GET: api/Products
-        [HttpGet("stores/Products")]
-        public async Task<ActionResult<IEnumerable<Store>>> GetAllProducts()
-        {
-            var response = await storeService.GetAllProducts();
-            if (!response.IsSuccess)
-            {
-                return NotFound();
-            }
-            return Ok(response.Result);
-        }
+        //// GET: api/Products
+        //[HttpGet("stores/Products")]
+        //public async Task<ActionResult<IEnumerable<Store>>> GetAllProducts()
+        //{
+        //    var response = await storeService.GetAllProducts();
+        //    if (!response.IsSuccess)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(response.Result);
+        //}
 
         // GET: api/Store/Products
         [HttpGet("stores/{storeId}/products")]

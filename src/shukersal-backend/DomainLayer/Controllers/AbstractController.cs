@@ -1,12 +1,12 @@
 ﻿using shukersal_backend.Models;
 
-namespace shukersal_backend.Domain
+namespace shukersal_backend.DomainLayer.Controllers
 {
-    public abstract class BaseService
+    public abstract class AbstractController
     {
         protected readonly MarketDbContext _context;
 
-        public BaseService(MarketDbContext context)
+        public AbstractController(MarketDbContext context)
         {
             _context = context;
             // _context.Database.EnsureCreated();
