@@ -9,7 +9,7 @@ namespace shukersal_backend.Tests.ServiceTests
 {
     internal class TransactionServiceTests
     {
-        private readonly DomainLayer.Controllers.TransactionLogic _TransactionService;
+        private readonly ServiceLayer.PurchaseService _TransactionService;
         private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper _output;
 
