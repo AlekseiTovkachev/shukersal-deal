@@ -4,14 +4,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace shukersal_backend.Models
 {
-    public class PurchasePost
+    public class TransactionPost
     {
         //public long Id { get; set; }
         [Required]
         [JsonIgnore]
         public long Member__ID { get; set; }
         [Required]
-        public DateTime PurchaseDate { get; set; }
+        public DateTime TransactionDate { get; set; }
         [Required]
         public double TotalPrice { get; set; }
 

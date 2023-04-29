@@ -5,9 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
-    public class Purchase
+    public class Transaction
     {
-        public Purchase() { PurchaseItems = new List<PurchaseItem>(); }
+        public Transaction() { TransactionItems = new List<TransactionItem>(); }
 
         // TODO: Connect billing/delivery service via invoice id / delivery id etc.
         [Key]
@@ -18,8 +18,8 @@ namespace shukersal_backend.Models
         //[ForeignKey("Member_Id_")]
         //[Required]
        // public Member? Member_ { get; set; }
-        public DateTime PurchaseDate { get; set; }
+        public DateTime TransactionDate { get; set; }
         public double TotalPrice { get; set; }
-        public virtual ICollection<PurchaseItem> PurchaseItems { get; set; }
+        public virtual ICollection<TransactionItem> TransactionItems { get; set; }
     }
 }

@@ -47,10 +47,10 @@ namespace shukersal_backend.Models
         public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
         #endregion
 
-        #region Purchase Models
-        // *------------------------------------------------- Purchase Models --------------------------------------------------*
-        public DbSet<Purchase> Purchases { get; set; } = null!;
-        public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+        #region Transaction Models
+        // *------------------------------------------------- Transaction Models --------------------------------------------------*
+        public DbSet<Transaction> Transactions { get; set; } = null!;
+        public DbSet<TransactionItem> TransactionItems { get; set; } = null!;
         #endregion
 
         #region Review Models

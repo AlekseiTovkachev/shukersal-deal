@@ -7,17 +7,17 @@ using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.ServiceTests
 {
-    internal class PurchaseServiceTests
+    internal class TransactionServiceTests
     {
-        private readonly DomainLayer.Controllers.PurchaseLogic _purchaseService;
+        private readonly DomainLayer.Controllers.TransactionLogic _TransactionService;
         private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper _output;
 
-        public PurchaseServiceTests(ITestOutputHelper output)
+        public TransactionServiceTests(ITestOutputHelper output)
         {
             _context = new Mock<MarketDbContext>();
             _output = output;
-            _purchaseService = new DomainLayer.Controllers.PurchaseLogic(_context.Object);
+            _TransactionService = new DomainLayer.Controllers.TransactionLogic(_context.Object);
         }
     }
 }

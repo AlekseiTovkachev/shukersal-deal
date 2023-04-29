@@ -30,14 +30,14 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId) { return StatusCode(501); }
         public async Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item) { return StatusCode(501); }
         public async Task<IActionResult> RemoveItemFromCart(long id, long itemId) { return StatusCode(501); }
-        //Purchase
-        public async Task<ActionResult<IEnumerable<Models.Purchase>>> GetPurchases() { return StatusCode(501); }
-        public async Task<ActionResult<Models.Purchase>> GetPurchase(long PurchaseId) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost) { return StatusCode(501); }
-        public async Task<IActionResult> DeletePurchase(long purchaseId) { return StatusCode(501); }
-        public async Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Purchase>> BrowesePurchaseHistory(long memberId) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Purchase>> BroweseShopPurchaseHistory(long storeId) { return StatusCode(501); }
+        //Transaction
+        public async Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions() { return StatusCode(501); }
+        public async Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId) { return StatusCode(501); }
+        public async Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost) { return StatusCode(501); }
+        public async Task<IActionResult> DeleteTransaction(long TransactionId) { return StatusCode(501); }
+        public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post) { return StatusCode(501); }
+        public async Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId) { return StatusCode(501); }
+        public async Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId) { return StatusCode(501); }
         //Manager
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers() { return StatusCode(501); }
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id) { return StatusCode(501); }

@@ -9,101 +9,101 @@ using System.Net;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
-    public class PurchaseController
+    public class TransactionController
     {
         private readonly MarketDbContext _context;
 
-        public PurchaseController(MarketDbContext context)
+        public TransactionController(MarketDbContext context)
         {
             _context = context;
         }
 
-        public async Task<Response<IEnumerable<Purchase>>> GetPurchases()
+        public async Task<Response<IEnumerable<Transaction>>> GetTransactions()
         {
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
-            var purchases = await _context.Purchases
-               // .Include(s => s.PurchaseItems).Include(m=>m.Member_).ToListAsync();
-               .Include(s => s.PurchaseItems).ToListAsync();
-            return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
+            var Transactions = await _context.Transactions
+               // .Include(s => s.TransactionItems).Include(m=>m.Member_).ToListAsync();
+               .Include(s => s.TransactionItems).ToListAsync();
+            return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, Transactions);
         }
 
-        public async Task<Response<Purchase>> GetPurchase(long Purchaseid)
+        public async Task<Response<Transaction>> GetTransaction(long Transactionid)
         {
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
-            var purchase = await _context.Purchases
-                .Include(s => s.PurchaseItems)
+            var Transaction = await _context.Transactions
+                .Include(s => s.TransactionItems)
                 //.Include(m=>m.Member_)
-                .FirstOrDefaultAsync(s => s.Id == Purchaseid);
+                .FirstOrDefaultAsync(s => s.Id == Transactionid);
 
-            if (purchase == null)
+            if (Transaction == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.NotFound, "Not found");
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Not found");
             }
-            return Response<Purchase>.Success(HttpStatusCode.OK, purchase);
+            return Response<Transaction>.Success(HttpStatusCode.OK, Transaction);
         }
 
-        public async Task<Response<Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost)
+        public async Task<Response<Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
         {
 
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
-            if (_context.PurchaseItems == null)
+            if (_context.TransactionItems == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.PurchaseItems'  is null.");
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.TransactionItems'  is null.");
             }
 
 
-            var purchase = new Purchase
+            var Transaction = new Transaction
             {
-                Member_Id_ = purchasePost.Member__ID,
+                Member_Id_ = TransactionPost.Member__ID,
                 //Member_ =null,
-                PurchaseDate = purchasePost.PurchaseDate,
-                TotalPrice = purchasePost.TotalPrice,
-                PurchaseItems = new List<PurchaseItem>(),
+                TransactionDate = TransactionPost.TransactionDate,
+                TotalPrice = TransactionPost.TotalPrice,
+                TransactionItems = new List<TransactionItem>(),
             };
 
-            var member = await _context.Members.FindAsync(purchasePost.Member__ID);
+            var member = await _context.Members.FindAsync(TransactionPost.Member__ID);
             if (member == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Illegal user id");
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
-            //purchase.Member_ = member;
+            //Transaction.Member_ = member;
 
             var shoppingCart = await _context.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
                 .ThenInclude(b => b.ShoppingItems)
-                .FirstOrDefaultAsync(c => c.MemberId == purchasePost.Member__ID);
+                .FirstOrDefaultAsync(c => c.MemberId == TransactionPost.Member__ID);
 
             if (shoppingCart == null)
             {
-                return Response<Purchase>.Error(HttpStatusCode.BadRequest, "No shopping cart.");
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "No shopping cart.");
             }
 
             if (shoppingCart.ShoppingBaskets.Count == 0)
             {
-                return Response<Purchase>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
             }
 
-            var purchaseBaskets = new Dictionary<long, List<PurchaseItem>>();
+            var TransactionBaskets = new Dictionary<long, List<TransactionItem>>();
             foreach (ShoppingBasket basket in shoppingCart.ShoppingBaskets)
             {
 
-                purchaseBaskets.Add(basket.StoreId, new List<PurchaseItem>());
+                TransactionBaskets.Add(basket.StoreId, new List<TransactionItem>());
 
                 foreach (ShoppingItem item in basket.ShoppingItems)
                 {
-                    var purchaseItem = new PurchaseItem
+                    var TransactionItem = new TransactionItem
                     {
-                        PurchaseId = purchase.Id,
-                        // Purchase= purchase,
+                        TransactionId = Transaction.Id,
+                        // Transaction= Transaction,
                         ProductId = item.ProductId,
                         StoreId = item.Product.StoreId,
                         ProductName = item.Product.Name,
@@ -112,133 +112,133 @@ namespace shukersal_backend.DomainLayer.Controllers
                         FullPrice = item.Product.Price,
                         FinalPrice = item.Product.Price,
                     };
-                    purchaseBaskets[basket.StoreId].Add(purchaseItem);
+                    TransactionBaskets[basket.StoreId].Add(TransactionItem);
                 }
 
 
-                var allAvailable = await CheckAvailabilityInStock(basket.StoreId, purchaseBaskets[basket.StoreId]);
+                var allAvailable = await CheckAvailabilityInStock(basket.StoreId, TransactionBaskets[basket.StoreId]);
                 if (!allAvailable.Result)
                 {
-                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
+                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
                 }
 
-                var compliesWithPurchasePolicy = await CheckPurchasePolicy(basket.StoreId, purchaseBaskets[basket.StoreId]);
-                if (!compliesWithPurchasePolicy.Result)
+                var compliesWithTransactionPolicy = await CheckTransactionPolicy(basket.StoreId, TransactionBaskets[basket.StoreId]);
+                if (!compliesWithTransactionPolicy.Result)
                 {
-                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, compliesWithPurchasePolicy.ErrorMessage);
+                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, compliesWithTransactionPolicy.ErrorMessage);
                 }
 
-                var discountsApplied = await ApplyDiscounts(basket.StoreId, purchaseBaskets[basket.StoreId], purchasePost.Member__ID);
+                var discountsApplied = await ApplyDiscounts(basket.StoreId, TransactionBaskets[basket.StoreId], TransactionPost.Member__ID);
                 if (!discountsApplied.Result)
                 {
-                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
+                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
                 }
 
             }
-            purchase.TotalPrice = purchaseBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
+            Transaction.TotalPrice = TransactionBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
 
 
             //connction with external delivery service
-            //TODO: confirmDelivery(purchaseItems,~delivery details~);
+            //TODO: confirmDelivery(TransactionItems,~delivery details~);
 
             //connction with external delivery service
             //TODO: confirmPayment(amount,~payment details~);
 
 
-            foreach (var (storeId, items) in purchaseBaskets)
+            foreach (var (storeId, items) in TransactionBaskets)
             {
-                purchase.PurchaseItems.AddRange(items);
+                Transaction.TransactionItems.AddRange(items);
                 var stockUpdated = await UpdateStock(storeId, items);
                 if (!stockUpdated.Result)
                 {
-                    return Response<Purchase>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
+                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
                 }
-                //TODO: sendPurchaseNotification(storeId);
+                //TODO: sendTransactionNotification(storeId);
             }
 
 
             //TODO: remove all baskets from shopping cart
 
 
-            _context.Purchases.Add(purchase);
+            _context.Transactions.Add(Transaction);
             await _context.SaveChangesAsync();
-            return Response<Purchase>.Success(HttpStatusCode.Created, purchase);
+            return Response<Transaction>.Success(HttpStatusCode.Created, Transaction);
         }
 
 
-        public async Task<Response<IEnumerable<Purchase>>> BrowesePurchaseHistory(long memberId)
+        public async Task<Response<IEnumerable<Transaction>>> BroweseTransactionHistory(long memberId)
         {
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
 
             var member = await _context.Members.FindAsync(memberId);
             if (member == null)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal user id");
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.BadRequest, "Illegal user id");
             }
 
-            var purchases = await _context.Purchases
-              //  .Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
-              .Include(s => s.PurchaseItems).Where(s => s.Member_Id_ == memberId).ToListAsync();
-            return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchases);
+            var Transactions = await _context.Transactions
+              //  .Include(s => s.TransactionItems).Include(m=>m.Member_).Where(s=>s.Member_Id_ ==memberId).ToListAsync();
+              .Include(s => s.TransactionItems).Where(s => s.Member_Id_ == memberId).ToListAsync();
+            return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, Transactions);
         }
 
-        public async Task<Response<IEnumerable<Purchase>>> BroweseShopPurchaseHistory(long shopId)
+        public async Task<Response<IEnumerable<Transaction>>> BroweseShopTransactionHistory(long shopId)
         {
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
 
             var shop = await _context.Stores.FindAsync(shopId);
             if (shop == null)
             {
-                return Response<IEnumerable<Purchase>>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
             }
 
 
-            var purchases = await _context.Purchases
-                //.Include(s => s.PurchaseItems).Include(m=>m.Member_).Where(p=> p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
-                .Include(s => s.PurchaseItems).Where(p => p.PurchaseItems.Any(i => i.StoreId == shopId)).ToListAsync();
+            var Transactions = await _context.Transactions
+                //.Include(s => s.TransactionItems).Include(m=>m.Member_).Where(p=> p.TransactionItems.Any(i => i.StoreId == shopId)).ToListAsync();
+                .Include(s => s.TransactionItems).Where(p => p.TransactionItems.Any(i => i.StoreId == shopId)).ToListAsync();
 
-            var purchaseHistory = new List<Purchase>();
-            foreach (var purchase in purchases)
+            var TransactionHistory = new List<Transaction>();
+            foreach (var Transaction in Transactions)
             {
-                Purchase p = new Purchase
+                Transaction p = new Transaction
                 {
-                    Id = purchase.Id,
-                    Member_Id_ = purchase.Member_Id_,
-                    // Member_ = purchase.Member_,
-                    PurchaseDate = purchase.PurchaseDate,
-                    TotalPrice = purchase.TotalPrice,
-                    PurchaseItems = purchase.PurchaseItems.Where(i => i.StoreId == shopId).ToList(),
+                    Id = Transaction.Id,
+                    Member_Id_ = Transaction.Member_Id_,
+                    // Member_ = Transaction.Member_,
+                    TransactionDate = Transaction.TransactionDate,
+                    TotalPrice = Transaction.TotalPrice,
+                    TransactionItems = Transaction.TransactionItems.Where(i => i.StoreId == shopId).ToList(),
                 };
-                purchaseHistory.Add(p);
+                TransactionHistory.Add(p);
             }
-            return Response<IEnumerable<Purchase>>.Success(HttpStatusCode.OK, purchaseHistory);
+            return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, TransactionHistory);
         }
 
 
-        private bool PurchaseExists(long id)
+        private bool TransactionExists(long id)
         {
-            return (_context.Purchases?.Any(e => e.Id == id)).GetValueOrDefault();
+            return (_context.Transactions?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
-        public async Task<Response<bool>> UpdatePurchase(long id, PurchasePost post)
+        public async Task<Response<bool>> UpdateTransaction(long id, TransactionPost post)
         {
 
-            var purchase = await _context.Purchases.FindAsync(id);
-            if (purchase == null)
+            var Transaction = await _context.Transactions.FindAsync(id);
+            if (Transaction == null)
             {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Purchase not found");
+                return Response<bool>.Error(HttpStatusCode.NotFound, "Transaction not found");
             }
 
-            purchase.PurchaseDate = post.PurchaseDate;
-            purchase.TotalPrice = post.TotalPrice;
+            Transaction.TransactionDate = post.TransactionDate;
+            Transaction.TotalPrice = post.TotalPrice;
 
-            _context.Entry(purchase).State = EntityState.Modified;
+            _context.Entry(Transaction).State = EntityState.Modified;
 
             try
             {
@@ -246,7 +246,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!PurchaseExists(id))
+                if (!TransactionExists(id))
                 {
                     return Response<bool>.Error(HttpStatusCode.NotFound, "not found");
                 }
@@ -259,29 +259,29 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
-        public async Task<Response<bool>> DeletePurchase(long id)
+        public async Task<Response<bool>> DeleteTransaction(long id)
         {
-            if (_context.Purchases == null)
+            if (_context.Transactions == null)
             {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'PurchaseContext.Purchases'  is null.");
+                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'TransactionContext.Transactions'  is null.");
             }
-            var purchase = await _context.Purchases.FindAsync(id);
-            if (purchase == null)
+            var Transaction = await _context.Transactions.FindAsync(id);
+            if (Transaction == null)
             {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Purchase not found");
+                return Response<bool>.Error(HttpStatusCode.NotFound, "Transaction not found");
             }
 
-            foreach (var item in _context.PurchaseItems)
+            foreach (var item in _context.TransactionItems)
             {
-                if (item.PurchaseId == id) { _context.PurchaseItems.Remove(item); }
+                if (item.TransactionId == id) { _context.TransactionItems.Remove(item); }
             }
-            _context.Purchases.Remove(purchase);
+            _context.Transactions.Remove(Transaction);
             await _context.SaveChangesAsync();
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
-        private async Task<Response<bool>> CheckPurchasePolicy(long storeId, List<PurchaseItem> purchaseItems)
+        private async Task<Response<bool>> CheckTransactionPolicy(long storeId, List<TransactionItem> TransactionItems)
         {
             var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
@@ -293,7 +293,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         }
 
-        private async Task<Response<bool>> ApplyDiscounts(long storeId, List<PurchaseItem> purchaseItems, long memberId)
+        private async Task<Response<bool>> ApplyDiscounts(long storeId, List<TransactionItem> TransactionItems, long memberId)
         {
             var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
@@ -311,7 +311,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<PurchaseItem> purchaseItems)
+        private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<TransactionItem> TransactionItems)
         {
             var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
@@ -319,11 +319,11 @@ namespace shukersal_backend.DomainLayer.Controllers
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
             }
 
-            foreach (var purchaseItem in purchaseItems)
+            foreach (var TransactionItem in TransactionItems)
             {
-                var product = await _context.Products.FindAsync(purchaseItem.ProductId);
+                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                // if (product.UnitsInStock < purchaseItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
+                // if (product.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
@@ -331,7 +331,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        private async Task<Response<bool>> UpdateStock(long storeId, List<PurchaseItem> purchaseItems)
+        private async Task<Response<bool>> UpdateStock(long storeId, List<TransactionItem> TransactionItems)
         {
             var shop = await _context.Stores.FindAsync(storeId);
             if (shop == null)
@@ -339,17 +339,17 @@ namespace shukersal_backend.DomainLayer.Controllers
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
             }
 
-            foreach (var purchaseItem in purchaseItems)
+            foreach (var TransactionItem in TransactionItems)
             {
-                var product = await _context.Products.FindAsync(purchaseItem.ProductId);
+                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                if (product.UnitsInStock < purchaseItem.Quantity)
+                if (product.UnitsInStock < TransactionItem.Quantity)
                 {
                     return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store");
                 }
                 else
                 {
-                    product.UnitsInStock = product.UnitsInStock - purchaseItem.Quantity;
+                    product.UnitsInStock = product.UnitsInStock - TransactionItem.Quantity;
                 }
             }
             await _context.SaveChangesAsync();

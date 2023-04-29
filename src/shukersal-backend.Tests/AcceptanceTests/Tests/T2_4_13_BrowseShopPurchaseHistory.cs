@@ -7,8 +7,8 @@ using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal class T2_4_13_BrowseShopPurchaseHistory : AcceptanceTest
+    internal class T2_4_13_BrowseShopTransactionHistory : AcceptanceTest
     {
-        public T2_4_13_BrowseShopPurchaseHistory(ITestOutputHelper output) : base(output) { }
+        public T2_4_13_BrowseShopTransactionHistory(ITestOutputHelper output) : base(output) { }
     }
 }

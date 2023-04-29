@@ -29,14 +29,14 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId);
         Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item);
         Task<IActionResult> RemoveItemFromCart(long id, long itemId);
-        //Purchase
-        Task<ActionResult<IEnumerable<Models.Purchase>>> GetPurchases();
-        Task<ActionResult<Models.Purchase>> GetPurchase(long PurchaseId);
-        Task<ActionResult<Models.Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost);
-        Task<IActionResult> DeletePurchase(long purchaseId);
-        Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post);
-        Task<ActionResult<Models.Purchase>> BrowesePurchaseHistory(long memberId);
-        Task<ActionResult<Models.Purchase>> BroweseShopPurchaseHistory(long storeId);
+        //Transaction
+        Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions();
+        Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId);
+        Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost);
+        Task<IActionResult> DeleteTransaction(long TransactionId);
+        Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post);
+        Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId);
+        Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId);
         //Manager
         Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers();
         Task<ActionResult<StoreManager>> GetStoreManager(long id);

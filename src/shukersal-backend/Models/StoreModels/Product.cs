@@ -10,7 +10,7 @@ namespace shukersal_backend.Models
         public string Description { get; set; }
         public double Price { get; set; }
         public string? ImageUrl { get; set; }
-        public bool IsListed { get; set; } // Indicates if the product is available for normal purchase
+        public bool IsListed { get; set; } // Indicates if the product is available for normal Transaction
 
         public int UnitsInStock { get; set; }
 
