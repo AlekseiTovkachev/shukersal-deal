@@ -17,12 +17,12 @@ namespace shukersal_backend.ServiceLayer
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class PurchaseService : ControllerBase
+    public class TransactionService : ControllerBase
     {
         private readonly TransactionController TransactionController;
 
 
-        public PurchaseService(MarketDbContext context)
+        public TransactionService(MarketDbContext context)
         {
             TransactionController = new TransactionController(context);
         }

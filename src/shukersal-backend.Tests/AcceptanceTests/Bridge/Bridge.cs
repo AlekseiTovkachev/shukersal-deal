@@ -23,7 +23,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private readonly AuthService authService;
         //private readonly StoreManagersController storeManagersController; //TODO: rename me
         private readonly MemberService memberService;
-        private readonly PurchaseService TransactionService;
+        private readonly TransactionService TransactionService;
         private readonly ShoppingCartService shoppingCartService;
         private readonly StoreService storeService;
         public readonly Mock<MarketDbContext> _context;
@@ -35,7 +35,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
             //TODO: init configuration
             authService = new AuthService(null, _context.Object);
             memberService = new MemberService(_context.Object);
-            TransactionService = new PurchaseService(_context.Object);
+            TransactionService = new TransactionService(_context.Object);
             shoppingCartService = new ShoppingCartService(_context.Object);
             storeService = new StoreService(_context.Object);
         }
