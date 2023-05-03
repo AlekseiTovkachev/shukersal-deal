@@ -3,7 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
+using shukersal_backend.DomainLayer.ExternalServices;
+using shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService;
+using shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
+using shukersal_backend.Models.PurchaseModels;
 using shukersal_backend.Utility;
 using System.Net;
 
@@ -12,11 +16,18 @@ namespace shukersal_backend.DomainLayer.Controllers
     public class TransactionController
     {
         private readonly MarketDbContext _context;
+        private readonly PaymentProxy _paymentProvider;
+        private readonly DeliveryProxy _deliveryProvider;
 
         public TransactionController(MarketDbContext context)
         {
             _context = context;
+            _paymentProvider = new PaymentProxy();
+            _deliveryProvider= new DeliveryProxy();
         }
+        public DeliveryProxy getDeliveryService() { return _deliveryProvider; }
+
+        public PaymentProxy getPaymentService() { return _paymentProvider; }
 
         public async Task<Response<IEnumerable<Transaction>>> GetTransactions()
         {
@@ -98,6 +109,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
                 TransactionBaskets.Add(basket.StoreId, new List<TransactionItem>());
 
+
                 foreach (ShoppingItem item in basket.ShoppingItems)
                 {
                     var TransactionItem = new TransactionItem
@@ -113,6 +125,7 @@ namespace shukersal_backend.DomainLayer.Controllers
                         FinalPrice = item.Product.Price,
                     };
                     TransactionBaskets[basket.StoreId].Add(TransactionItem);
+
                 }
 
 
@@ -137,13 +150,24 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
             Transaction.TotalPrice = TransactionBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
 
+            TransactionPost.TotalPrice = Transaction.TotalPrice;
+
 
             //connction with external delivery service
-            //TODO: confirmDelivery(TransactionItems,~delivery details~);
+            bool deliveryConfirmed=_deliveryProvider.ConfirmDelivery(new DeliveryDetails(TransactionPost,TransactionBaskets));
+            if (!deliveryConfirmed)
+            {
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Delivey declined");
 
+            }
             //connction with external delivery service
-            //TODO: confirmPayment(amount,~payment details~);
+            bool paymentConfirmed=_paymentProvider.ConfirmPayment(new PaymentDetails(TransactionPost));
 
+            if (!paymentConfirmed)
+            {
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Payment declined");
+
+            }
 
             foreach (var (storeId, items) in TransactionBaskets)
             {

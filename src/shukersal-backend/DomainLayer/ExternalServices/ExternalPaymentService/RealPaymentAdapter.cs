@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService
+﻿using shukersal_backend.Models.PurchaseModels;
+
+namespace shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService
 {
     public class RealPaymentAdapter : IPayment
     {
@@ -6,7 +8,7 @@
         public RealPaymentAdapter(PaymentAdaptee adaptee) {
             this.adaptee = adaptee;
         }
-        public bool ConfirmPayment(double totalPrice, string HolderFirstName, string HolderLastName, string HolderID, string CardNumber, DateOnly expirationDate, string CVC)
+        public bool ConfirmPayment(PaymentDetails paymentDetails)
         {
             return adaptee.Pay();
         }

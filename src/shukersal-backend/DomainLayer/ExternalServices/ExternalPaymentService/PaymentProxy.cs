@@ -1,15 +1,24 @@
-﻿namespace shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService
+﻿using shukersal_backend.Models.PurchaseModels;
+
+namespace shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService
 {
     public class PaymentProxy : IPayment
     {
-        private RealPaymentAdapter realPaymentAdapter;
+        private RealPaymentAdapter? RealPaymentAdapter =null;
+        private bool ProxyAns;
 
-        public PaymentProxy(RealPaymentAdapter realPaymentAdapter) {
-            this.realPaymentAdapter = realPaymentAdapter;
-        }
-        public bool ConfirmPayment(double totalPrice, string HolderFirstName, string HolderLastName, string HolderID, string CardNumber, DateOnly expirationDate, string CVC)
+        public PaymentProxy() { ProxyAns = true; }
+        public bool ConfirmPayment(PaymentDetails paymentDetails)
         {
-            throw new NotImplementedException();
+            if (RealPaymentAdapter == null) { return ProxyAns; }
+            return RealPaymentAdapter.ConfirmPayment(paymentDetails);
         }
+
+        public void SetPaymentProvider(RealPaymentAdapter Adapter)
+        {
+            this.RealPaymentAdapter = Adapter;
+        }
+
+        public void SetProxyAnswer(bool NewAns) { ProxyAns = NewAns; }
     }
 }

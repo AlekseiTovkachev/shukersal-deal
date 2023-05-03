@@ -29,7 +29,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions()
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
             var response = await TransactionController.GetTransactions();
             if (!response.IsSuccess)
@@ -41,7 +41,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions/5
         [HttpGet("Transactionid")]
-        public async Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId)
+        public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
             var response = await TransactionController.GetTransaction(TransactionId);
             if (!response.IsSuccess)
@@ -56,7 +56,7 @@ namespace shukersal_backend.ServiceLayer
         // POST: api/Transactions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
+        public async Task<ActionResult<Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
         {
             if (ModelState.IsValid)
             {
@@ -109,7 +109,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions/memberId/5
         [HttpGet("memberId/{memberId}")]
-        public async Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId)
+        public async Task<ActionResult<Transaction>> BroweseTransactionHistory(long memberId)
         {
             if (ModelState.IsValid)
             {
@@ -129,7 +129,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions/storeId/5
         [HttpGet("storeId/{storeId}")]
-        public async Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId)
+        public async Task<ActionResult<Transaction>> BroweseShopTransactionHistory(long storeId)
         {
             if (ModelState.IsValid)
             {
