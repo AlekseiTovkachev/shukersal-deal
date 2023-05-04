@@ -60,7 +60,7 @@ namespace shukersal_backend.ServiceLayer
         {
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.TransactionAShoppingCart(TransactionPost);
+                var response = await TransactionController.PurchaseAShoppingCart(TransactionPost);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(response.ErrorMessage);
@@ -109,11 +109,11 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions/memberId/5
         [HttpGet("memberId/{memberId}")]
-        public async Task<ActionResult<Transaction>> BroweseTransactionHistory(long memberId)
+        public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.BroweseTransactionHistory(memberId);
+                var response = await TransactionController.BrowseShopTransactionHistory(memberId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -129,11 +129,11 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions/storeId/5
         [HttpGet("storeId/{storeId}")]
-        public async Task<ActionResult<Transaction>> BroweseShopTransactionHistory(long storeId)
+        public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.BroweseShopTransactionHistory(storeId);
+                var response = await TransactionController.BrowseShopTransactionHistory(storeId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

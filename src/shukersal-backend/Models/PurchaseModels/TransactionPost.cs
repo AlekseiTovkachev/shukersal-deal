@@ -9,7 +9,7 @@ namespace shukersal_backend.Models
         //public long Id { get; set; }
         [Required]
         [JsonIgnore]
-        public long Member__ID { get; set; }
+        public long MemberId { get; set; }
         [Required]
         public DateTime TransactionDate { get; set; }
         [Required]
