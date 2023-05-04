@@ -12,7 +12,12 @@ namespace shukersal_backend.Models
         XOR_PRIORRITY = 4,
         MAX = 5,
         ADDITIONAL = 6
-
+    }
+    public enum DiscountOn
+    {
+        STORE = 0,
+        CATEGORY = 1,
+        PRODUCT = 2
     }
     public class DiscountRule
     {
@@ -23,10 +28,11 @@ namespace shukersal_backend.Models
         public DiscountType discountType { get; set; }
         public double Discount { get; set; } // in percentage, 20 means x(1-(20/100)) calculation
         public virtual ICollection<DiscountRule>? Components { get; set; }
-        public PurchaseRule? PurchaseRule1 { get; set; }
-        public PurchaseRule? PurchaseRule2 { get; set; }
+        public PurchaseRule? PurchaseRule { get; set; }
         [JsonIgnore]
         public Store store { get; set; }
+        public DiscountOn discountOn { get; set; }
+        public string discountOnString { get; set; }
 
     }
 }
