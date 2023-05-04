@@ -15,22 +15,25 @@ namespace shukersal_backend.Tests.AcceptanceTests
             bridge.Login(new Models.LoginPost { Username = "testUsername", Password = "testPassword" });
         }
         [Fact]
-        public async void GetShopInfo()
+        public void GetShopsInfo()
         {
             var res = bridge.GetStores();
             res.Wait();
-            var res2 = bridge.Register(new RegisterPost { Id = 11, Username = "User", Password = "UserPass2" });
-            res2.Wait();
-            Assert.False(res2.Result is ActionResult);
+            Assert.Equal(res.Result.Value.Count(), 3);
         }
         [Fact]
-        public async void TestRegisterSameUsername()
+        public void GetShopInfo()
         {
-            var res = bridge.Register(new RegisterPost { Id = 10, Username = "User", Password = "UserPass" });
+            var res = bridge.GetStore(1);
             res.Wait();
-            var res2 = bridge.Register(new RegisterPost { Id = 11, Username = "User", Password = "UserPass2" });
-            res2.Wait();
-            Assert.False(res2.Result is ActionResult);
+            Assert.Equal(res.Result.Value.Name, "1");
+        }
+        [Fact]
+        public void GetShopProductInfo()
+        {
+            var res = bridge.GetStoreProducts(1);
+            res.Wait();
+            Assert.Equal(res.Result.Value.Products.Count, 2);
         }
     }
 
