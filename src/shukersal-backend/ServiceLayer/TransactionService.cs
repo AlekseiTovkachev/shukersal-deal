@@ -56,7 +56,7 @@ namespace shukersal_backend.ServiceLayer
         // POST: api/Transactions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
+        public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
             if (ModelState.IsValid)
             {

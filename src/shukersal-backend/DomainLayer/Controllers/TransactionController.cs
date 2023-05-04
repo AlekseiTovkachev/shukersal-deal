@@ -99,23 +99,9 @@ namespace shukersal_backend.DomainLayer.Controllers
 
 
                 foreach (ShoppingItem item in basket.ShoppingItems)
-                {/*
-                    var transactionItem = new TransactionItem
-                    {
-                        TransactionId = Transaction.Id,
-                        // Transaction= Transaction,
-                        ProductId = item.ProductId,
-                        StoreId = item.Product.StoreId,
-                        ProductName = item.Product.Name,
-                        ProductDescription = item.Product.Description,
-                        Quantity = item.Quantity,
-                        FullPrice = item.Product.Price,
-                        FinalPrice = item.Product.Price,
-                    };
-                    */
+                {
                     TransactionItem transactionItem = new TransactionItem(Transaction.Id, item);
                     TransactionBaskets[basket.StoreId].Add(transactionItem);
-
                 }
 
                 //var allAvailable= await _marketObject.CheckAvailabilityInStock(basket.StoreId, TransactionBaskets[basket.StoreId]);
@@ -176,7 +162,6 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             //TODO: remove all baskets from shopping cart
             //await _marketObject.RemoveAllBaskets(member.Id);
-
 
             _context.Transactions.Add(Transaction);
             await _context.SaveChangesAsync();
