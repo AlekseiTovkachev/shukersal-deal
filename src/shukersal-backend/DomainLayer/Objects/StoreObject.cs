@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Net;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.DomainLayer.Objects
 {
@@ -10,13 +10,31 @@ namespace shukersal_backend.DomainLayer.Objects
         private MarketDbContext _context;
         private MarketObject _market;
 
-        public StoreObject(MarketDbContext context, MarketObject market) {
+        public StoreObject(MarketDbContext context, MarketObject market)
+        {
             _context = context;
             _market = market;
         }
 
-        public async Task<Response<Product>> AddProduct(long storeId, ProductPost post)
+        public async Task<Response<Product>> AddProduct(long storeId, ProductPost post, Member member)
         {
+
+            var manager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(m => m.MemberId == member.Id && m.StoreId == storeId);
+
+            if (manager == null)
+            {
+                return Response<Product>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
+            }
+
+            bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
+
+            if (!hasPermission)
+            {
+                return Response<Product>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
+            }
+
             var store = await _context.Stores
                 .Include(s => s.Products)
                 .FirstOrDefaultAsync(s => s.Id == storeId);
@@ -56,7 +74,7 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Product>.Success(HttpStatusCode.Created, product);
         }
 
-        public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch)
+        public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch, Member member)
         {
             var existingProduct = await _context.Products.FindAsync(productId);
 
@@ -91,7 +109,7 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Product>.Success(HttpStatusCode.NoContent, existingProduct);
         }
 
-        public async Task<Response<Product>> DeleteProduct(long storeId, long productId)
+        public async Task<Response<Product>> DeleteProduct(long storeId, long productId, Member member)
         {
             var store = await _context.Stores.FindAsync(storeId);
 
@@ -119,7 +137,7 @@ namespace shukersal_backend.DomainLayer.Objects
         public async Task<Response<IEnumerable<Product>>> GetProducts(long storeId)
         {
             var response = await _market.GetStore(storeId);
-            if(!response.IsSuccess || response.Result == null)
+            if (!response.IsSuccess || response.Result == null)
             {
                 return Response<IEnumerable<Product>>.Error(response);
             }

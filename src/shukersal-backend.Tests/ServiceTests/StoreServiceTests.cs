@@ -10,7 +10,7 @@ namespace shukersal_backend.Tests.ServiceTests
     public class StoreServiceTests
     {
         private readonly Mock<MarketDbContext> _context;
-        private readonly StoreController _service;
+        private readonly StoreController _controller;
         private readonly ITestOutputHelper output;
 
         //private readonly Mock<ManagerContext> _managerContextMock;
@@ -18,8 +18,7 @@ namespace shukersal_backend.Tests.ServiceTests
         {
             this.output = output;
             _context = new Mock<MarketDbContext>();
-            //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
-            _service = new StoreController(_context.Object);
+            _controller = new StoreController(_context.Object);
         }
 
         [Fact]
@@ -37,7 +36,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
 
             // Act
-            var response = await _service.GetStores();
+            var response = await _controller.GetStores();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -61,7 +60,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Stores).ReturnsDbSet(stores);
 
             // Act
-            var response = await _service.GetStore(store.Id);
+            var response = await _controller.GetStore(store.Id);
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -76,7 +75,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
 
             // Act
-            var response = await _service.GetStore(nonExistingStoreId);
+            var response = await _controller.GetStore(nonExistingStoreId);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -105,7 +104,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
             _context.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
             // Act
-            var response = await _service.CreateStore(storeData);
+            var response = await _controller.CreateStore(storeData);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -126,7 +125,7 @@ namespace shukersal_backend.Tests.ServiceTests
             };
             _context.Setup(m => m.Members).ReturnsDbSet(new List<Models.Member>().AsQueryable());
             // Act
-            var response = await _service.CreateStore(storeData);
+            var response = await _controller.CreateStore(storeData);
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -147,7 +146,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(x => x.Stores.FindAsync(id)).ReturnsAsync(store);
             _context.Setup(x => x.MarkAsModified(store)).Verifiable();
             // Act
-            var result = await _service.UpdateStore(id, patch);
+            var result = await _controller.UpdateStore(id, patch);
 
             // Assert
             result.Should().BeOfType<Response<bool>>();
@@ -171,7 +170,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
 
             // Act
-            var result = await _service.UpdateStore(id, patch);
+            var result = await _controller.UpdateStore(id, patch);
 
             // Assert
             result.Should().BeOfType<Response<bool>>();
@@ -196,7 +195,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(x => x.MarkAsModified(store)).Verifiable();
 
             // Act
-            var response = await _service.UpdateStore(store.Id, patch);
+            var response = await _controller.UpdateStore(store.Id, patch);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -215,7 +214,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
 
             // Act
-            var response = await _service.DeleteStore(store.Id);
+            var response = await _controller.DeleteStore(store.Id);
 
             // Assert
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -230,7 +229,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
 
             // Act
-            var response = await _service.DeleteStore(storeId);
+            var response = await _controller.DeleteStore(storeId);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -245,7 +244,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
 
             // Act
-            var response = await _service.DeleteStore(1);
+            var response = await _controller.DeleteStore(1);
 
             // Assert
 
@@ -275,7 +274,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Products).ReturnsDbSet(products.AsQueryable());
 
             // Act
-            var response = await _service.GetStoreProducts(store.Id);
+            var response = await _controller.GetStoreProducts(store.Id);
 
             // Assert
             Assert.NotNull(response.Result);
@@ -304,7 +303,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
 
             // Act
-            var response = await _service.GetStoreProducts(store.Id);
+            var response = await _controller.GetStoreProducts(store.Id);
 
             // Assert
             Assert.NotNull(response);
@@ -322,7 +321,7 @@ namespace shukersal_backend.Tests.ServiceTests
             //_context.Setup(c => c.Stores.FirstOrDefaultAsync(s => s.Id == storeId)).ReturnsAsync((Store)null);
             _context.Setup(c => c.Stores).ReturnsDbSet((new List<Store>()).AsQueryable());
             // Act
-            var response = await _service.AddProduct(storeId, post);
+            var response = await _controller.AddProduct(storeId, post);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -352,7 +351,7 @@ namespace shukersal_backend.Tests.ServiceTests
             //_context.Setup(c => c.Categories.FirstOrDefaultAsync(s => s.Id == post.CategoryId)).ReturnsAsync((Category)null);
 
             // Act
-            var response = await _service.AddProduct(store.Id, post);
+            var response = await _controller.AddProduct(store.Id, post);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, response.StatusCode);
@@ -382,7 +381,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(c => c.Products).ReturnsDbSet((new List<Product>()).AsQueryable());
 
             // Act
-            var result = await _service.AddProduct(store.Id, post);
+            var result = await _controller.AddProduct(store.Id, post);
 
             // Assert
             Assert.Equal(HttpStatusCode.Created, result.StatusCode);
@@ -420,7 +419,7 @@ namespace shukersal_backend.Tests.ServiceTests
             };
 
             // Act
-            var result = await _service.UpdateProduct(existingProduct.StoreId, existingProduct.Id, patch);
+            var result = await _controller.UpdateProduct(existingProduct.StoreId, existingProduct.Id, patch);
 
             // Assert
             Assert.NotNull(result);
@@ -451,7 +450,7 @@ namespace shukersal_backend.Tests.ServiceTests
             };
 
             // Act
-            var result = await _service.UpdateProduct(storeId, productId, patch);
+            var result = await _controller.UpdateProduct(storeId, productId, patch);
 
             // Assert
             Assert.NotNull(result);
@@ -488,7 +487,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(x => x.Products.FindAsync(productId)).ReturnsAsync(product);
             _context.Setup(x => x.Stores.FindAsync(store.Id)).ReturnsAsync(store);
             // Act
-            var result = await _service.UpdateProduct(store.Id, productId, patch);
+            var result = await _controller.UpdateProduct(store.Id, productId, patch);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
@@ -514,7 +513,7 @@ namespace shukersal_backend.Tests.ServiceTests
             //_context.Setup(x => x.SaveChangesAsync());
 
             // Act
-            var result = await _service.DeleteProduct(store.Id, product.Id);
+            var result = await _controller.DeleteProduct(store.Id, product.Id);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
@@ -530,7 +529,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(x => x.Stores.FindAsync(storeId)).ReturnsAsync((Store)null);
 
             // Act
-            var result = await _service.DeleteProduct(storeId, productId);
+            var result = await _controller.DeleteProduct(storeId, productId);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
@@ -547,7 +546,7 @@ namespace shukersal_backend.Tests.ServiceTests
             _context.Setup(x => x.Products.FindAsync(product.Id)).ReturnsAsync((Product)null);
 
             // Act
-            var result = await _service.DeleteProduct(store.Id, product.Id);
+            var result = await _controller.DeleteProduct(store.Id, product.Id);
 
             // Assert
             Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
@@ -567,7 +566,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
 
             // Act
-            var result = await _service.GetAllProducts();
+            var result = await _controller.GetAllProducts();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
@@ -586,7 +585,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
             _context.Setup(x => x.Categories).ReturnsDbSet(categories.AsQueryable());
             // Act
-            var result = await _service.GetStoreCategories();
+            var result = await _controller.GetStoreCategories();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);

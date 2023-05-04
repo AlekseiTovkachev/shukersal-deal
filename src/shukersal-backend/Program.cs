@@ -1,15 +1,14 @@
-using System.Text;
-
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using shukersal_backend.Models;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Enable cors
 var AllowOrigin = "AllowOrigin";
