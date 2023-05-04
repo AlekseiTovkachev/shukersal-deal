@@ -1,28 +1,39 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models.PurchaseModels
 {
     public class PaymentDetails
     {
-        public double TotalPrice { get; set; }
+        [Required]
+        [JsonIgnore]
         public string HolderFirstName { get; set; }
+
+        [Required]
+        [JsonIgnore]
         public string HolderLastName { get; set; }
+
+        [Required]
+        [JsonIgnore]
+        [StringLength(9, MinimumLength = 9)]
         public string HolderID { get; set; }
+
+        [Required]
+        [JsonIgnore]
+        [StringLength(19, MinimumLength = 16)]
         public string CardNumber { get; set; }
-        public DateOnly expirationDate { get; set; }
+
+        [Required]
+        [JsonIgnore]
+        public DateOnly ExpirationDate { get; set; }
+
+        [Required]
+        [JsonIgnore]
+        [StringLength(3, MinimumLength = 3)]
         public string CVC { get; set; }
+        public double TotalPrice { get; set; }
 
-        public PaymentDetails(TransactionPost transactionDeails) {
-            TotalPrice = transactionDeails.TotalPrice;
-            HolderFirstName = transactionDeails.HolderFirstName;
-            HolderLastName = transactionDeails.HolderLastName;
-            HolderID = transactionDeails.HolderID;
-            CardNumber = transactionDeails.CardNumber;
-            expirationDate = transactionDeails.expirationDate;
-            CVC = transactionDeails.CVC;
-        }
         
-
 
     }
 }

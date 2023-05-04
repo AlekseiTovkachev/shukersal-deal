@@ -208,13 +208,13 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
             PaymentDetails paymentDetails = new PaymentDetails(transaction);
             DeliveryDetails deliveryDetails = new DeliveryDetails(transaction, new Dictionary<long, List<TransactionItem>>());
 
-            Assert.True(_TransactionController.getPaymentService().ConfirmPayment(paymentDetails));
-            _TransactionController.getPaymentService().SetProxyAnswer(false);
-            Assert.False(_TransactionController.getPaymentService().ConfirmPayment(paymentDetails));
+            Assert.True(_TransactionController.getPaymentProxy().ConfirmPayment(paymentDetails));
+            _TransactionController.getPaymentProxy().SetProxyAnswer(false);
+            Assert.False(_TransactionController.getPaymentProxy().ConfirmPayment(paymentDetails));
 
-            Assert.True(_TransactionController.getDeliveryService().ConfirmDelivery(deliveryDetails));
-            _TransactionController.getDeliveryService().SetProxyAnswer(false);
-            Assert.False(_TransactionController.getDeliveryService().ConfirmDelivery(deliveryDetails));
+            Assert.True(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails));
+            _TransactionController.getDeliveryProxy().SetProxyAnswer(false);
+            Assert.False(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails));
         }
 
         [Fact]

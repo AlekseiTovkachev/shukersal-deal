@@ -1,4 +1,5 @@
 ﻿using shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService;
+using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
 
 namespace shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService
@@ -11,7 +12,7 @@ namespace shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService
             this.adaptee = adaptee;
         }
 
-        public bool ConfirmDelivery(DeliveryDetails deliveryDetails)
+        public bool ConfirmDelivery(DeliveryDetails deliveryDetails, List<TransactionItem> items)
         {
             return adaptee.Deliver();
         }

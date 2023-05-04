@@ -1,7 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using NuGet.ContentModel;
 using NuGet.Packaging;
 using shukersal_backend.DomainLayer.ExternalServices;
 using shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService;
@@ -12,6 +14,7 @@ using shukersal_backend.Models.PurchaseModels;
 using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
 using System.Net;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
@@ -20,12 +23,12 @@ namespace shukersal_backend.DomainLayer.Controllers
         private readonly MarketDbContext _context;
         private readonly PaymentProxy _paymentProvider;
         private readonly DeliveryProxy _deliveryProvider;
+
         private readonly MarketObject _marketObject;
+        private readonly StoreObject _storeObject;
 
-
-        //Will be deleted when the relevant function are in market object:
-        MemberService _memberService;
-        ShoppingCartService _shoppingCartService;
+        //private readonly ShoppingCartObject _shoppingCartObject; 
+        //private readonly MemberObject _memberObject;
 
 
         public TransactionController(MarketDbContext context)
@@ -34,19 +37,17 @@ namespace shukersal_backend.DomainLayer.Controllers
             _paymentProvider = new PaymentProxy();
             _deliveryProvider = new DeliveryProxy();
             _marketObject = new MarketObject(context);
-            //Will be deleted when the relevant function are in market object:
-            _memberService = new MemberService(context);
-            _shoppingCartService = new ShoppingCartService(context);
+            _storeObject = new StoreObject(context, _marketObject);
+
         }
 
 
-        public DeliveryProxy getDeliveryService() { return _deliveryProvider; }
+        public DeliveryProxy getDeliveryProxy() { return _deliveryProvider; }
 
-        public PaymentProxy getPaymentService() { return _paymentProvider; }
+        public PaymentProxy getPaymentProxy() { return _paymentProvider; }
 
         public async Task<Response<IEnumerable<Transaction>>> GetTransactions()
         {
-
             var Transactions = await _context.Transactions.Include(s => s.TransactionItems).ToListAsync();
             return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, Transactions);
         }
@@ -63,83 +64,82 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
             return Response<Transaction>.Success(HttpStatusCode.OK, Transaction);
         }
-
+    
+ 
+       
         public async Task<Response<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
-            //memberResp member = await _marketObject.GetMember(TransactionPost.MemberId);
-            var memberResp = await _memberService.GetMember(TransactionPost.MemberId);
-            if (memberResp == null || memberResp.Value == null)
-            { return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Illegal user id"); }
 
-            Member member = memberResp.Value;
-            //var shoppingCartResp = await _marketObject.GetShoppingCartByUserId(TransactionPost.MemberId);
-            var shoppingCartResp = await _shoppingCartService.GetShoppingCartByUserId(TransactionPost.MemberId);
-            if (shoppingCartResp == null || shoppingCartResp.Value == null) { return Response<Transaction>.Error(HttpStatusCode.BadRequest, "No shopping cart found"); }
-            ShoppingCart shoppingCart = shoppingCartResp.Value;
-            if (shoppingCart.ShoppingBaskets.Count == 0) { return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty."); }
+            var member = await _marketObject.GetMember(TransactionPost.MemberId);
+            bool isGuest = member.Result == null;
 
+            if (TransactionPost.TransactionItems.IsNullOrEmpty())
+            {
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
+            }
 
 
             var Transaction = new Transaction
             {
                 MemberId = TransactionPost.MemberId,
-                //Member_ =null,
                 TransactionDate = TransactionPost.TransactionDate,
-                TotalPrice = TransactionPost.TotalPrice,
-                TransactionItems = new List<TransactionItem>(),
+                TransactionItems= new List<TransactionItem>(),
+                
+            
             };
 
+            Dictionary<long,List<TransactionItem>> TransactionBaskets=new Dictionary<long,List<TransactionItem>>();
+
+            foreach (TransactionItem item in TransactionPost.TransactionItems)
+            {
+                if (!TransactionBaskets.ContainsKey(item.StoreId))
+                {
+                    TransactionBaskets.Add(item.StoreId, new List<TransactionItem>());
+                }
+                item.TransactionId = Transaction.Id;
+                TransactionBaskets[item.StoreId].Add(item);
+            }
 
 
-            var TransactionBaskets = new Dictionary<long, List<TransactionItem>>();
-            foreach (ShoppingBasket basket in shoppingCart.ShoppingBaskets)
+            foreach(KeyValuePair<long,List<TransactionItem>> basket in TransactionBaskets)
             {
 
-                TransactionBaskets.Add(basket.StoreId, new List<TransactionItem>());
-
-
-                foreach (ShoppingItem item in basket.ShoppingItems)
-                {
-                    TransactionItem transactionItem = new TransactionItem(Transaction.Id, item);
-                    TransactionBaskets[basket.StoreId].Add(transactionItem);
-                }
-
-                //var allAvailable= await _marketObject.CheckAvailabilityInStock(basket.StoreId, TransactionBaskets[basket.StoreId]);
-                var allAvailable = await CheckAvailabilityInStock(basket.StoreId, TransactionBaskets[basket.StoreId]);
+                var allAvailable = await CheckAvailabilityInStock(basket.Key, TransactionBaskets[basket.Key]);
                 if (!allAvailable.Result)
                 {
                     return Response<Transaction>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
                 }
+                
+               //var allAvailable= await _marketObject.CheckPurchasePolicy(basket.key, TransactionBaskets[basket.key]);
 
-                //var allAvailable= await _marketObject.CheckTransactionPolicy(basket.StoreId, TransactionBaskets[basket.StoreId]);
-                var compliesWithTransactionPolicy = await CheckTransactionPolicy(basket.StoreId, TransactionBaskets[basket.StoreId]);
+               var compliesWithTransactionPolicy = await CheckPurchasePolicy(basket.Key, TransactionBaskets[basket.Key]);
                 if (!compliesWithTransactionPolicy.Result)
                 {
                     return Response<Transaction>.Error(HttpStatusCode.BadRequest, compliesWithTransactionPolicy.ErrorMessage);
                 }
 
                 //var discountsApplied = await  _marketObject.ApplyDiscounts(basket.StoreId, TransactionBaskets[basket.StoreId], TransactionPost.MemberId);
-                var discountsApplied = await ApplyDiscounts(basket.StoreId, TransactionBaskets[basket.StoreId], TransactionPost.MemberId);
+                var discountsApplied = await ApplyDiscounts(basket.Key, TransactionBaskets[basket.Key], TransactionPost.MemberId);
                 if (!discountsApplied.Result)
                 {
                     return Response<Transaction>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
                 }
-
             }
+
+
             Transaction.TotalPrice = TransactionBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
-
-            TransactionPost.TotalPrice = Transaction.TotalPrice;
-
+            TransactionPost.BillingDetails.TotalPrice = TransactionPost.TotalPrice=Transaction.TotalPrice;
+            TransactionBaskets.Values.ToList().ForEach(basket => Transaction.TransactionItems.AddRange(basket));
 
             //connction with external delivery service
-            bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(new DeliveryDetails(TransactionPost, TransactionBaskets));
+            bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(TransactionPost.DeliveryDetails,Transaction.TransactionItems.ToList());
             if (!deliveryConfirmed)
             {
                 return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Delivey declined");
 
             }
             //connction with external delivery service
-            bool paymentConfirmed = _paymentProvider.ConfirmPayment(new PaymentDetails(TransactionPost));
+            bool paymentConfirmed = _paymentProvider.ConfirmPayment(TransactionPost.BillingDetails);
 
             if (!paymentConfirmed)
             {
@@ -149,7 +149,6 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             foreach (var (storeId, items) in TransactionBaskets)
             {
-                Transaction.TransactionItems.AddRange(items);
                 //var stockUpdated= await _marketObject.UpdateStock(storeId, items);
                 var stockUpdated = await UpdateStock(storeId, items);
                 if (!stockUpdated.Result)
@@ -159,9 +158,11 @@ namespace shukersal_backend.DomainLayer.Controllers
                 //TODO: sendTransactionNotification(storeId);
             }
 
+            if (member.Id)
+            {
+               await _ShoppingCartObject.EmptyCart(member.Id);
+            }
 
-            //TODO: remove all baskets from shopping cart
-            //await _marketObject.RemoveAllBaskets(member.Id);
 
             _context.Transactions.Add(Transaction);
             await _context.SaveChangesAsync();
@@ -178,6 +179,11 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         public async Task<Response<IEnumerable<Transaction>>> BrowseShopTransactionHistory(long shopId)
         {
+            var storeResp = await _marketObject.GetStore(shopId);
+
+            if (storeResp.Result == null) {
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.BadRequest,storeResp.ErrorMessage); }
+
 
             var purchasesId = new List<long>();
             var items = await _context.TransactionItems.ToListAsync();
@@ -204,44 +210,6 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        private bool TransactionExists(long id)
-        {
-            return (_context.Transactions?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
-
-        public async Task<Response<bool>> UpdateTransaction(long id, TransactionPost post)
-        {
-
-            var Transaction = await _context.Transactions.FindAsync(id);
-            if (Transaction == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Transaction not found");
-            }
-
-            Transaction.TransactionDate = post.TransactionDate;
-            Transaction.TotalPrice = post.TotalPrice;
-
-            _context.Entry(Transaction).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!TransactionExists(id))
-                {
-                    return Response<bool>.Error(HttpStatusCode.NotFound, "not found");
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
-        }
-
         public async Task<Response<bool>> DeleteTransaction(long id)
         {
             if (_context.Transactions == null)
@@ -264,12 +232,12 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
-        private async Task<Response<bool>> CheckTransactionPolicy(long storeId, List<TransactionItem> TransactionItems)
+        private async Task<Response<bool>> CheckPurchasePolicy(long storeId, List<TransactionItem> TransactionItems)
         {
-            var shop = await _context.Stores.FindAsync(storeId);
-            if (shop == null)
+            var shop = await _marketObject.GetStore(storeId);
+            if (shop.Result==null)
             {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
@@ -278,17 +246,14 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         private async Task<Response<bool>> ApplyDiscounts(long storeId, List<TransactionItem> TransactionItems, long memberId)
         {
-            var shop = await _context.Stores.FindAsync(storeId);
-            if (shop == null)
+            var shop = await _marketObject.GetStore(storeId);
+            if (shop.Result == null)
             {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
             }
 
-            var member = await _context.Members.FindAsync(memberId);
-            if (member == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal member id");
-            }
+            var member = await _memberObject.GetMember(memberId);
+            
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
 
         }
@@ -296,17 +261,17 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<TransactionItem> TransactionItems)
         {
-            var shop = await _context.Stores.FindAsync(storeId);
-            if (shop == null)
+            var shop = await _marketObject.GetStore(storeId);
+            if (shop.Result == null)
             {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
             }
 
             foreach (var TransactionItem in TransactionItems)
             {
-                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
-                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                // if (product.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
+                var product = await _storeObject.getProduct(TransactionItem.ProductId);
+                if (product.Result == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
+                if (product.Result.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
@@ -316,14 +281,16 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         private async Task<Response<bool>> UpdateStock(long storeId, List<TransactionItem> TransactionItems)
         {
-            var shop = await _context.Stores.FindAsync(storeId);
-            if (shop == null)
+            var shop = await _marketObject.GetStore(storeId);
+            if (shop.Result == null)
             {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Illegal shop id");
+                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
             }
 
             foreach (var TransactionItem in TransactionItems)
             {
+
+                var updated=_marketObject.UpdateProduct(storeId, TransactionItem.ProductId);
                 var product = await _context.Products.FindAsync(TransactionItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
                 if (product.UnitsInStock < TransactionItem.Quantity)

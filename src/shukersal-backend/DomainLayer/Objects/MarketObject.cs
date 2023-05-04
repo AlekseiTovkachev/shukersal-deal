@@ -145,5 +145,18 @@ namespace shukersal_backend.DomainLayer.Objects
         {
             return _context.Stores.Any(e => e.Id == id);
         }
+
+
+        #region Transaction Functionality
+        // *------------------------------------------------- Transaction Functionality --------------------------------------------------*
+
+        public bool TransactionExists(long id)
+        {
+            return (_context.Transactions?.Any(e => e.Id == id)).GetValueOrDefault();
+        }
+
+
+
+        #endregion
     }
 }

@@ -7,12 +7,13 @@ namespace shukersal_backend.Models
 {
     public class Transaction
     {
-        public Transaction() { TransactionItems = new List<TransactionItem>(); }
         public long Id { get; set; }
         [Required]
         public long MemberId { get; set; }
         public DateTime TransactionDate { get; set; }
         public double TotalPrice { get; set; }
         public virtual ICollection<TransactionItem> TransactionItems { get; set; }
+
+
     }
 }

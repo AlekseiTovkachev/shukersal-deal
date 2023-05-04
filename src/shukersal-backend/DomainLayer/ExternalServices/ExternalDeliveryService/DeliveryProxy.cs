@@ -1,4 +1,5 @@
-﻿using shukersal_backend.Models.PurchaseModels;
+﻿using shukersal_backend.Models;
+using shukersal_backend.Models.PurchaseModels;
 
 namespace shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService
 {
@@ -12,10 +13,10 @@ namespace shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService
             ProxyAns = true;
         }
 
-        public bool ConfirmDelivery(DeliveryDetails deliveryDetails)
+        public bool ConfirmDelivery(DeliveryDetails deliveryDetails, List<TransactionItem> items)
         {
             if (RealDeliveryAdapter == null) { return ProxyAns; }
-            return RealDeliveryAdapter.ConfirmDelivery(deliveryDetails);
+            return RealDeliveryAdapter.ConfirmDelivery(deliveryDetails,items);
 
         }
 
