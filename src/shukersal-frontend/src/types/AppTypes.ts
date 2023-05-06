@@ -12,29 +12,29 @@ export interface Member {
 }
 
 export enum PermissionType {
-    ManagerPermission = 0;
-    ManageProductsPermission = 1;
-    ManageDiscountsPermission = 3;
-    AppointOwnerPermission = 4;
-    RemoveOwnerermission = 5;
-    AppointManagerPermission = 6;
-    EditManagerPermissionsPermission = 7;
-    RemoveManagerPermission = 8;
-    GetManagerInfoPermission = 11;
-    ReplyPermission = 12;
+    ManagerPermission = 0,
+    ManageProductsPermission = 1,
+    ManageDiscountsPermission = 3,
+    AppointOwnerPermission = 4,
+    RemoveOwnerPermission = 5,
+    AppointManagerPermission = 6,
+    EditManagerPermissionsPermission = 7,
+    RemoveManagerPermission = 8,
+    GetManagerInfoPermission = 11,
+    ReplyPermission = 12,
     GetHistoryPermission = 13
 }
 
 export interface Category {
     id: number;
-    number: string;
+    name: string;
 }
 
 export interface Product {
     id: number;
     name: string;
     description: string;
-    price: string;
+    price: number;
     imageUrl: string;
     isListed: boolean;
     unitsInStock: number;
@@ -66,7 +66,7 @@ export interface ShoppingItem {
     id: number;
     shoppingBasketId: number;
     productId: number;
-    quantity:number
+    quantity: number
 }
 
 export interface ShoppingBasket {

@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles';
-import { orange, blue } from '@mui/material/colors';
+import { orange, blue, grey } from '@mui/material/colors';
 
 export const theme = createTheme({
   palette: {
@@ -9,5 +9,12 @@ export const theme = createTheme({
     secondary: {
       main: blue[500],
     },
+    background: {
+      default: grey[100]
+    }
   },
+  spacing: 8,
+  shape: {
+    borderRadius: 8
+  }
 });
