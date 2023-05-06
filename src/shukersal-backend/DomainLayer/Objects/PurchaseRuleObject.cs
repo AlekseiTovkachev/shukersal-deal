@@ -14,28 +14,29 @@ namespace shukersal_backend.DomainLayer.Objects
         {
             _context = context;
         }
-        public async Task<Response<bool>> CreateDiscount(PurchaseRulePost post, Store s)
+        public async Task<Response<PurchaseRule>> CreatePurchaseRule(PurchaseRulePost post, Store s)
         {
             ICollection<PurchaseRule>? componenets = null;
             if (post.purchaseRuleType == PurchaseRuleType.OR || post.purchaseRuleType == PurchaseRuleType.AND || post.purchaseRuleType == PurchaseRuleType.CONDITION)
                 componenets = new List<PurchaseRule>();
-            _context.PurchaseRules.Add(new PurchaseRule
+            var pr = new PurchaseRule
             {
                 Id = post.Id,
                 store = s,
                 purchaseRuleType = post.purchaseRuleType,
                 Components = componenets,
                 conditionString = post.conditionString,
-                conditionLimit =    post.conditionLimit,
+                conditionLimit = post.conditionLimit,
                 minHour = post.minHour,
                 maxHour = post.maxHour,
                 weekDays = post.weekDays
-                
-            });
+
+            };
+            _context.PurchaseRules.Add(pr);
             await _context.SaveChangesAsync();
-            return Response<bool>.Success(HttpStatusCode.OK, true);
+            return Response<PurchaseRule>.Success(HttpStatusCode.OK, pr);
         }
-        public async Task<Response<bool>> CreateChildDiscount(long compositeId, PurchaseRulePost post)
+        public async Task<Response<bool>> CreateChildPurchaseRule(long compositeId, PurchaseRulePost post)
         {
             var composite = await _context.PurchaseRules.FirstOrDefaultAsync(dr => dr.Id == compositeId);
             if (composite != null && (composite.purchaseRuleType == PurchaseRuleType.OR || composite.purchaseRuleType == PurchaseRuleType.AND || composite.purchaseRuleType == PurchaseRuleType.CONDITION))
@@ -64,7 +65,9 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public bool Evaluate(PurchaseRule purchaseRule, ICollection<ShoppingItem> items)
         {
-            if (purchaseRule.purchaseRuleType == PurchaseRuleType.AND && purchaseRule.Components != null)
+            if (purchaseRule == null)
+                return true;
+            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.AND && purchaseRule.Components != null)
                 return purchaseRule.Components.Select(cm => Evaluate(cm, items)).All(res => res);
 
             else if (purchaseRule.purchaseRuleType == PurchaseRuleType.OR && purchaseRule.Components != null)
@@ -101,30 +104,12 @@ namespace shukersal_backend.DomainLayer.Objects
                 return purchaseRule.weekDays[(int)DateTime.Now.DayOfWeek];
             return true;
         }
-
-        private double calculateDiscountOnProducts(DiscountRule discountRule, ICollection<ShoppingItem> items)
+        public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
-            if (discountRule.discountOn == DiscountOn.STORE)
-                return items.Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
-
-            else if (discountRule.discountOn == DiscountOn.CATEGORY)
-                return items.Where(i => i.Product.Category.Name == discountRule.discountOnString)
-                    .Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
-
-            else if (discountRule.discountOn == DiscountOn.PRODUCT)
-                return items.Where(i => i.Product.Name == discountRule.discountOnString)
-                    .Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
-            return 0;
-        }
-        public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
-        {
-            var discounts = await _context.DiscountRules
-                .Where(dr => dr.store.Id == storeId)
+            var prs = await _context.PurchaseRules
+                .Where(pr => pr.store.Id == storeId)
                 .ToListAsync();
-            return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, discounts);
+            return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, prs);
         }
     }
 }

@@ -16,12 +16,13 @@ namespace shukersal_backend.DomainLayer.Objects
             _context = context;
             _purchaseRuleObject = new PurchaseRuleObject(context);
         }
-        public async Task<Response<bool>> CreateDiscount(DiscountRulePost post, Store s)
+        public async Task<Response<DiscountRule>> CreateDiscount(DiscountRulePost post, Store s)
         {
             ICollection<DiscountRule>? componenets = null;
             if (post.discountType == DiscountType.ADDITIONAL || post.discountType == DiscountType.MAX)
                 componenets= new List<DiscountRule>();
-            _context.DiscountRules.Add(new DiscountRule {
+            var discount = new DiscountRule
+            {
                 Id = post.Id,
                 store = s,
                 Discount = post.Discount,
@@ -30,9 +31,10 @@ namespace shukersal_backend.DomainLayer.Objects
                 PurchaseRule = post.PurchaseRule,
                 discountOn = post.discountOn,
                 discountOnString = post.discountOnString
-            });
+            };
+            _context.DiscountRules.Add(discount);
             await _context.SaveChangesAsync();
-            return Response<bool>.Success(HttpStatusCode.OK, true);
+            return Response<DiscountRule>.Success(HttpStatusCode.OK, discount);
         }
         public async Task<Response<bool>> CreateChildDiscount(long compositeId, DiscountRulePost post)
         {
