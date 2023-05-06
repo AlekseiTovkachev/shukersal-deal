@@ -6,9 +6,11 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NuGet.Protocol;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.ServiceLayer;
+using shukersal_backend.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal class Bridge : IBridge
+    public class Bridge : IBridge
     {
         private readonly AuthService authService;
         //private readonly StoreManagersController storeManagersController; //TODO: rename me
@@ -188,6 +190,31 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest)
         {
             return await authService.ChangePassword(changePasswordRequest);
+        }
+
+        public async void init()
+        {
+            _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>());
+            _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>());
+            string debug = (AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin"}).Result.ToJson());
+            string debug2 =(AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin2"}).Result.ToJson());
+
+
+            var p1 = new Product { Id = 1, Name = "1", Description = "1", Price = 1, IsListed = true, UnitsInStock = 1 };
+            var p2 = new Product { Id = 2, Name = "2", Description = "2", Price = 2, IsListed = true, UnitsInStock = 1 };
+            var product = new List<Product>
+            {
+                p1,p2
+            }.AsQueryable();
+
+            var stores = new List<Store>
+            {
+                new Store { Id = 1, Name = "Store 1", RootManagerId = 1, Products = new List<Product>{p1,p2 }, DiscountRules = new List<DiscountRule>() },
+                new Store { Id = 2, Name = "Store 2", RootManagerId = 2, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() },
+                new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
+            }.AsQueryable();
+
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
         }
     }
 }

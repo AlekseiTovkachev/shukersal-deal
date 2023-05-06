@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal interface IBridge
+    public interface IBridge
     {
         //Member
         Task<ActionResult<IEnumerable<Models.Member>>> GetMembers();
@@ -51,8 +51,6 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<ActionResult<Member>> Register(RegisterPost registerRequest);
         Task<ActionResult<Member>> GetLoggedUser();
         Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest);
-
-
-
+        void init();
     }
 }

@@ -1,4 +1,4 @@
-﻿using shukersal_backend.Controllers.MemberControllers;
+﻿using shukersal_backend.ServiceLayer;
 using shukersal_backend.Models;
 using Xunit.Abstractions;
 
@@ -42,7 +42,7 @@ namespace shukersal_backend.Tests.Controllers
 
 
             // Act
-            var result = await _controller.PostMember(memberData);
+            var result = await _controller.AddMember(memberData);
 
             // Assert
             Assert.IsType<CreatedAtActionResult>(result.Result);
@@ -60,7 +60,7 @@ namespace shukersal_backend.Tests.Controllers
             };
 
             // Act
-            var result = await _controller.PostMember(memberData);
+            var result = await _controller.AddMember(memberData);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -79,7 +79,7 @@ namespace shukersal_backend.Tests.Controllers
             _context.Setup(m => m.Members).ReturnsDbSet((DbSet<Member>)null); // Set MemberContext.Members to null
 
             // Act
-            var result = await _controller.PostMember(memberData);
+            var result = await _controller.AddMember(memberData);
 
             // Assert
             Assert.IsType<BadRequestObjectResult>(result.Result);

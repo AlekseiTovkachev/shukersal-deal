@@ -1,6 +1,5 @@
 ﻿using NuGet.Protocol;
-using shukersal_backend.Controllers;
-using shukersal_backend.Controllers.StoreControllers;
+using shukersal_backend;
 using shukersal_backend.Models;
 using Xunit.Abstractions;
 using System.Threading;
