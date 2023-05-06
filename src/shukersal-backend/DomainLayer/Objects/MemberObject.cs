@@ -9,6 +9,7 @@ using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -73,9 +74,8 @@ namespace shukersal_backend.DomainLayer.Objects
             // Add the shopping cart and member to the database
             _context.ShoppingCarts.Add(shoppingCart);
             _context.Members.Add(member);
-
-            await _context.SaveChangesAsync();
-
+            if (_context.SaveChangesAsync().IsFaulted)
+                return Response<Member>.Error(HttpStatusCode.OK, "");
             return Response<Member>.Success(HttpStatusCode.Created, member);
         }
 

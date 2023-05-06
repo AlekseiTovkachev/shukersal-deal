@@ -16,6 +16,6 @@ namespace shukersal_backend.Models.StoreModels
         public int minHour { get; set; }
         [Range(0, 24)]
         public int maxHour { get; set; }
-        public bool[] weekDays { get; set; }
+        //public int weekDays { get; set; }
     }
 }

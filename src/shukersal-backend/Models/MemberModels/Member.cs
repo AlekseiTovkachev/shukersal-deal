@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
+    [Index(nameof(Username), IsUnique = true)]
     public class Member
     {
         public long Id { get; set; }
