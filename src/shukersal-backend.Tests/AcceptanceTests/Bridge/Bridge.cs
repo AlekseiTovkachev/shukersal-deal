@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
@@ -29,9 +30,11 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private readonly ShoppingCartService shoppingCartService;
         private readonly StoreService storeService;
         public readonly Mock<MarketDbContext> _context;
+        public readonly Mock<ILogger<StoreService>> _logger;
         public Bridge() {
             
             _context = new Mock<MarketDbContext>();
+            _logger = new Mock<ILogger<StoreService>>();
             //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
 
             //TODO: init configuration
@@ -39,14 +42,15 @@ namespace shukersal_backend.Tests.AcceptanceTests
             memberService = new MemberService(_context.Object);
             TransactionService = new TransactionService(_context.Object);
             shoppingCartService = new ShoppingCartService(_context.Object);
-            storeService = new StoreService(_context.Object);
+            
+            storeService = new StoreService(_context.Object,_logger.Object);
         }
         //Member
-        public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers() 
+        public async Task<ActionResult<IEnumerable<Member>>> GetMembers() 
         {
             return await memberService.GetMembers();
         }
-        public async Task<ActionResult<Models.Member>> GetMember(long id)
+        public async Task<ActionResult<Member>> GetMember(long id)
         {
             return await memberService.GetMember(id);
         }
@@ -113,17 +117,17 @@ namespace shukersal_backend.Tests.AcceptanceTests
             return await shoppingCartService.RemoveItemFromCart(id, itemId);
         }
         //Transaction
-        public async Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions()
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
             return await TransactionService.GetTransactions();
         }
-        public async Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId)
+        public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
             return await TransactionService.GetTransaction(TransactionId);
         }
-        public async Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
+        public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
-            return await TransactionService.TransactionAShoppingCart(TransactionPost);
+            return await TransactionService.PurchaseAShoppingCart(TransactionPost);
         }
         public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
@@ -133,13 +137,13 @@ namespace shukersal_backend.Tests.AcceptanceTests
         {
             return await TransactionService.UpdateTransaction(Transactionid, post);
         }
-        public async Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId)
+        public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
-            return await TransactionService.BroweseTransactionHistory(memberId);
+            return await TransactionService.BrowseTransactionHistory(memberId);
         }
-        public async Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId)
+        public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
-            return await TransactionService.BroweseShopTransactionHistory(storeId);
+            return await TransactionService.BrowseShopTransactionHistory(storeId);
         }
         //Manager
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()
@@ -179,7 +183,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         {
             return null;
         }
-        public async Task<ActionResult<Member>> Register(RegisterPost registerRequest)
+        public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest)
         {
             return await authService.Register(registerRequest);
         }

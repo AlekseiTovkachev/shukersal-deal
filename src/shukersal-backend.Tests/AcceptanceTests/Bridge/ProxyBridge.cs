@@ -11,8 +11,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
     {
         public ProxyBridge() { }
         //Member
-        public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers() { return StatusCode(501); }
-        public async Task<ActionResult<Models.Member>> GetMember(long id) { return StatusCode(501); }
+        public async Task<ActionResult<IEnumerable<Member>>> GetMembers() { return StatusCode(501); }
+        public async Task<ActionResult<Member>> GetMember(long id) { return StatusCode(501); }
         public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData) { return StatusCode(501); }
         public async Task<IActionResult> DeleteMember(long id) { return StatusCode(501); }
         //Store
@@ -31,13 +31,13 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item) { return StatusCode(501); }
         public async Task<IActionResult> RemoveItemFromCart(long id, long itemId) { return StatusCode(501); }
         //Transaction
-        public async Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions() { return StatusCode(501); }
-        public async Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost) { return StatusCode(501); }
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions() { return StatusCode(501); }
+        public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId) { return StatusCode(501); }
+        public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost) { return StatusCode(501); }
         public async Task<IActionResult> DeleteTransaction(long TransactionId) { return StatusCode(501); }
         public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId) { return StatusCode(501); }
-        public async Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId) { return StatusCode(501); }
+        public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId) { return StatusCode(501); }
+        public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId) { return StatusCode(501); }
         //Manager
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers() { return StatusCode(501); }
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id) { return StatusCode(501); }
@@ -49,7 +49,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission) { return StatusCode(501); }
         //Auth
         public async Task<ActionResult> Login(LoginPost loginRequest) { return StatusCode(501); }
-        public async Task<ActionResult<Member>> Register(RegisterPost registerRequest) { return StatusCode(501); }
+        public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest) { return StatusCode(501); }
         public async Task<ActionResult<Member>> GetLoggedUser() { return StatusCode(501); }
         public async Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest) { return StatusCode(501); }
 

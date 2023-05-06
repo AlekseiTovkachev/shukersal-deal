@@ -3,23 +3,26 @@ using shukersal_backend.Models;
 using Xunit.Abstractions;
 using System.Threading;
 using shukersal_backend.ServiceLayer;
+using Microsoft.Extensions.Logging;
+using shukersal_backend.DomainLayer.Controllers;
 
 namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 {
     public class ManagerTestBase
     {
-        protected readonly StoreManagerService _controller;
+        protected readonly StoreManagerController _controller;
         protected readonly StoreService _storeController;
         protected readonly Mock<MarketDbContext> _context;
         protected readonly ITestOutputHelper output;
+        protected readonly Mock<ILogger<StoreService>> _logger;
         public ManagerTestBase(ITestOutputHelper output)
         {
             this.output = output;
 
             _context = new Mock<MarketDbContext>();
-            
-            _controller = new StoreManagersController(_context.Object);
-            _storeController = new StoreService(_context.Object);
+            _logger= new Mock<ILogger<StoreService>>();
+            _controller = new StoreManagerController(_context.Object);
+            _storeController = new StoreService(_context.Object,_logger.Object);
 
 
             var membersList = new List<Member>

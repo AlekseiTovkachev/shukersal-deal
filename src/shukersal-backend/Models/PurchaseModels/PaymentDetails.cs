@@ -33,7 +33,5 @@ namespace shukersal_backend.Models.PurchaseModels
         public string CVC { get; set; }
         public double TotalPrice { get; set; }
 
-        
-
     }
 }

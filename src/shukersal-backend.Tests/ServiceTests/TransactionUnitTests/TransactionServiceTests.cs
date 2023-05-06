@@ -30,7 +30,9 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
         private List<ShoppingCart>? shoppingCarts;
         private List<ShoppingBasket>? shoppingBaskets;
         private List<ShoppingItem>? shoppingItems;
-        
+        private List<PaymentDetails>? billingDetails;
+        private List<DeliveryDetails>? deliveryDetails;
+
         public TransactionServiceTests(ITestOutputHelper output){
             _context = new Mock<MarketDbContext>();
             _output = output;
@@ -67,6 +69,48 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
                 },
             };
 
+            billingDetails = new List<PaymentDetails>
+                {
+                    new PaymentDetails
+                    {
+                     HolderFirstName = "Holder",
+                    HolderLastName = "Holder",
+                    HolderID = "313574357",
+                    CardNumber = "1111111111111111",
+                    ExpirationDate = new DateOnly(),
+                    CVC = "123",
+                    },
+                     new PaymentDetails
+                    {
+                         HolderFirstName = "HolderFirstName",
+                         HolderLastName = "HolderLastName",
+                         HolderID = "123456789",
+                         CardNumber = "1111111111111111",
+                         ExpirationDate = new DateOnly(),
+                         CVC = "123",
+                    }
+                };
+
+            deliveryDetails = new List<DeliveryDetails>
+            {
+                new DeliveryDetails
+                {
+                     ReceiverFirstName = "Holder",
+                    ReceiverLastName = "Holder",
+                    ReceiverPhoneNum = "0506255065",
+                    ReceiverAddress = "Holder",
+                    ReceiverPostalCode = "2804601"
+                },
+                new DeliveryDetails
+                {
+                    ReceiverFirstName= "ReceiverFirstName",
+                    ReceiverLastName= "ReceiverLastName",
+                    ReceiverPhoneNum="0500000000",
+                    ReceiverAddress= "ReceiverAddress",
+                    ReceiverPostalCode="1234567"
+                }
+            };
+
               transactionPosts = new List<TransactionPost>
             {
                 new TransactionPost
@@ -74,33 +118,18 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
                     MemberId = 1,
                     TransactionDate = new DateTime(),
                     TotalPrice = 130,
-                    HolderFirstName = "Holder",
-
-                    HolderLastName = "Holder",
-                    HolderID = "313574357",
-                    CardNumber = "1111111111111111",
-                    expirationDate = new DateOnly(),
-                    CVC = "123",
-                    ReceiverFirstName = "Holder",
-                    ReceiverLastName = "Holder",
-
-                    ReceiverPhoneNum = "0506255065",
-
-                    ReceiverAddress = "Holder",
-                    ReceiverPostalCode = "2804601"
+                    BillingDetails=billingDetails.ElementAt(0),
+                    DeliveryDetails=deliveryDetails.ElementAt(0),
+                   
                 },
                 new TransactionPost
             {
                 MemberId =   members[0].Id,
-                HolderFirstName = "HolderFirstName",
-                HolderLastName = "HolderLastName",
-                HolderID = "123456789",
-                CardNumber = "1111111111111111",
-                ReceiverFirstName= "ReceiverFirstName",
-                ReceiverLastName= "ReceiverLastName",
-                ReceiverPhoneNum="0500000000",
-                ReceiverAddress= "ReceiverAddress",
-                ReceiverPostalCode="1234567"
+                TransactionDate = new DateTime(),
+                TotalPrice = 130,
+                BillingDetails=billingDetails.ElementAt(1),
+                DeliveryDetails=deliveryDetails.ElementAt(1)
+
             }
 
             };
@@ -122,7 +151,6 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
                     TransactionId=2,
                     ProductId=1,
                     StoreId=1,
-
                 },
 
             };
@@ -205,16 +233,13 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
         {
 
             TransactionPost transaction = transactionPosts.ElementAt(0);
-            PaymentDetails paymentDetails = new PaymentDetails(transaction);
-            DeliveryDetails deliveryDetails = new DeliveryDetails(transaction, new Dictionary<long, List<TransactionItem>>());
-
-            Assert.True(_TransactionController.getPaymentProxy().ConfirmPayment(paymentDetails));
+            Assert.True(_TransactionController.getPaymentProxy().ConfirmPayment(billingDetails.ElementAt(0)));
             _TransactionController.getPaymentProxy().SetProxyAnswer(false);
-            Assert.False(_TransactionController.getPaymentProxy().ConfirmPayment(paymentDetails));
+            Assert.False(_TransactionController.getPaymentProxy().ConfirmPayment(billingDetails.ElementAt(0)));
 
-            Assert.True(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails));
+            Assert.True(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails.ElementAt(0),transactionItems));
             _TransactionController.getDeliveryProxy().SetProxyAnswer(false);
-            Assert.False(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails));
+            Assert.False(_TransactionController.getDeliveryProxy().ConfirmDelivery(deliveryDetails.ElementAt(0), transactionItems));
         }
 
         [Fact]

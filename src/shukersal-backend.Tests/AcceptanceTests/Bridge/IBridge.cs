@@ -10,8 +10,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
     public interface IBridge
     {
         //Member
-        Task<ActionResult<IEnumerable<Models.Member>>> GetMembers();
-        Task<ActionResult<Models.Member>> GetMember(long id);
+        Task<ActionResult<IEnumerable<Member>>> GetMembers();
+        Task<ActionResult<Member>> GetMember(long id);
         Task<ActionResult<MemberPost>> AddMember(MemberPost memberData);
         Task<IActionResult> DeleteMember(long id);
         //Store
@@ -30,13 +30,13 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item);
         Task<IActionResult> RemoveItemFromCart(long id, long itemId);
         //Transaction
-        Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions();
-        Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId);
-        Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost);
+        Task<ActionResult<IEnumerable<Transaction>>> GetTransactions();
+        Task<ActionResult<Transaction>> GetTransaction(long TransactionId);
+        Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost);
         Task<IActionResult> DeleteTransaction(long TransactionId);
         Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post);
-        Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId);
-        Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId);
+        Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId);
+        Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId);
         //Manager
         Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers();
         Task<ActionResult<StoreManager>> GetStoreManager(long id);
@@ -48,7 +48,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission);
         //Auth
         Task<ActionResult> Login(LoginPost loginRequest);
-        Task<ActionResult<Member>> Register(RegisterPost registerRequest);
+        Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest);
         Task<ActionResult<Member>> GetLoggedUser();
         Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest);
         void init();
