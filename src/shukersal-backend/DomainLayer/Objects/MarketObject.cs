@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Net;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.DomainLayer.Objects
 {
@@ -9,7 +9,8 @@ namespace shukersal_backend.DomainLayer.Objects
     {
         private MarketDbContext _context;
 
-        public MarketObject(MarketDbContext context) {
+        public MarketObject(MarketDbContext context)
+        {
             _context = context;
         }
         public async Task<Response<IEnumerable<Store>>> GetStores()
@@ -19,7 +20,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 .Include(s => s.DiscountRules).ToListAsync();
             return Response<IEnumerable<Store>>.Success(HttpStatusCode.OK, stores);
         }
-        
+
         public async Task<Response<Store>> GetStore(long id)
         {
             if (_context.Stores == null)
@@ -37,13 +38,8 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Store>.Success(HttpStatusCode.OK, store);
         }
 
-        public async Task<Response<Store>> CreateStore(StorePost storeData)
+        public async Task<Response<Store>> CreateStore(StorePost storeData, Member member)
         {
-            var member = await _context.Members.FindAsync(storeData.RootManagerMemberId);
-            if (member == null)
-            {
-                return Response<Store>.Error(HttpStatusCode.BadRequest, "Illegal user id");
-            }
 
             var store = new Store
             {
@@ -84,8 +80,19 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Store>.Success(HttpStatusCode.Created, store);
         }
 
-        public async Task<Response<bool>> UpdateStore(long id, StorePatch patch)
+        public async Task<Response<bool>> UpdateStore(long id, StorePatch patch, Member member)
         {
+
+            var manager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(m => m.MemberId == member.Id && m.StoreId == id);
+
+            if (manager == null)
+            {
+                return Response<bool>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
+            }
+
+            bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
 
             var store = await _context.Stores.FindAsync(id);
             if (store == null)
@@ -117,7 +124,7 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
-        public async Task<Response<bool>> DeleteStore(long id)
+        public async Task<Response<bool>> DeleteStore(long id, Member member)
         {
             if (_context.Stores == null)
             {

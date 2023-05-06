@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
 using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -13,18 +14,24 @@ namespace shukersal_backend.ServiceLayer
     [EnableCors("AllowOrigin")]
     public class StoreService : ControllerBase
     {
-        private readonly StoreController storeService;
+        private readonly StoreController storeController;
+        private readonly Member? currentMember;
+        private readonly ILogger logger;
 
-        public StoreService(MarketDbContext context)
+        public StoreService(MarketDbContext context, ILogger<StoreService> logger)
         {
-            storeService = new StoreController(context);
+            storeController = new StoreController(context);
+
+            currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            this.logger = logger;
+            logger.LogInformation("testing the log");
         }
 
         // GET: api/Store
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
-            var response = await storeService.GetStores();
+            var response = await storeController.GetStores();
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -36,7 +43,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("{id}")]
         public async Task<ActionResult<Store>> GetStore(long id)
         {
-            var response = await storeService.GetStore(id);
+            var response = await storeController.GetStore(id);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -48,9 +55,13 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
-                var response = await storeService.CreateStore(storeData);
+                var response = await storeController.CreateStore(storeData, currentMember);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(response.ErrorMessage);
@@ -68,9 +79,13 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStore(long id, StorePatch patch)
         {
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
-                var response = await storeService.UpdateStore(id, patch);
+                var response = await storeController.UpdateStore(id, patch, currentMember);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -88,7 +103,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {
-            var response = await storeService.DeleteStore(id);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await storeController.DeleteStore(id, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -100,9 +119,13 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("stores/{storeId}/products")]
         public async Task<IActionResult> AddProduct(long storeId, ProductPost product)
         {
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
-                var response = await storeService.AddProduct(storeId, product);
+                var response = await storeController.AddProduct(storeId, product, currentMember);
                 var res_product = response.Result;
                 return Ok(res_product);
             }
@@ -116,9 +139,13 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("stores/{storeId}/products/{productId}")]
         public async Task<IActionResult> UpdateProduct(long storeId, long productId, ProductPatch product)
         {
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
-                var response = await storeService.UpdateProduct(storeId, productId, product);
+                var response = await storeController.UpdateProduct(storeId, productId, product, currentMember);
                 if (response.StatusCode == HttpStatusCode.NotFound)
                 {
                     return NotFound();
@@ -132,7 +159,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("stores/{storeId}/products")]
         public async Task<IActionResult> DeleteProduct(long storeId, long productId)
         {
-            var response = await storeService.DeleteProduct(storeId, productId);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await storeController.DeleteProduct(storeId, productId, currentMember);
             if (response.StatusCode != HttpStatusCode.NotFound)
             {
                 return NotFound();
@@ -144,7 +175,7 @@ namespace shukersal_backend.ServiceLayer
         //[HttpGet("stores/Products")]
         //public async Task<ActionResult<IEnumerable<Store>>> GetAllProducts()
         //{
-        //    var response = await storeService.GetAllProducts();
+        //    var response = await storeController.GetAllProducts();
         //    if (!response.IsSuccess)
         //    {
         //        return NotFound();
@@ -156,7 +187,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("stores/{storeId}/products")]
         public async Task<ActionResult<Store>> GetStoreProducts(long storeId)
         {
-            var response = await storeService.GetStoreProducts(storeId);
+            var response = await storeController.GetStoreProducts(storeId);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -168,7 +199,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("stores/categories")]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
-            var response = await storeService.GetCategories();
+            var response = await storeController.GetCategories();
             return Ok(response.Result);
         }
     }

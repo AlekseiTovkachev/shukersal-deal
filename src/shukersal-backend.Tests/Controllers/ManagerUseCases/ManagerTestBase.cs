@@ -8,7 +8,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 {
     public class ManagerTestBase
     {
-        protected readonly StoreManagersController _controller;
+        protected readonly StoreManagerService _controller;
         protected readonly StoreService _storeController;
         protected readonly Mock<MarketDbContext> _context;
         protected readonly ITestOutputHelper output;
