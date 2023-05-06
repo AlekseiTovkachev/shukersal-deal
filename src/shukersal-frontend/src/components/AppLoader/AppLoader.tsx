@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import './AppLoader.css';
 
 export const AppLoader = () => <Box sx={{
     position: 'fixed',
@@ -6,7 +7,7 @@ export const AppLoader = () => <Box sx={{
     height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    //justifyContent: 'center',
+    justifyContent: 'center',
     alignItems: 'center'
 }}>
     <div className="preloader">
