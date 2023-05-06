@@ -4,10 +4,10 @@ import { orange, blue, grey } from '@mui/material/colors';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: orange[500],
+      main: '#263238',
     },
     secondary: {
-      main: blue[500],
+      main: '#F4D35E',
     },
     background: {
       default: grey[100]

@@ -9,6 +9,6 @@ export const AppFooter = styled(Box)(({ theme }) => ({
     boxSizing: 'border-box',
     //height: 50,
 
-    backgroundColor: theme.palette.secondary.dark,
+    backgroundColor: theme.palette.secondary.main,
     //boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)',
 }));
