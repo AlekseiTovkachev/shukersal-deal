@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
@@ -23,12 +24,13 @@ namespace shukersal_backend.DomainLayer.Controllers
         private readonly MarketDbContext _context;
         private readonly PaymentProxy _paymentProvider;
         private readonly DeliveryProxy _deliveryProvider;
+        private readonly TransactionObject _transactionObject;
 
         private readonly MarketObject _marketObject;
         private readonly StoreObject _storeObject;
 
         //private readonly ShoppingCartObject _shoppingCartObject; 
-        //private readonly MemberObject _memberObject;
+        private readonly MemberObject _memberObject;
 
 
         public TransactionController(MarketDbContext context)
@@ -37,7 +39,9 @@ namespace shukersal_backend.DomainLayer.Controllers
             _paymentProvider = new PaymentProxy();
             _deliveryProvider = new DeliveryProxy();
             _marketObject = new MarketObject(context);
-            _storeObject = new StoreObject(context, _marketObject);
+            _storeObject = new StoreObject(context, _marketObject, new StoreManagerObject());
+            _memberObject= new MemberObject(context);
+            _transactionObject = new TransactionObject(context,_marketObject);
 
         }
 
@@ -70,7 +74,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         public async Task<Response<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
 
-            var member = await _marketObject.GetMember(TransactionPost.MemberId);
+            var member = await _memberObject.GetMember(TransactionPost.MemberId);
             bool isGuest = member.Result == null;
 
             if (TransactionPost.TransactionItems.IsNullOrEmpty())
@@ -158,9 +162,9 @@ namespace shukersal_backend.DomainLayer.Controllers
                 //TODO: sendTransactionNotification(storeId);
             }
 
-            if (member.Id)
+            if (!isGuest)
             {
-               await _ShoppingCartObject.EmptyCart(member.Id);
+               //await _ShoppingCartObject.EmptyCart(member.Id);
             }
 
 
@@ -269,9 +273,9 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             foreach (var TransactionItem in TransactionItems)
             {
-                var product = await _storeObject.getProduct(TransactionItem.ProductId);
-                if (product.Result == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                if (product.Result.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
+                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
+                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
+                if (product.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
@@ -289,8 +293,6 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             foreach (var TransactionItem in TransactionItems)
             {
-
-                var updated=_marketObject.UpdateProduct(storeId, TransactionItem.ProductId);
                 var product = await _context.Products.FindAsync(TransactionItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
                 if (product.UnitsInStock < TransactionItem.Quantity)
@@ -307,6 +309,9 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         }
 
+        public async Task<Response<bool>> UpdateTransaction(long Transactionid, TransactionPost post) {
+            return await _transactionObject.UpdateTransaction(Transactionid, post);
+        }
 
     }
 }
