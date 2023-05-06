@@ -8,6 +8,7 @@ namespace shukersal_backend.Models
     public class Member
     {
         public long Id { get; set; }
+
         public string Username { get; set; }
         [JsonIgnore]
         public string PasswordHash { get; set; }

@@ -7,6 +7,10 @@ namespace shukersal_backend.Utility
     {
         public static Member? GetCurrentMember(MarketDbContext context, HttpContext httpContext)
         {
+            if (httpContext == null)
+            {
+                return null;
+            }
             string? username = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (username == null)
             {
