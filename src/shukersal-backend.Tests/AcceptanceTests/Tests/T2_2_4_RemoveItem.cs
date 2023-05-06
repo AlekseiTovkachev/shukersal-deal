@@ -12,14 +12,14 @@ namespace shukersal_backend.Tests.AcceptanceTests
     {
         public T2_2_4_RemoveItem(ITestOutputHelper output) : base(output)
         {
-            bridge.Register(new Models.RegisterPost { Id = 2, Username = "testUsername", Password = "testPassword" });
-            bridge.Login(new Models.LoginPost { Username = "testUsername", Password = "testPassword" });
+            bridge.Register(new RegisterPost { Username = "testUsername", Password = "testPassword" });
+            bridge.Login(new LoginPost { Username = "testUsername", Password = "testPassword" });
         }
         [Fact]
         public void RemoveItemPositive()
         {
             var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            bridge.AddItemToCart(1, new Models.ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
+            bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
             var res = bridge.RemoveItemFromCart(1, 100);
             res.Wait();
             Assert.True(res.Result is IActionResult);
@@ -36,7 +36,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public void RemoveItemDoubleRequest()
         {
             var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            bridge.AddItemToCart(1, new Models.ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
+            bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
             var res1 = bridge.RemoveItemFromCart(1, 100);
             var res2 = bridge.RemoveItemFromCart(1, 100);
             res1.Wait();

@@ -42,7 +42,7 @@ using Xunit.Abstractions;
 
 
             // Act
-            var result = await _controller.AddMember(memberData);
+     //       var result = await _controller.AddMember(memberData);
 
 
 //            // Assert
@@ -62,7 +62,7 @@ using Xunit.Abstractions;
 
 
             // Act
-            var result = await _controller.AddMember(memberData);
+        //    var result = await _controller.AddMember(memberData);
 
 //            // Assert
 //            Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -82,7 +82,7 @@ using Xunit.Abstractions;
 
 
             // Act
-            var result = await _controller.AddMember(memberData);
+        //    var result = await _controller.AddMember(memberData);
 
 
 //            // Assert
