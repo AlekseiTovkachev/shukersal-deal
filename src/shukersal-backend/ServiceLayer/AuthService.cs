@@ -43,7 +43,7 @@ namespace shukersal_backend.ServiceLayer
                 var response = await memberController.LoginMember(loginRequest, _configuration);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
                 var loginResponse = response.Result;
                 return Ok(loginResponse);
