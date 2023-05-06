@@ -25,7 +25,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private readonly AuthService authService;
         //private readonly StoreManagersController storeManagersController; //TODO: rename me
         private readonly MemberService memberService;
-        private readonly PurchaseService purchaseService;
+        private readonly TransactionService TransactionService;
         private readonly ShoppingCartService shoppingCartService;
         private readonly StoreService storeService;
         public readonly Mock<MarketDbContext> _context;
@@ -37,7 +37,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
             //TODO: init configuration
             authService = new AuthService(null, _context.Object);
             memberService = new MemberService(_context.Object);
-            purchaseService = new PurchaseService(_context.Object);
+            TransactionService = new TransactionService(_context.Object);
             shoppingCartService = new ShoppingCartService(_context.Object);
             storeService = new StoreService(_context.Object);
         }
@@ -112,34 +112,34 @@ namespace shukersal_backend.Tests.AcceptanceTests
         {
             return await shoppingCartService.RemoveItemFromCart(id, itemId);
         }
-        //Purchase
-        public async Task<ActionResult<IEnumerable<Models.Purchase>>> GetPurchases()
+        //Transaction
+        public async Task<ActionResult<IEnumerable<Models.Transaction>>> GetTransactions()
         {
-            return await purchaseService.GetPurchases();
+            return await TransactionService.GetTransactions();
         }
-        public async Task<ActionResult<Models.Purchase>> GetPurchase(long PurchaseId)
+        public async Task<ActionResult<Models.Transaction>> GetTransaction(long TransactionId)
         {
-            return await purchaseService.GetPurchase(PurchaseId);
+            return await TransactionService.GetTransaction(TransactionId);
         }
-        public async Task<ActionResult<Models.Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost)
+        public async Task<ActionResult<Models.Transaction>> TransactionAShoppingCart(TransactionPost TransactionPost)
         {
-            return await purchaseService.PurchaseAShoppingCart(purchasePost);
+            return await TransactionService.TransactionAShoppingCart(TransactionPost);
         }
-        public async Task<IActionResult> DeletePurchase(long purchaseId)
+        public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
-            return await purchaseService.DeletePurchase(purchaseId);
+            return await TransactionService.DeleteTransaction(TransactionId);
         }
-        public async Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post)
+        public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post)
         {
-            return await purchaseService.UpdatePurchase(purchaseid, post);
+            return await TransactionService.UpdateTransaction(Transactionid, post);
         }
-        public async Task<ActionResult<Models.Purchase>> BrowesePurchaseHistory(long memberId)
+        public async Task<ActionResult<Models.Transaction>> BroweseTransactionHistory(long memberId)
         {
-            return await purchaseService.BrowesePurchaseHistory(memberId);
+            return await TransactionService.BroweseTransactionHistory(memberId);
         }
-        public async Task<ActionResult<Models.Purchase>> BroweseShopPurchaseHistory(long storeId)
+        public async Task<ActionResult<Models.Transaction>> BroweseShopTransactionHistory(long storeId)
         {
-            return await purchaseService.BroweseShopPurchaseHistory(storeId);
+            return await TransactionService.BroweseShopTransactionHistory(storeId);
         }
         //Manager
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()

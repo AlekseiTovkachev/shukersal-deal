@@ -17,21 +17,21 @@ namespace shukersal_backend.ServiceLayer
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class PurchaseService : ControllerBase
+    public class TransactionService : ControllerBase
     {
-        private readonly PurchaseController purchaseController;
+        private readonly TransactionController TransactionController;
 
 
-        public PurchaseService(MarketDbContext context)
+        public TransactionService(MarketDbContext context)
         {
-            purchaseController = new PurchaseController(context);
+            TransactionController = new TransactionController(context);
         }
 
-        // GET: api/Purchases
+        // GET: api/Transactions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Models.Purchase>>> GetPurchases()
+        public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
-            var response = await purchaseController.GetPurchases();
+            var response = await TransactionController.GetTransactions();
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -39,11 +39,11 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // GET: api/Purchases/5
-        [HttpGet("Purchaseid")]
-        public async Task<ActionResult<Models.Purchase>> GetPurchase(long PurchaseId)
+        // GET: api/Transactions/5
+        [HttpGet("Transactionid")]
+        public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
-            var response = await purchaseController.GetPurchase(PurchaseId);
+            var response = await TransactionController.GetTransaction(TransactionId);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -53,20 +53,20 @@ namespace shukersal_backend.ServiceLayer
 
 
 
-        // POST: api/Purchases
+        // POST: api/Transactions
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Models.Purchase>> PurchaseAShoppingCart(PurchasePost purchasePost)
+        public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
             if (ModelState.IsValid)
             {
-                var response = await purchaseController.PurchaseAShoppingCart(purchasePost);
+                var response = await TransactionController.PurchaseAShoppingCart(TransactionPost);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(response.ErrorMessage);
                 }
-                var purchase = response.Result;
-                return CreatedAtAction(nameof(GetPurchase), new { id = purchase.Id }, purchase);
+                var Transaction = response.Result;
+                return CreatedAtAction(nameof(GetTransaction), new { id = Transaction.Id }, Transaction);
             }
             else
             {
@@ -74,11 +74,11 @@ namespace shukersal_backend.ServiceLayer
             }
         }
 
-        // DELETE: api/Purchases/5
-        [HttpDelete("purchaseid/{purchaseId}")]
-        public async Task<IActionResult> DeletePurchase(long purchaseId)
+        // DELETE: api/Transactions/5
+        [HttpDelete("Transactionid/{TransactionId}")]
+        public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
-            var response = await purchaseController.DeletePurchase(purchaseId);
+            var response = await TransactionController.DeleteTransaction(TransactionId);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -87,13 +87,13 @@ namespace shukersal_backend.ServiceLayer
         }
 
 
-        // PUT: api/Purchase/5
-        [HttpPut("purchaseid/{purchaseid}")]
-        public async Task<IActionResult> UpdatePurchase(long purchaseid, PurchasePost post)
+        // PUT: api/Transaction/5
+        [HttpPut("Transactionid/{Transactionid}")]
+        public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post)
         {
             if (ModelState.IsValid)
             {
-                var response = await purchaseController.UpdatePurchase(purchaseid, post);
+                var response = await TransactionController.UpdateTransaction(Transactionid, post);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -107,13 +107,13 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest();
         }
 
-        // GET: api/Purchases/memberId/5
+        // GET: api/Transactions/memberId/5
         [HttpGet("memberId/{memberId}")]
-        public async Task<ActionResult<Models.Purchase>> BrowesePurchaseHistory(long memberId)
+        public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
             if (ModelState.IsValid)
             {
-                var response = await purchaseController.BrowesePurchaseHistory(memberId);
+                var response = await TransactionController.BrowseShopTransactionHistory(memberId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -127,13 +127,13 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest();
         }
 
-        // GET: api/Purchases/storeId/5
+        // GET: api/Transactions/storeId/5
         [HttpGet("storeId/{storeId}")]
-        public async Task<ActionResult<Models.Purchase>> BroweseShopPurchaseHistory(long storeId)
+        public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
             if (ModelState.IsValid)
             {
-                var response = await purchaseController.BroweseShopPurchaseHistory(storeId);
+                var response = await TransactionController.BrowseShopTransactionHistory(storeId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

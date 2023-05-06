@@ -43,14 +43,14 @@ namespace shukersal_backend.Models
 
         #region Notification Models
         // *------------------------------------------------- Notification Models --------------------------------------------------*
-        public DbSet<Notification> Notifications { get; set; } = null!;
-        public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
+        virtual public DbSet<Notification> Notifications { get; set; } = null!;
+        virtual public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
         #endregion
 
-        #region Purchase Models
-        // *------------------------------------------------- Purchase Models --------------------------------------------------*
-        public DbSet<Purchase> Purchases { get; set; } = null!;
-        public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+        #region Transaction Models
+        // *------------------------------------------------- Transaction Models --------------------------------------------------*
+        virtual public DbSet<Transaction> Transactions { get; set; } = null!;
+        virtual public DbSet<TransactionItem> TransactionItems { get; set; } = null!;
         #endregion
 
         #region Review Models
@@ -62,8 +62,8 @@ namespace shukersal_backend.Models
         #region Shopping Cart
         // *------------------------------------------------- Shopping Cart Models --------------------------------------------------*
         public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
-        public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
-        public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
+        virtual public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
+        virtual public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
         #endregion
 
 
