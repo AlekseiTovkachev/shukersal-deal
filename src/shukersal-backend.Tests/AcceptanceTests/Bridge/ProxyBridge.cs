@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal class ProxyBridge : ControllerBase, IBridge
+    public class ProxyBridge : ControllerBase, IBridge
     {
         public ProxyBridge() { }
         //Member
@@ -52,5 +52,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<ActionResult<Member>> Register(RegisterPost registerRequest) { return StatusCode(501); }
         public async Task<ActionResult<Member>> GetLoggedUser() { return StatusCode(501); }
         public async Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest) { return StatusCode(501); }
+
+        public void init()
+        {
+            //do nothing
+        }
     }
 }

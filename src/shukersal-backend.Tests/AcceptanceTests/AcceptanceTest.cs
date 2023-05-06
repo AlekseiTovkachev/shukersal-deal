@@ -1,4 +1,6 @@
-﻿using System;
+﻿using shukersal_backend.Models;
+using shukersal_backend.Utility;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal class AcceptanceTest
+    public class AcceptanceTest
     {
         public IBridge bridge;
         public ITestOutputHelper output;
@@ -19,6 +21,9 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
             //uncomment the following line when using the real bridge
             bridge = new Bridge();
+            bridge.init();
+
+            
         }
     }
 }

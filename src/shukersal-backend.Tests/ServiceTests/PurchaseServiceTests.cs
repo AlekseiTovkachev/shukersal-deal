@@ -9,7 +9,7 @@ namespace shukersal_backend.Tests.ServiceTests
 {
     internal class PurchaseServiceTests
     {
-        private readonly DomainLayer.Controllers.PurchaseLogic _purchaseService;
+        private readonly DomainLayer.Controllers.PurchaseController _purchaseService;
         private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper _output;
 
@@ -17,7 +17,7 @@ namespace shukersal_backend.Tests.ServiceTests
         {
             _context = new Mock<MarketDbContext>();
             _output = output;
-            _purchaseService = new DomainLayer.Controllers.PurchaseLogic(_context.Object);
+            _purchaseService = new DomainLayer.Controllers.PurchaseController(_context.Object);
         }
     }
 }
