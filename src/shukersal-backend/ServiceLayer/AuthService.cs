@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Plugins;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Data;
@@ -24,73 +25,62 @@ namespace shukersal_backend.ServiceLayer
     {
         private readonly MarketDbContext _context;
         private readonly IConfiguration _configuration;
-
+        private readonly MemberController memberController;
         public AuthService(IConfiguration configuration, MarketDbContext context)
         {
             _context = context;
             _configuration = configuration;
+            memberController = new MemberController(context);
         }
 
         [HttpPost]
         [Route("Login")]
-        public async Task<ActionResult> Login(LoginPost loginRequest)
+        public async Task<ActionResult> Login(LoginPost loginRequest, IConfiguration _configuration)
         {
-            Member? member = _context.Members.Where(m => m.Username.Equals
-            (loginRequest.Username)).FirstOrDefault();
-
-            if (member == null ||
-                !HashingUtilities.VerifyHashedPassword(member.PasswordHash, loginRequest.Password))
+            if (ModelState.IsValid)
             {
-                return BadRequest("Wrong username or password. ");
+                var response = await memberController.LoginMember(loginRequest, _configuration);
+                if (!response.IsSuccess || response.Result == null)
+                {
+                    return BadRequest(ModelState);
+                }
+                var tokenString = response.Result;
+                return Ok(tokenString);
+            }
+            else
+            {
+                return BadRequest(ModelState);
             }
 
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier, member.Username),
-                //new Claim(ClaimTypes.Email, member.Email),
-                new Claim(ClaimTypes.Role, member.Role)
-            };
 
-            var token = new JwtSecurityToken
-            (
-                issuer: _configuration["Jwt:Issuer"],
-                audience: _configuration["Jwt:Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(60),
-                notBefore: DateTime.UtcNow,
-                signingCredentials: new SigningCredentials(
-                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
-                    SecurityAlgorithms.HmacSha256)
-            );
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            return Ok(tokenString);
         }
+
+
         [HttpPost]
         [Route("Register")]
-        public async Task<ActionResult<Member>> Register(RegisterPost registerRequest)
+        public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest)
         {
-            // TODO: Move code logic to MembersService, wrap with error handlers like in store service.
 
-            Member member = new Member();
-            member.Username = registerRequest.Username;
-            member.PasswordHash = HashingUtilities.HashPassword(registerRequest.Password);
-            member.Role = UserRoles.Member;
-
-            // Verify the user does not exist
-            Member? existingUsername = _context.Members.Where(u => u.Username.Equals
-            (member.Username)).FirstOrDefault();
-            if (existingUsername != null)
+            if (ModelState.IsValid)
             {
-                return BadRequest("A user with that name already exists.");
+                var response = await memberController.RegisterMember(registerRequest);
+                if (!response.IsSuccess || response.Result == null)
+                {
+                    return BadRequest(ModelState);
+                }
+                var member = response.Result;
+                return CreatedAtAction("GetMember","MemberService", new { id = member.Id }, member);
+            }
+            else
+            {
+                return BadRequest(ModelState);
             }
 
-            _context.Members.Add(member);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(actionName: "GetUser", controllerName: "Users", new { id = member.Id }, member);
         }
+
+
+
+
         [HttpGet]
         [Route("GetLoggedUser")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AllGroup)]
@@ -110,6 +100,8 @@ namespace shukersal_backend.ServiceLayer
             }
             return user;
         }
+
+
         [HttpPost]
         [Route("ChangePassword")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AllGroup)]
