@@ -14,98 +14,60 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
+using shukersal_backend.DomainLayer.Objects;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
+    //TODO: move the logic to the MemberObject
     public class MemberController : AbstractController
     {
-        public MemberController(MarketDbContext context) : base(context) { }
+
+        private MemberObject _memberObject;
+        public MemberController(MarketDbContext context) : base(context) { 
+            _memberObject = new MemberObject(context);
+        }
 
         public async Task<Response<IEnumerable<Member>>> GetMembers()
         {
-            if (_context.Members == null)
-            {
-                return Response<IEnumerable<Member>>.Error(HttpStatusCode.NotFound, "Entity set 'MemberContext.members'  is null.");
-            }
-            var members = await _context.Members.Include(m => m.ShoppingCart).ToListAsync();
-
-            return Response<IEnumerable<Member>>.Success(HttpStatusCode.OK, members);
+            return await _memberObject.GetMembers();
         }
 
 
-        [HttpGet("{id}")]
         public async Task<Response<Member>> GetMember(long id)
         {
-            if (_context.Members == null)
-            {
-                return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
-            }
-            var member = await _context.Members.FindAsync(id);
-
-            if (member == null)
-            {
-                return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
-            }
-
-            return Response<Member>.Success(HttpStatusCode.OK, member);
+            return await _memberObject.GetMember(id);
         }
 
 
 
         public async Task<Response<Member>> AddMember(MemberPost memberData)
         {
-            if (_context.Members == null)
-            {
-                return Response<Member>.Error(HttpStatusCode.NotFound, "\"Entity set 'MemberContext.Members'  is null.\"");
-            }
-            var member = new Member
-            {
-                Username = memberData.Username,
-                PasswordHash = HashingUtilities.HashPassword(memberData.Password),
-                Role = memberData.Role
-            };
-            // Create a new shopping cart and associate it with the new member
-            var shoppingCart = new ShoppingCart
-            {
-                Member = member,
-                ShoppingBaskets = new List<ShoppingBasket>()
-            };
-
-            // Add the shopping cart and member to the database
-            _context.ShoppingCarts.Add(shoppingCart);
-            _context.Members.Add(member);
-
-            await _context.SaveChangesAsync();
-
-            return Response<Member>.Success(HttpStatusCode.Created, member);
+            return await _memberObject.AddMember(memberData);
         }
+
+
+        public async Task<Response<Member>> RegisterMember(RegisterPost registerData)
+        {
+            return await _memberObject.RegisterMember(registerData);
+        }
+
+
+        public async Task<Response<string>> LoginMember(LoginPost loginData, IConfiguration _configuration)
+        {
+            return await _memberObject.LoginMember(loginData, _configuration);
+        }
+
 
         // DELETE: api/Members/5
         [HttpDelete("{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<Response<bool>> DeleteMember(long id)
         {
-            if (_context.Members == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'Members' is null.");
-            }
-            var member = await _context.Members.FindAsync(id);
-            if (member == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.NotFound, "Member is not found");
-            }
-            var shoppingCart = await _context.ShoppingCarts.FirstOrDefaultAsync(c => c.MemberId == id);
-            if (shoppingCart != null)
-            {
-                _context.ShoppingCarts.Remove(shoppingCart); // remove ShoppingCart entity
-            }
-            _context.Members.Remove(member);
-
-            await _context.SaveChangesAsync();
-
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
+           return await _memberObject.DeleteMember(id);
         }
 
+
+        //not sure if needed
         private bool MemberExists(long id)
         {
             return (_context.Members?.Any(e => e.Id == id)).GetValueOrDefault();
