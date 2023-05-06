@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using shukersal_backend.Models;
+using shukersal_backend.Models.PurchaseModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +10,83 @@ using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
-    internal class T2_2_5_Transaction : AcceptanceTest
+
+    public class T2_2_5_Transaction : AcceptanceTest
     {
-        public T2_2_5_Transaction(ITestOutputHelper output) : base(output) { }
+        private List<PaymentDetails> billingDetails;
+        private List<DeliveryDetails> deliveryDetails;
+
+        public T2_2_5_Transaction(ITestOutputHelper output) : base(output) {
+            TransactionAT_init(); 
+        }
+
+        private void TransactionAT_init()
+        {
+            billingDetails = new List<PaymentDetails>
+                {
+                    new PaymentDetails
+                    {
+                     HolderFirstName = "Holder",
+                    HolderLastName = "Holder",
+                    HolderID = "313574357",
+                    CardNumber = "1111111111111111",
+                    ExpirationDate = new DateOnly(),
+                    CVC = "123",
+                    },
+                     new PaymentDetails
+                    {
+                         HolderFirstName = "HolderFirstName",
+                         HolderLastName = "HolderLastName",
+                         HolderID = "123456789",
+                         CardNumber = "1111111111111111",
+                         ExpirationDate = new DateOnly(),
+                         CVC = "123",
+                     }
+            };
+
+            deliveryDetails = new List<DeliveryDetails>
+            {
+                new DeliveryDetails
+                {
+                     ReceiverFirstName = "Holder",
+                    ReceiverLastName = "Holder",
+                    ReceiverPhoneNum = "0506255065",
+                    ReceiverAddress = "Holder",
+                    ReceiverPostalCode = "2804601"
+                },
+                new DeliveryDetails
+                {
+                    ReceiverFirstName= "ReceiverFirstName",
+                    ReceiverLastName= "ReceiverLastName",
+                    ReceiverPhoneNum="0500000000",
+                    ReceiverAddress= "ReceiverAddress",
+                    ReceiverPostalCode="1234567"
+                }
+            };
+        }
+
+        [Fact]
+        public async void PurchaseAShoppingCart_Member_Valid()
+        {
+            var registerResp = await bridge.Register(new RegisterPost {Username = "testUsername8", Password = "testPassword" });
+            var loginResp = await bridge.Login(new LoginPost { Username = "testUsername8", Password = "testPassword" });
+            var storeResp = await bridge.CreateStore(new StorePost { Name = "mystore", Description = "mystoredesc", RootManagerMemberId = 2 });
+            var product = await bridge.AddProduct(storeResp.Value.Id, new ProductPost { Name = "myproduct1", Description = "myproduct1Desc", Price = 10, UnitsInStock = 3, IsListed = true, CategoryId = 1 });
+            await bridge.AddItemToCart(1, new ShoppingItem { Product = product as Product, Quantity = 1 });
+            var purchaseResult = await bridge.PurchaseAShoppingCart(
+            new TransactionPost {MemberId = 1,BillingDetails = billingDetails.ElementAt(0),DeliveryDetails = deliveryDetails.ElementAt(0),TransactionItems=new List<TransactionItem> { 
+            new TransactionItem { ProductId = ((Product)product).Id,StoreId = storeResp.Value.Id,ProductName = "myproduct1",ProductDescription = "myproduct1Desc",FullPrice = 10 } } });
+            Assert.NotNull(purchaseResult.Value);
+            var history= await bridge.BrowseTransactionHistory(1);
+            Assert.NotNull(purchaseResult.Value);
+            Assert.Equal(1,history.Value.TransactionItems.Count);
+            var products= await bridge.GetStoreProducts(storeResp.Value.Id);
+            var updated = products.Value.Products.ElementAt(0);
+            Assert.Equal(2,updated.UnitsInStock);
+            var shoppingCart = bridge.GetShoppingCartByUserId(2).Result.Value;
+            Assert.Equal(0, shoppingCart.ShoppingBaskets.Count);
+
+        }
+
     }
 }

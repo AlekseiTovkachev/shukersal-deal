@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Plugins;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Models.MemberModels;
 using shukersal_backend.Utility;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -35,17 +36,17 @@ namespace shukersal_backend.ServiceLayer
 
         [HttpPost]
         [Route("Login")]
-        public async Task<ActionResult> Login(LoginPost loginRequest, IConfiguration _configuration)
+        public async Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest, IConfiguration _configuration)
         {
             if (ModelState.IsValid)
             {
                 var response = await memberController.LoginMember(loginRequest, _configuration);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
-                var tokenString = response.Result;
-                return Ok(tokenString);
+                var loginResponse = response.Result;
+                return Ok(loginResponse);
             }
             else
             {

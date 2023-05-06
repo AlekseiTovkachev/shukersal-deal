@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using shukersal_backend.DomainLayer.Objects;
+using shukersal_backend.Models.MemberModels;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
@@ -52,7 +53,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        public async Task<Response<string>> LoginMember(LoginPost loginData, IConfiguration _configuration)
+        public async Task<Response<LoginResponse>> LoginMember(LoginPost loginData, IConfiguration _configuration)
         {
             return await _memberObject.LoginMember(loginData, _configuration);
         }

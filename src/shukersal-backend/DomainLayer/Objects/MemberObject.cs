@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Plugins;
 using shukersal_backend.Models;
+using shukersal_backend.Models.MemberModels;
 using shukersal_backend.Utility;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -80,7 +81,7 @@ namespace shukersal_backend.DomainLayer.Objects
         }
 
 
-        public async Task<Response<string>> LoginMember(LoginPost loginData, IConfiguration _configuration)
+        public async Task<Response<LoginResponse>> LoginMember(LoginPost loginData, IConfiguration _configuration)
         {
             Member? member = _context.Members.Where(m => m.Username.Equals
             (loginData.Username)).FirstOrDefault();
@@ -89,7 +90,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 !HashingUtilities.VerifyHashedPassword(member.PasswordHash, loginData.Password))
             {
                 //return BadRequest("Wrong username or password. ");
-                return Response<string>.Error(HttpStatusCode.Unauthorized, "\"Wrong username or password.\"");
+                return Response<LoginResponse>.Error(HttpStatusCode.Unauthorized, "\"Wrong username or password.\"");
             }
 
             var claims = new[]
@@ -110,9 +111,14 @@ namespace shukersal_backend.DomainLayer.Objects
                     new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])),
                     SecurityAlgorithms.HmacSha256)
             );
-
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return Response<string>.Success(HttpStatusCode.Created, tokenString);
+
+            var loginResponse = new LoginResponse
+            {
+                Member = member,
+                Token = tokenString
+            };
+            return Response<LoginResponse>.Success(HttpStatusCode.Created, loginResponse);
         }
 
 
