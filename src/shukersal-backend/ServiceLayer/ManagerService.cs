@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
-using shukersal_backend.Utility;
 
 namespace shukersal_backend.ServiceLayer
 {
@@ -17,10 +16,10 @@ namespace shukersal_backend.ServiceLayer
         private readonly StoreManagerController _controller;
         private readonly Member? currentMember;
 
-        public StoreManagerService(MarketDbContext context, HttpContext httpContext)
+        public StoreManagerService(MarketDbContext context)
         {
             //_context = context;
-            currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
+            //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
             _controller = new StoreManagerController(context);
         }
 

@@ -14,8 +14,17 @@ namespace shukersal_backend.DomainLayer.Controllers
         public StoreController(MarketDbContext context) : base(context)
         {
             _marketObject = new MarketObject(context);
-            _storeObject = new StoreObject(context, _marketObject);
             _managerObject = new StoreManagerObject(context);
+            _storeObject = new StoreObject(context, _marketObject, _managerObject);
+        }
+
+        //Constructor for tests
+        public StoreController(MarketDbContext context,
+            MarketObject marketObject, StoreObject storeObject, StoreManagerObject managerObject) : base(context)
+        {
+            _marketObject = marketObject;
+            _storeObject = storeObject;
+            _managerObject = managerObject;
         }
 
         public async Task<Response<IEnumerable<Store>>> GetStores()
@@ -37,7 +46,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         public async Task<Response<bool>> UpdateStore(long storeId, StorePatch patch, Member member)
         {
             bool hasPermission = await _managerObject
-                .CheckPemission(storeId, member.Id, PermissionType.Manager_permission);
+                .CheckPermission(storeId, member.Id, PermissionType.Manager_permission);
 
             if (!hasPermission)
             {
@@ -56,7 +65,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         public async Task<Response<Product>> AddProduct(long storeId, ProductPost post, Member member)
         {
             bool hasPermission = await _managerObject
-                .CheckPemission(storeId, member.Id, PermissionType.Manage_products_permission);
+                .CheckPermission(storeId, member.Id, PermissionType.Manage_products_permission);
 
             if (!hasPermission)
             {
@@ -68,7 +77,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         public async Task<Response<Product>> UpdateProduct(long storeId, long productId, ProductPatch patch, Member member)
         {
             bool hasPermission = await _managerObject
-                .CheckPemission(storeId, member.Id, PermissionType.Manage_products_permission);
+                .CheckPermission(storeId, member.Id, PermissionType.Manage_products_permission);
 
             if (!hasPermission)
             {
@@ -81,7 +90,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         public async Task<Response<Product>> DeleteProduct(long storeId, long productId, Member member)
         {
             bool hasPermission = await _managerObject
-                .CheckPemission(storeId, member.Id, PermissionType.Manage_products_permission);
+                .CheckPermission(storeId, member.Id, PermissionType.Manage_products_permission);
 
             if (!hasPermission)
             {

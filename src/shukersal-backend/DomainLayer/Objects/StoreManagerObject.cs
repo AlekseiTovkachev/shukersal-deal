@@ -16,8 +16,13 @@ namespace shukersal_backend.DomainLayer.Objects
             _context = context;
         }
 
+        public StoreManagerObject()
+        {
 
-        public async Task<bool> CheckPemission(long storeId, long memberId, PermissionType type)
+        }
+
+
+        public virtual async Task<bool> CheckPermission(long storeId, long memberId, PermissionType type)
         {
             var manager = await _context.StoreManagers
                 .Include(m => m.StorePermissions)

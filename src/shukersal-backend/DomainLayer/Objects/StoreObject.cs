@@ -9,26 +9,28 @@ namespace shukersal_backend.DomainLayer.Objects
     {
         private MarketDbContext _context;
         private MarketObject _market;
+        private StoreManagerObject _manager;
 
-        public StoreObject(MarketDbContext context, MarketObject market)
+        public StoreObject(MarketDbContext context, MarketObject market, StoreManagerObject manager)
         {
             _context = context;
             _market = market;
+            _manager = manager;
         }
 
         public async Task<Response<Product>> AddProduct(long storeId, ProductPost post, Member member)
         {
 
-            var manager = await _context.StoreManagers
-                .Include(m => m.StorePermissions)
-                .FirstOrDefaultAsync(m => m.MemberId == member.Id && m.StoreId == storeId);
+            //var manager = await _context.StoreManagers
+            //    .Include(m => m.StorePermissions)
+            //    .FirstOrDefaultAsync(m => m.MemberId == member.Id && m.StoreId == storeId);
 
-            if (manager == null)
-            {
-                return Response<Product>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
-            }
-
-            bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
+            //if (manager == null)
+            //{
+            //    return Response<Product>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
+            //}
+            //bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
+            bool hasPermission = await _manager.CheckPermission(storeId, member.Id, PermissionType.Manage_products_permission);
 
             if (!hasPermission)
             {

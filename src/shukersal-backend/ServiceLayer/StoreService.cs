@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
 using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -14,15 +15,14 @@ namespace shukersal_backend.ServiceLayer
     public class StoreService : ControllerBase
     {
         private readonly StoreController storeController;
-        //private readonly HttpContext httpContext;
         private readonly Member? currentMember;
         private readonly ILogger logger;
 
-        public StoreService(MarketDbContext context/*, HttpContext httpContext*/, ILogger<StoreService> logger)
+        public StoreService(MarketDbContext context, ILogger<StoreService> logger)
         {
             storeController = new StoreController(context);
-            //this.httpContext = httpContext;
-            //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
+
+            currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             this.logger = logger;
             logger.LogInformation("testing the log");
         }
