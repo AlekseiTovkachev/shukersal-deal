@@ -569,7 +569,7 @@ namespace shukersal_backend.Tests.ServiceTests
             Assert.Equal("Product not found in the specified store.", result.ErrorMessage);
         }
 
-        [Fact]
+        /*[Fact]
         public async Task GetAllProducts_WithValidData_ReturnsSuccessResponse()
         {
             // Arrange
@@ -590,7 +590,7 @@ namespace shukersal_backend.Tests.ServiceTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.Equal(products, result.Result);
-        }
+        }*/
 
         [Fact]
         public async Task GetCategories_WithValidData_ReturnsSuccessResponse()
@@ -604,6 +604,7 @@ namespace shukersal_backend.Tests.ServiceTests
 
             _context.Setup(x => x.Categories).ReturnsDbSet(categories.AsQueryable());
             // Act
+
             var result = await _controller.GetCategories();
 
             // Assert

@@ -1,7 +1,7 @@
-﻿//using shukersal_backend.Models;
-//using Xunit.Abstractions;
 
-//namespace shukersal_backend.Tests.Controllers
+using shukersal_backend.Models;
+using Xunit.Abstractions;
+
 //{
 //    public class MembersControllerTests
 //    {
@@ -40,8 +40,10 @@
 //            // Configure mock MemberContext to return a valid collection of Member entities
 
 
-//            // Act
-//            var result = await _controller.PostMember(memberData);
+
+            // Act
+            var result = await _controller.AddMember(memberData);
+
 
 //            // Assert
 //            Assert.IsType<CreatedAtActionResult>(result.Result);
@@ -58,8 +60,9 @@
 //                Password = "123"
 //            };
 
-//            // Act
-//            var result = await _controller.PostMember(memberData);
+
+            // Act
+            var result = await _controller.AddMember(memberData);
 
 //            // Assert
 //            Assert.IsType<BadRequestObjectResult>(result.Result);
@@ -77,8 +80,10 @@
 
 //            _context.Setup(m => m.Members).ReturnsDbSet((DbSet<Member>)null); // Set MemberContext.Members to null
 
-//            // Act
-//            var result = await _controller.PostMember(memberData);
+
+            // Act
+            var result = await _controller.AddMember(memberData);
+
 
 //            // Assert
 //            Assert.IsType<BadRequestObjectResult>(result.Result);
