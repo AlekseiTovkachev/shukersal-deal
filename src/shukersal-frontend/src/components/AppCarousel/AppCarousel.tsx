@@ -20,7 +20,7 @@ export const AppCarousel = ({ slides }: AppCarouselProps) => {
             <Carousel
                 showStatus={false}
                 emulateTouch
-                onClickItem={() => { console.log("[DEBUG] CLICK") }}
+                //onClickItem={() => { console.log("[DEBUG] CLICK") }}
                 showThumbs={false}
                 showArrows
                 //autoPlay

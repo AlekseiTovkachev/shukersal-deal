@@ -1,10 +1,10 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-import { RootState } from './store'
 import { localStorageValues } from '../_configuration';
 import { authApi } from '../api/authApi';
 import { Member } from '../types/appTypes';
 import { ApiError } from '../types/apiTypes';
+import { LoginFormFields } from '../types/formTypes';
 
 const sliceName = 'auth';
 
@@ -15,11 +15,7 @@ export const login = createAsyncThunk<
         token: string,
         rememberMe: boolean
     },
-    {
-        username: string,
-        password: string,
-        rememberMe: boolean
-    },
+    LoginFormFields,
     { rejectValue: ApiError }
 >(
     `${sliceName}/login`,

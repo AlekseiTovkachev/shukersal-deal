@@ -41,34 +41,6 @@ export const BuyerPage = () => {
                     )}
                 />
             </Grid>
-            <Grid xs={12} item>
-                <AppCarousel
-                    slides={products.map((product, index) =>
-                        <AppProductCard key={index} product={product} />
-                    )}
-                />
-            </Grid>
-            <Grid xs={12} item>
-                <AppCarousel
-                    slides={products.map((product, index) =>
-                        <AppProductCard key={index} product={product} />
-                    )}
-                />
-            </Grid>
-            <Grid xs={12} item>
-                <AppCarousel
-                    slides={products.map((product, index) =>
-                        <AppProductCard key={index} product={product} />
-                    )}
-                />
-            </Grid>
-            <Grid xs={12} item>
-                <AppCarousel
-                    slides={products.map((product, index) =>
-                        <AppProductCard key={index} product={product} />
-                    )}
-                />
-            </Grid>
             { /* -------------------- Recommended Items -------------------- */}
 
             { /* -------------------- Recommended Stores -------------------- */}

@@ -15,7 +15,7 @@ export type TokenResponseBody = {
 
 export const authApi = {
     login: (credentials: LoginPostData): Promise<TokenResponseBody> =>
-        apiErrorHandlerWrapper(apiClient.post('api-token-auth/', credentials)),
+        apiErrorHandlerWrapper(apiClient.post('auth/login/', credentials)),
     register: () =>
         console.error('NOT IMPLEMENTED!') //TODO: IMPLEMENT apiErrorHandlerWrapper(noAuthApiClient.post(''))
 } 

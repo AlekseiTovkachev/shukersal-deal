@@ -115,7 +115,7 @@ export const AppProductCard = ({ product }: AppProductCardProps) => {
                 <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                     <PriceText price={product.price} />
                     <FlexSpacer />
-                    <Button variant="contained" size="small">Add to Cart</Button>
+                    <Button variant="contained" size="small" color="secondary">Add to Cart</Button>
                 </Box>
             </Box>
         </Box>
