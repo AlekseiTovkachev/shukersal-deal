@@ -1,4 +1,4 @@
-import { Member } from '../types/AppTypes';
+import { Member } from '../../types/appTypes';
 
 // TODO: Remove this once redux is implemented
 export const demoMembers: Member[] = [{

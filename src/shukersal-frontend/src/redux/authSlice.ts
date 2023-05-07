@@ -59,6 +59,11 @@ export const authSlice = createSlice({
                 state.error = undefined;
             })
             .addCase(login.fulfilled, (state, { payload }) => {
+                state.isLoading = false;
+                state.data = {
+                    token: payload.token,
+                    currentMember: payload.member
+                }
                 if (payload.rememberMe) {
                     window.localStorage.setItem(localStorageValues.auth.currentMemberData.name, JSON.stringify(payload));
                 } else {
@@ -67,7 +72,7 @@ export const authSlice = createSlice({
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
-                state.error = action.error.message ?? 'Login Error. ';
+                state.error = action.payload ?? { message: 'Login Error. ' };
             })
     }
 })

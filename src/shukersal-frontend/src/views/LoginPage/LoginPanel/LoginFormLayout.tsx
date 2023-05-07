@@ -22,9 +22,9 @@ export const LoginFormLayout = () => {
             <Box className="app-typewriter-container">
                 <Typography
                     className="app-typewriter-text"
-                    variant="h4"
+                    variant="h5"
                     color="primary.contrastText"
-                >Welcome</Typography>
+                >The best marketplace</Typography>
             </Box>
         </Grid>
         <Grid item xs={12}>

@@ -1,4 +1,6 @@
-export type ApiError = string;
+export type ApiError = {
+    message: string
+};
 
 
 export type ApiListData<T> = T[];

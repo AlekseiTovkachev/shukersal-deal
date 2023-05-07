@@ -10,8 +10,13 @@ export const useAuth = () => {
     const isLoading = useAppSelector((state) => state.auth.isLoading);
     const error = useAppSelector((state) => state.auth.error);
 
-    const loginCallback = useCallback((formData: LoginFormFields) => {
-        dispatch(login(formData));
+    const loginCallback = useCallback(async (formData: LoginFormFields) => {
+        const response = await dispatch(login(formData));
+        if (response.meta.requestStatus === 'fulfilled') {
+            return true;
+        }
+        return false;
+
     }, [dispatch]);
 
     return {

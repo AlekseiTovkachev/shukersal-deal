@@ -1,4 +1,4 @@
-export const API_URL = 'https://localhost:5130';
+export const API_URL = 'https://localhost:7258/api/';
 export const API_DATE_TIME_FORMAT = 'YYYY-MM-DDTHH:mm:ssZ';
 export const APP_CURRENCY_SIGN = "$";
 

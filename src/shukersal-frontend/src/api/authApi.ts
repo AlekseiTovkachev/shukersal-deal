@@ -2,6 +2,7 @@ import { Member } from '../types/appTypes';
 import { apiClient } from './apiClient';
 import { apiErrorHandlerWrapper } from './util';
 
+
 export interface LoginPostData {
     username: string;
     password: string;
@@ -12,10 +13,11 @@ export type TokenResponseBody = {
     token: string
 };
 
+const serviceName = 'authservice';
 
 export const authApi = {
     login: (credentials: LoginPostData): Promise<TokenResponseBody> =>
-        apiErrorHandlerWrapper(apiClient.post('auth/login/', credentials)),
+        apiErrorHandlerWrapper(apiClient.post(`${serviceName}/login/`, credentials)),
     register: () =>
         console.error('NOT IMPLEMENTED!') //TODO: IMPLEMENT apiErrorHandlerWrapper(noAuthApiClient.post(''))
 } 
