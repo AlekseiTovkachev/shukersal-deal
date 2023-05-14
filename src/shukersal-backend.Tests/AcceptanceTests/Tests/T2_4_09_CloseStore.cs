@@ -1,4 +1,5 @@
-﻿using System;
+﻿using shukersal_backend.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,23 @@ namespace shukersal_backend.Tests.AcceptanceTests
 {
     internal class T2_4_09_CloseStore : AcceptanceTest
     {
-        public T2_4_09_CloseStore(ITestOutputHelper output) : base(output) { }
+        private long StoreId;
+        private bool isInitFinished;
+        public T2_4_09_CloseStore(ITestOutputHelper output) : base(output) {
+            isInitFinished = false;
+            Init();
+            while (!isInitFinished) { }
+        }
+        private async void Init()
+        {
+
+            await bridge.Register(new RegisterPost { Username = "testUsername2409", Password = "testPassword" });
+            await bridge.Login(new LoginPost { Username = "testUsername2409", Password = "testPassword" });
+            var user = (await bridge.GetLoggedUser()).Value;
+            var res = await bridge.CreateStore(new StorePost { Name = "store2409", Description = "", RootManagerMemberId = user.Id });
+            if (res.Value != null)
+                StoreId = res.Value.Id;
+            isInitFinished = true;
+        }
     }
 }

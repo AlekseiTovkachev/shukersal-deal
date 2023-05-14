@@ -24,7 +24,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
     public class Bridge : IBridge
     {
         private readonly AuthService authService;
-        //private readonly StoreManagersController storeManagersController; //TODO: rename me
+        private readonly StoreManagerService storeManagersService;
         private readonly MemberService memberService;
         private readonly TransactionService TransactionService;
         private readonly ShoppingCartService shoppingCartService;
@@ -148,35 +148,35 @@ namespace shukersal_backend.Tests.AcceptanceTests
         //Manager
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()
         {
-            return null;
+            return await storeManagersService.GetStoreManagers();
         }
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
-            return null;
+            return await storeManagersService.GetStoreManager(id);
         }
         public async Task<ActionResult<StoreManager>> PostStoreManager(OwnerManagerPost post)
         {
-            return null;
+            return await storeManagersService.PostStoreManager(post);
         }
         public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
         {
-            return null;
+            return await storeManagersService.PostStoreOwner(post);
         }
         public async Task<IActionResult> PutStoreManager(long id, StoreManager storeManager)
         {
-            return null;
+            return await storeManagersService.PutStoreManager(id, storeManager);
         }
         public async Task<IActionResult> DeleteStoreManager(long id)
         {
-            return null;
+            return await storeManagersService.DeleteStoreManager(id);
         }
         public async Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission)
         {
-            return null;
+            return await storeManagersService.AddPermissionToManager(Id, permission);
         }
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
         {
-            return null;
+            return await storeManagersService.RemovePermissionFromManager(id, permission);
         }
         //Auth
         public async Task<ActionResult> Login(LoginPost loginRequest)
@@ -198,6 +198,33 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
         public async void init()
         {
+            var membersList = new List<Member>
+            {
+                new Member
+                {
+                    Id = 101,
+                    Username = "TestM1",
+                    PasswordHash = HashingUtilities.HashPassword("password")
+                },
+                new Member
+                {
+                    Id = 102,
+                    Username = "TestM2",
+                    PasswordHash = HashingUtilities.HashPassword("password")
+                },
+                new Member
+                {
+                    Id = 103,
+                    Username = "TestM3",
+                    PasswordHash = HashingUtilities.HashPassword("password")
+                },
+                new Member
+                {
+                    Id = 104,
+                    Username = "TestM4",
+                    PasswordHash = HashingUtilities.HashPassword("password")
+                }
+            };
             _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>());
             _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>());
             string debug = (AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin"}).Result.ToJson());
@@ -219,6 +246,9 @@ namespace shukersal_backend.Tests.AcceptanceTests
             }.AsQueryable();
 
             _context.Setup(c => c.Stores).ReturnsDbSet(stores);
+            _context.Setup(p => p.Products).ReturnsDbSet(new List<Product>());
+            _context.Setup(m => m.StoreManagers).ReturnsDbSet(new List<StoreManager>());
+            _context.Setup(m => m.StorePermissions).ReturnsDbSet(new List<StorePermission>());
         }
     }
 }
