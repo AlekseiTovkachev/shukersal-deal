@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using shukersal_backend.Models.MemberModels;
+using shukersal_backend.ServiceLayer;
+using shukersal_backend.Utility;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
@@ -48,7 +51,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission) { return StatusCode(501); }
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission) { return StatusCode(501); }
         //Auth
-        public async Task<ActionResult> Login(LoginPost loginRequest) { return StatusCode(501); }
+        public async Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest) { return StatusCode(501); }
         public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest) { return StatusCode(501); }
         public async Task<ActionResult<Member>> GetLoggedUser() { return StatusCode(501); }
         public async Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest) { return StatusCode(501); }

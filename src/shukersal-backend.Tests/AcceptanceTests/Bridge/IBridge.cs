@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using shukersal_backend.Models;
+using shukersal_backend.Models.MemberModels;
+using shukersal_backend.ServiceLayer;
+using shukersal_backend.Utility;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
@@ -47,7 +51,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission);
         Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission);
         //Auth
-        Task<ActionResult> Login(LoginPost loginRequest);
+        Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest);
         Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest);
         Task<ActionResult<Member>> GetLoggedUser();
         Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest);
