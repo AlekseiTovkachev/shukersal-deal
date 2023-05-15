@@ -10,7 +10,7 @@ using Xunit;
 using shukersal_backend.Utility;
 
 
-//TODO: tests are not done yet need to add more and are not runing.
+//TODO: tests dont work properly. look at AT 2.1 for similar tests.
 
 
 namespace shukersal_backend.Tests.ServiceLayer
