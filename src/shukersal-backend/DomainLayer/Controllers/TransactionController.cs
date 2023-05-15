@@ -22,33 +22,28 @@ namespace shukersal_backend.DomainLayer.Controllers
     public class TransactionController
     {
         private readonly MarketDbContext _context;
-        private readonly PaymentProxy _paymentProvider;
-        private readonly DeliveryProxy _deliveryProvider;
+        
         private readonly TransactionObject _transactionObject;
 
         private readonly MarketObject _marketObject;
         private readonly StoreObject _storeObject;
 
-        //private readonly ShoppingCartObject _shoppingCartObject; 
         private readonly MemberObject _memberObject;
 
 
         public TransactionController(MarketDbContext context)
         {
             _context = context;
-            _paymentProvider = new PaymentProxy();
-            _deliveryProvider = new DeliveryProxy();
             _marketObject = new MarketObject(context);
             _storeObject = new StoreObject(context, _marketObject, new StoreManagerObject());
             _memberObject= new MemberObject(context);
             _transactionObject = new TransactionObject(context,_marketObject);
-
         }
 
 
-        public DeliveryProxy getDeliveryProxy() { return _deliveryProvider; }
+        public DeliveryProxy getDeliveryProxy() { return _marketObject.getDeliveryProxy(); }
 
-        public PaymentProxy getPaymentProxy() { return _paymentProvider; }
+        public PaymentProxy getPaymentProxy() { return _marketObject.getPaymentProxy(); }
 
         public async Task<Response<IEnumerable<Transaction>>> GetTransactions()
         {
@@ -73,9 +68,12 @@ namespace shukersal_backend.DomainLayer.Controllers
        
         public async Task<Response<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
-
+            long memberId=0;
             var member = await _memberObject.GetMember(TransactionPost.MemberId);
-            bool isGuest = member.Result == null;
+            if (member.Result != null)
+            {
+                memberId = member.Result.Id;
+            }
 
             if (TransactionPost.TransactionItems.IsNullOrEmpty())
             {
@@ -88,8 +86,6 @@ namespace shukersal_backend.DomainLayer.Controllers
                 MemberId = TransactionPost.MemberId,
                 TransactionDate = TransactionPost.TransactionDate,
                 TransactionItems= new List<TransactionItem>(),
-                
-            
             };
 
             Dictionary<long,List<TransactionItem>> TransactionBaskets=new Dictionary<long,List<TransactionItem>>();
@@ -104,67 +100,32 @@ namespace shukersal_backend.DomainLayer.Controllers
                 TransactionBaskets[item.StoreId].Add(item);
             }
 
+            var allValid = await CheckRulesAndApplyDiscounts(TransactionBaskets,memberId);
 
-            foreach(KeyValuePair<long,List<TransactionItem>> basket in TransactionBaskets)
-            {
-
-                var allAvailable = await CheckAvailabilityInStock(basket.Key, TransactionBaskets[basket.Key]);
-                if (!allAvailable.Result)
-                {
-                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
-                }
-                
-               //var allAvailable= await _marketObject.CheckPurchasePolicy(basket.key, TransactionBaskets[basket.key]);
-
-               var compliesWithTransactionPolicy = await CheckPurchasePolicy(basket.Key, TransactionBaskets[basket.Key]);
-                if (!compliesWithTransactionPolicy.Result)
-                {
-                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, compliesWithTransactionPolicy.ErrorMessage);
-                }
-
-                //var discountsApplied = await  _marketObject.ApplyDiscounts(basket.StoreId, TransactionBaskets[basket.StoreId], TransactionPost.MemberId);
-                var discountsApplied = await ApplyDiscounts(basket.Key, TransactionBaskets[basket.Key], TransactionPost.MemberId);
-                if (!discountsApplied.Result)
-                {
-                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
-                }
-            }
+            if (!allValid.IsSuccess) { return Response<Transaction>.Error(HttpStatusCode.BadRequest, allValid.ErrorMessage); }
 
 
             Transaction.TotalPrice = TransactionBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
             TransactionPost.BillingDetails.TotalPrice = TransactionPost.TotalPrice=Transaction.TotalPrice;
             TransactionBaskets.Values.ToList().ForEach(basket => Transaction.TransactionItems.AddRange(basket));
 
-            //connction with external delivery service
-            bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(TransactionPost.DeliveryDetails,Transaction.TransactionItems.ToList());
-            if (!deliveryConfirmed)
-            {
-                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Delivey declined");
-
-            }
-            //connction with external delivery service
-            bool paymentConfirmed = _paymentProvider.ConfirmPayment(TransactionPost.BillingDetails);
-
-            if (!paymentConfirmed)
-            {
-                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Payment declined");
-
-            }
+            var gotExternalServicesConfirmation = _marketObject.confirmDeliveryAndPayment(TransactionPost.DeliveryDetails, Transaction.TransactionItems.ToList(),TransactionPost.BillingDetails);
+            if(!gotExternalServicesConfirmation.IsSuccess) {return Response<Transaction>.Error(HttpStatusCode.BadRequest, gotExternalServicesConfirmation.ErrorMessage); }
 
             foreach (var (storeId, items) in TransactionBaskets)
             {
-                //var stockUpdated= await _marketObject.UpdateStock(storeId, items);
-                var stockUpdated = await UpdateStock(storeId, items);
-                if (!stockUpdated.Result)
+                var stockUpdated= await _marketObject.UpdateStock(storeId, items);
+
+                if (!stockUpdated.IsSuccess || !stockUpdated.Result)
                 {
                     return Response<Transaction>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
                 }
                 //TODO: sendTransactionNotification(storeId);
             }
 
-            if (!isGuest)
+            if (member.Result!=null)
             {
-               //await _ShoppingCartObject.EmptyCart(member.Id);
+               await _marketObject.EmptyCart(member.Result.Id);
             }
 
 
@@ -236,17 +197,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 
-        private async Task<Response<bool>> CheckPurchasePolicy(long storeId, List<TransactionItem> TransactionItems)
-        {
-            var shop = await _marketObject.GetStore(storeId);
-            if (shop.Result==null)
-            {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
-            }
-
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
-
-        }
+        
 
         private async Task<Response<bool>> ApplyDiscounts(long storeId, List<TransactionItem> TransactionItems, long memberId)
         {
@@ -263,55 +214,37 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        private async Task<Response<bool>> CheckAvailabilityInStock(long storeId, List<TransactionItem> TransactionItems)
-        {
-            var shop = await _marketObject.GetStore(storeId);
-            if (shop.Result == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
-            }
-
-            foreach (var TransactionItem in TransactionItems)
-            {
-                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
-                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                if (product.UnitsInStock < TransactionItem.Quantity) { return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store"); }
-            }
-
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
-
-        }
-
-
-        private async Task<Response<bool>> UpdateStock(long storeId, List<TransactionItem> TransactionItems)
-        {
-            var shop = await _marketObject.GetStore(storeId);
-            if (shop.Result == null)
-            {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
-            }
-
-            foreach (var TransactionItem in TransactionItems)
-            {
-                var product = await _context.Products.FindAsync(TransactionItem.ProductId);
-                if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                if (product.UnitsInStock < TransactionItem.Quantity)
-                {
-                    return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store");
-                }
-                else
-                {
-                    product.UnitsInStock = product.UnitsInStock - TransactionItem.Quantity;
-                }
-            }
-            await _context.SaveChangesAsync();
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
-
-        }
-
         public async Task<Response<bool>> UpdateTransaction(long Transactionid, TransactionPost post) {
             return await _transactionObject.UpdateTransaction(Transactionid, post);
         }
+
+
+        public async Task<Response<Dictionary<long, List<TransactionItem>>>> CheckRulesAndApplyDiscounts(Dictionary<long, List<TransactionItem>> TransactionBaskets ,long memberId )
+        {
+            foreach (KeyValuePair<long, List<TransactionItem>> basket in TransactionBaskets)
+            {
+
+                var allAvailable = await _marketObject.CheckAvailabilityInStock(basket.Key, TransactionBaskets[basket.Key]);
+                if (!allAvailable.Result)
+                {
+                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
+                }
+
+                var compliesWithTransactionPolicy = await _marketObject.CheckPurchasePolicy(basket.Key, TransactionBaskets[basket.Key]);
+                if (!compliesWithTransactionPolicy.Result)
+                {
+                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, compliesWithTransactionPolicy.ErrorMessage);
+                }
+
+                var discountsApplied = await ApplyDiscounts(basket.Key, TransactionBaskets[basket.Key], memberId);
+                if (!discountsApplied.Result)
+                {
+                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
+                }
+            }
+            return Response<Dictionary<long, List<TransactionItem>>>.Success(HttpStatusCode.BadRequest, TransactionBaskets);
+        }
+        
 
     }
 }

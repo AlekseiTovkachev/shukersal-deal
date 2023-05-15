@@ -55,7 +55,7 @@ namespace shukersal_backend.Tests.Controllers
             Assert.Equal(shoppingCart, okResult.Value);
         }
 
-        //[Fact]
+     /*   //[Fact]
         public async Task AddItemToCart_ReturnsNotImplemented()
         {
             // Arrange
@@ -67,11 +67,11 @@ namespace shukersal_backend.Tests.Controllers
 
             // Assert
             Assert.IsType<StatusCodeResult>(result);
-            var statusCodeResult = result as StatusCodeResult;
-            Assert.Equal(StatusCodes.Status501NotImplemented, statusCodeResult.StatusCode);
+            var statusCodeResult = result.Result;
+            Assert.Equal(StatusCodes., statusCodeResult);
         }
-
-        //[Fact]
+     */
+   /*     //[Fact]
         public async Task RemoveItemFromCart_ReturnsNotImplemented()
         {
             // Arrange
@@ -86,5 +86,6 @@ namespace shukersal_backend.Tests.Controllers
             var statusCodeResult = result as StatusCodeResult;
             Assert.Equal(StatusCodes.Status501NotImplemented, statusCodeResult.StatusCode);
         }
+   */
     }
 }

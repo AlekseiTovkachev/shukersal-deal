@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
 
 namespace shukersal_backend.ServiceLayer
 {
@@ -16,43 +18,89 @@ namespace shukersal_backend.ServiceLayer
     [EnableCors("AllowOrigin")]
     public class ShoppingCartService : ControllerBase
     {
-        private readonly MarketDbContext _context;
+        //private readonly MarketDbContext _context;
+        private readonly ShoppingCartController _shoppingCartController;
+        private readonly Member? currentMember;
 
         public ShoppingCartService(MarketDbContext context)
         {
-            _context = context;
+            _shoppingCartController = new ShoppingCartController(context);
+            currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+
         }
         // GET: api/ShoppingCarts/memberId/5
-        [HttpGet("memberId/{memberId}")]
+        [HttpGet("{memberId}/GetShoppingCartByUserId")]
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId)
         {
-            var shoppingCart = await _context.ShoppingCarts
-                .Include(s => s.ShoppingBaskets)
-                .ThenInclude(b => b.ShoppingItems)
-                .FirstOrDefaultAsync(c => c.MemberId == memberId);
+            if(currentMember == null) { Unauthorized(); }
 
-            if (shoppingCart == null)
+            var response = await _shoppingCartController.GetShoppingCartByUserId(memberId);
+            if (response.Result==null)
             {
                 return NotFound();
             }
+            return Ok(response.Result);
+        }
 
-            return shoppingCart;
+        // GET: api/ShoppingCarts/memberId/5
+        [HttpGet("{cartId}/GetShoppingCartByCartId")]
+        public async Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId)
+        {
+            if (currentMember == null) { Unauthorized(); }
+
+            var response = await _shoppingCartController.GetShoppingCartById(cartId);
+            if (response.Result == null)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
         }
 
         // POST: api/ShoppingCarts/5/items
-        [HttpPost("{id}/items")]
-        public async Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item)
+        [HttpPost("{cartId}/AddItemToCart")]
+        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItem item)
         {
-            // TODO: Implement addition based on store id (to the correct basket)
-            return new StatusCodeResult(StatusCodes.Status501NotImplemented);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var itemResp = await _shoppingCartController.AddItemToCart(cartId, item);
+            if (itemResp.Result!=null && itemResp.IsSuccess) 
+            {
+                return itemResp.Result;
+            }
+            return BadRequest(itemResp.ErrorMessage);
         }
 
         // DELETE: api/ShoppingCarts/5/items/1
-        [HttpDelete("{id}/items/{itemId}")]
-        public async Task<IActionResult> RemoveItemFromCart(long id, long itemId)
+        [HttpDelete("{cartid}/RemoveItemFromCart")]
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item)
         {
-            // TODO: Implement removal of correct item, as well as removing of empty baskets
-            return new StatusCodeResult(501); // Not implemented
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId,item);
+            if (itemResp.Result != null && itemResp.IsSuccess)
+            {
+                return itemResp.Result;
+            }
+            return BadRequest(itemResp.ErrorMessage);
+        }
+
+        [HttpPut("{cartId}")]
+        public async Task<ActionResult<ShoppingItem>> PutStoreManager(long cartId, ShoppingItem item)
+        {
+            var response = await _shoppingCartController.EditItemQuantity(cartId, item);
+            if (!response.IsSuccess)
+            {
+                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    return BadRequest();
+                }
+                return NotFound();
+            }
+            return Ok(response.Result);
         }
     }
 }
