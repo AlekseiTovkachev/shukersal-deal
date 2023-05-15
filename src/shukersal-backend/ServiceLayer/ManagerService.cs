@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.ServiceLayer
 {
@@ -12,13 +14,13 @@ namespace shukersal_backend.ServiceLayer
     public class StoreManagerService : ControllerBase
     {
         //private readonly ManagerContext _context;
-        //private readonly MarketDbContext _context;
+        private readonly MarketDbContext _context;
         private readonly StoreManagerController _controller;
         private readonly Member? currentMember;
 
         public StoreManagerService(MarketDbContext context)
         {
-            //_context = context;
+            _context = context;
             //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
             _controller = new StoreManagerController(context);
         }
@@ -43,11 +45,39 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
+        // GET: api/StoreManagers/member/5
+        [HttpGet("member/{memberId}")]
+        public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
+        {
+            var response = await _controller.GetStoreManagersByMemberId(memberId);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
+        [HttpGet("stores/{memberId}")]
+        public async Task<ActionResult<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
+        {
+            var response = await _controller.GetManagedStoresByMemberId(memberId);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
         // POST: api/StoreManagers
         [HttpPost("api/storemanager/createstoremanager")]
         public async Task<ActionResult<StoreManager>> PostStoreManager(OwnerManagerPost post)
         {
-            var response = await _controller.PostStoreManager(post);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.PostStoreManager(post, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -58,7 +88,12 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("api/storemanager/createstoreowner")]
         public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
         {
-            var response = await _controller.PostStoreOwner(post);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.PostStoreOwner(post, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -73,7 +108,7 @@ namespace shukersal_backend.ServiceLayer
             var response = await _controller.PutStoreManager(id, storeManager);
             if (!response.IsSuccess)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
                     return BadRequest();
                 }
@@ -86,6 +121,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreManager(long id)
         {
+            //var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            //if (currentMember == null)
+            //{
+            //    return Unauthorized();
+            //}
             var response = await _controller.DeleteStoreManager(id);
             if (!response.IsSuccess)
             {
@@ -99,7 +139,12 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("{id}/permissions")]
         public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
         {
-            var response = await _controller.AddPermissionToManager(id, permission);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.AddPermissionToManager(id, permission, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -111,6 +156,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}/permissions")]
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             var response = await _controller.RemovePermissionFromManager(id, permission);
             if (!response.IsSuccess)
             {

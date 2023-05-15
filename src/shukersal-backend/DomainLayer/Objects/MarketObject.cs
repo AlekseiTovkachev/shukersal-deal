@@ -92,7 +92,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Error(HttpStatusCode.Unauthorized, "The user is not authorized to update store");
             }
 
-            bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
+            //bool hasPermission = manager.StorePermissions.Any(p => p.PermissionType == PermissionType.Manager_permission);
 
             var store = await _context.Stores.FindAsync(id);
             if (store == null)

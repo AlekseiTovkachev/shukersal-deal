@@ -17,11 +17,12 @@ namespace shukersal_backend.ServiceLayer
         private readonly StoreController storeController;
         private readonly Member? currentMember;
         private readonly ILogger logger;
+        private readonly MarketDbContext context;
 
         public StoreService(MarketDbContext context, ILogger<StoreService> logger)
         {
             storeController = new StoreController(context);
-
+            this.context = context;
             currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             this.logger = logger;
             logger.LogInformation("testing the log");
@@ -55,13 +56,15 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
-            if (currentMember == null)
+            var member = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (member == null)
             {
                 return Unauthorized();
             }
             if (ModelState.IsValid)
             {
-                var response = await storeController.CreateStore(storeData, currentMember);
+                var response = await storeController
+                    .CreateStore(storeData, member);
                 if (!response.IsSuccess || response.Result == null)
                 {
                     return BadRequest(response.ErrorMessage);
@@ -79,6 +82,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStore(long id, StorePatch patch)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -103,6 +107,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -119,6 +124,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("stores/{storeId}/products")]
         public async Task<IActionResult> AddProduct(long storeId, ProductPost product)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -139,6 +145,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("stores/{storeId}/products/{productId}")]
         public async Task<IActionResult> UpdateProduct(long storeId, long productId, ProductPatch product)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -159,6 +166,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("stores/{storeId}/products")]
         public async Task<IActionResult> DeleteProduct(long storeId, long productId)
         {
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -200,6 +208,18 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
             var response = await storeController.GetCategories();
+            return Ok(response.Result);
+        }
+
+        // GET: api/Store/5
+        [HttpGet("products/{id}")]
+        public async Task<ActionResult<Product>> GetProduct(long id)
+        {
+            var response = await storeController.GetProduct(id);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
             return Ok(response.Result);
         }
     }

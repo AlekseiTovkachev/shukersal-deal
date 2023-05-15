@@ -38,6 +38,22 @@ namespace shukersal_backend.DomainLayer.Objects
             return hasPermission;
         }
 
+        public virtual async Task<bool> CheckPermission(long managerId, PermissionType type)
+        {
+            var manager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(m => m.Id == managerId);
+
+            if (manager == null || manager.StorePermissions == null)
+            {
+                return false;
+            }
+            bool hasPermission = manager.StorePermissions
+                .Any(p => p.PermissionType == PermissionType.Manager_permission || p.PermissionType == type);
+
+            return hasPermission;
+        }
+
         public async Task<Response<IEnumerable<StoreManager>>> GetStoreManagers()
         {
             var managers = await _context.StoreManagers.ToListAsync();
@@ -59,6 +75,38 @@ namespace shukersal_backend.DomainLayer.Objects
 
             return Response<StoreManager>.Success(HttpStatusCode.OK, storeManager);
         }
+
+        public async Task<Response<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
+        {
+            var storeManagers = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .Where(s => s.MemberId == memberId)
+                .ToListAsync();
+
+            if (storeManagers.Count == 0)
+            {
+                return Response<IEnumerable<StoreManager>>.Error(HttpStatusCode.NotFound, "");
+            }
+
+            return Response<IEnumerable<StoreManager>>.Success(HttpStatusCode.OK, storeManagers);
+        }
+
+        public async Task<Response<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
+        {
+            var storeManagers = await _context.StoreManagers
+                .Where(s => s.MemberId == memberId)
+                .ToListAsync();
+
+            if (storeManagers.Count == 0)
+            {
+                return Response<IEnumerable<Store>>.Error(HttpStatusCode.NotFound, "");
+            }
+
+            var managedStores = storeManagers.Select(sm => sm.Store);
+
+            return Response<IEnumerable<Store>>.Success(HttpStatusCode.OK, managedStores);
+        }
+
 
 
         public async Task<Response<StoreManager>> PostStoreManager(OwnerManagerPost post)

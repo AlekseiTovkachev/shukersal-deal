@@ -62,6 +62,11 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _marketObject.DeleteStore(storeId, member);
         }
 
+        public async Task<Response<Product>> GetProduct(long productId)
+        {
+            return await _storeObject.GetProduct(productId);
+        }
+
         public async Task<Response<Product>> AddProduct(long storeId, ProductPost post, Member member)
         {
             bool hasPermission = await _managerObject

@@ -151,5 +151,17 @@ namespace shukersal_backend.DomainLayer.Objects
 
             return Response<IEnumerable<Product>>.Success(HttpStatusCode.OK, products);
         }
+
+        public async Task<Response<Product>> GetProduct(long id)
+        {
+
+            var product = await _context.Products
+                .FindAsync(id);
+            if (product == null)
+            {
+                return Response<Product>.Error(HttpStatusCode.NotFound, "Not found");
+            }
+            return Response<Product>.Success(HttpStatusCode.OK, product);
+        }
     }
 }
