@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Models.MemberModels;
 using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
 using System;
@@ -31,6 +32,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private readonly StoreService storeService;
         public readonly Mock<MarketDbContext> _context;
         public readonly Mock<ILogger<StoreService>> _logger;
+        private readonly IConfiguration _configuration;
         public Bridge() {
             
             _context = new Mock<MarketDbContext>();
@@ -38,7 +40,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
             //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
 
             //TODO: init configuration
-            authService = new AuthService(null, _context.Object);
+            _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+            authService = new AuthService(_configuration, _context.Object);
             memberService = new MemberService(_context.Object);
             TransactionService = new TransactionService(_context.Object);
             shoppingCartService = new ShoppingCartService(_context.Object);
@@ -179,7 +182,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
             return null;
         }
         //Auth
-        public async Task<ActionResult> Login(LoginPost loginRequest)
+        public async Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest)
         {
             return null;
         }
