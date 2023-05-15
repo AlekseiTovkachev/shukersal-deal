@@ -51,6 +51,41 @@ namespace shukersal_backend.Tests
                 Assert.True(wres1.IsSuccess ^ wres2.IsSuccess);
             }
         }
+
+
+        [Fact]
+        public void DoubleRegister_TwoThreads()
+        {
+            // Arrange
+            bool isThread1Completed = false;
+            bool isThread2Completed = false;
+            Thread thread1 = new Thread(() =>
+            {
+                for (int i = 0; i < 1; i++)
+                    _memberController.RegisterMember(new RegisterPost { Username = "User" + i.ToString(), Password = "Pass2" });
+                isThread1Completed = true;
+            });
+
+            Thread thread2 = new Thread(() =>
+            {
+                for (int i = 0; i < 1; i++)
+                    _memberController.RegisterMember(new RegisterPost { Username = "User" + i.ToString(), Password = "Pass1" });
+                isThread2Completed = true;
+            });
+
+            // Act
+            thread1.Start();
+            thread2.Start();
+
+            // Wait for both threads to complete
+            thread1.Join();
+            thread2.Join();
+
+            // Assert
+            Assert.True(isThread1Completed ^ isThread2Completed);
+        }
+
+
         [Fact]
         public void DoubleBasket()
         {
