@@ -3,18 +3,18 @@ import { useMemo } from 'react';
 import { Controller, useFormContext } from 'react-hook-form';
 
 import { Typography, Divider, TextField, Grid, Box, useTheme, useMediaQuery, FormControlLabel, Checkbox } from '@mui/material';
-import { LoginFormFields } from '../../../types/formTypes';
+import { RegisterFormFields } from '../../../types/formTypes';
 
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 
 import '../styles.css';
 
-export const LoginFormLayout = () => {
+export const RegisterFormLayout = () => {
     const theme = useTheme();
     const isScreenLessThanMedium = useMediaQuery(theme.breakpoints.down("md"));
-
-    const form = useFormContext<LoginFormFields>();
+    
+    const form = useFormContext<RegisterFormFields>();
     const formValues = form.getValues();
 
     return (<>
@@ -24,7 +24,7 @@ export const LoginFormLayout = () => {
                     className="app-typewriter-text"
                     variant="h5"
                     color="primary.contrastText"
-                >The best marketplace</Typography>
+                >Register</Typography>
             </Box>
         </Grid>
         <Grid item xs={12}>
@@ -108,23 +108,30 @@ export const LoginFormLayout = () => {
         <Grid item xs={12}>
             <Controller
                 control={form.control}
-                name={'rememberMe'}
+                name={'confirmPassword'}
+                rules={{
+                    required: {
+                        value: true,
+                        message: 'Confirm Password is required'
+                    },
+                    validate: (value) =>
+                        value === form.getValues().password || 'Passwords do not match'
+                }}
                 render={({ field, fieldState, formState }) => {
-                    return <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={field.value}
-                                onChange={(e) => {
-                                    field.onChange(e.target.checked);
-                                }}
-                                name="rememberMe"
-
-                                color='secondary'
-                                icon={<CheckBoxOutlineBlankIcon color="secondary"/>}
-                                checkedIcon={<CheckBoxIcon color="secondary"/>}
-                            />
-                        }
-                        label={<Typography color="primary.contrastText">Remember Me</Typography>}
+                    return <TextField
+                        type="password"
+                        name="confirmPassword"
+                        placeholder="Confirm Password"
+                        value={field.value}
+                        fullWidth
+                        size='small'
+                        onChange={(e) => {
+                            field.onChange(e.target.value)
+                        }}
+                        onBlur={field.onBlur}
+                        ref={field.ref}
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
 
                         sx={(theme) => ({
                             input: {

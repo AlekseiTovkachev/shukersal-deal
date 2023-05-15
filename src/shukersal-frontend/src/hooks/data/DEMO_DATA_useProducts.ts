@@ -42,7 +42,7 @@ export const demoProducts: Product[] = [
             id: 3,
             name: "Groceries"
         },
-        storeId: 2
+        storeId: 1
     },
     {
         id: 4,
@@ -56,7 +56,7 @@ export const demoProducts: Product[] = [
             id: 4,
             name: "Home"
         },
-        storeId: 2
+        storeId: 1
     },
     {
         id: 5,
@@ -70,6 +70,6 @@ export const demoProducts: Product[] = [
             id: 5,
             name: "Sports"
         },
-        storeId: 3
+        storeId: 1
     }
 ];

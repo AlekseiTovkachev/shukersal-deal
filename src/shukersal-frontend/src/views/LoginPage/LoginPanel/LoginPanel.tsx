@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { SyntheticEvent, useCallback, useEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 import { useMatch, useNavigate } from 'react-router-dom';
 
@@ -27,74 +27,80 @@ export const LoginPanel = () => {
         }
     }), [navigate, form.getValues]);
 
-    return (<FormProvider {...form}>
-        <FormControl
-            onSubmit={form.handleSubmit(handleLogin)}
-            sx={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100%',
-                height: '100%',
-                boxSizing: 'border-box',
-                padding: 2
-            }}
-        >
-            <Grid
-                container
-                rowSpacing={2}
-                width="100%"
-            >
-                <LoginFormLayout />
-            </Grid>
-            {error && <Typography variant="body1" color="error">
-                {error.message}
-            </Typography>}
-            <FlexSpacer />
-            <LoadingButton
-                variant="contained"
-                color="secondary"
-                fullWidth
-                loading={isLoading}
-                onClick={form.handleSubmit(handleLogin)}
-            //disabled={(() => {console.log('formState: ', form.formState); return !form.formState.isValid})()}
-            >Log In</LoadingButton>
-            <Box sx={{
-                width: '100%',
-                pt: 2,
-
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
+    return (
+        <FormProvider {...form}>
+            <form onSubmit={(e) => {
+                e.preventDefault();
+                form.handleSubmit(handleLogin)();
             }}>
-                <Box sx={(theme) => ({
-                    display: 'flex',
-                    [theme.breakpoints.down('sm')]: {
+                <FormControl
+                    sx={{
+                        display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'start'
-                    },
-                    [theme.breakpoints.up('sm')]: {
                         width: '100%',
-                        flexDirection: 'row',
-                        justifyContent: 'space-between',
-                        alignItems: 'space-between'
-                    }
-                    
-                })}>
-                    <Link color="secondary" href="login/forgotpassword">
-                        Forgot Password?
-                    </Link>
+                        height: '100%',
+                        boxSizing: 'border-box',
+                        padding: 2
+                    }}
+                >
+                    <Grid
+                        container
+                        rowSpacing={2}
+                        width="100%"
+                    >
+                        <LoginFormLayout />
+                    </Grid>
+                    {error && <Typography variant="body1" color="error">
+                        {error.message}
+                    </Typography>}
+                    <FlexSpacer minHeight={100} />
+                    <LoadingButton
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                        loading={isLoading}
+                        type="submit"
+                    // onClick={form.handleSubmit(handleLogin)}
+                    //disabled={(() => {console.log('formState: ', form.formState); return !form.formState.isValid})()}
+                    >Log In</LoadingButton>
+                    <Box sx={{
+                        width: '100%',
+                        pt: 2,
 
-                    <Link color="secondary" href="login/register">
-                        Register
-                    </Link>
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <Box sx={(theme) => ({
+                            display: 'flex',
+                            [theme.breakpoints.down('sm')]: {
+                                flexDirection: 'column',
+                                justifyContent: 'center',
+                                alignItems: 'start'
+                            },
+                            [theme.breakpoints.up('sm')]: {
+                                width: '100%',
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'space-between'
+                            }
 
-                    <Link color="secondary" href="/">
-                        Continue as Guest
-                    </Link>
-                </Box>
-            </Box>
-        </FormControl >
-    </FormProvider>
+                        })}>
+                            {/* <Typography><Link color="secondary" href="/login/forgotpassword">
+                                Forgot Password?
+                            </Link></Typography> */}
+
+                            <Typography><Link color="secondary" href="/login/register">
+                                Register
+                            </Link></Typography>
+
+                            <Typography><Link color="secondary" href="/">
+                                Continue as Guest
+                            </Link></Typography>
+                        </Box>
+                    </Box>
+                </FormControl >
+            </form>
+        </FormProvider >
     )
 };
