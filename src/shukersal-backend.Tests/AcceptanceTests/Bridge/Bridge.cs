@@ -184,7 +184,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         //Auth
         public async Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest)
         {
-            return null;
+            return await authService.Login(loginRequest, new ConfigurationBuilder().Build());
         }
         public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest)
         {
@@ -228,7 +228,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
                     PasswordHash = HashingUtilities.HashPassword("password")
                 }
             };
-            _context.Setup(m => m.Members).ReturnsDbSet(new List<Member>());
+            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
             _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>());
             string debug = (AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin"}).Result.ToJson());
             string debug2 =(AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin2"}).Result.ToJson());

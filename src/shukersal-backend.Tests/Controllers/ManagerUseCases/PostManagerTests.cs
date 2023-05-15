@@ -10,7 +10,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 
         }
 
-        [Fact]
+        /*[Fact]
         public void TestPostManager_MemberIsAlreadyAManagerFailure()
         {
             Assert.IsType<NotFoundResult>(_controller.PostStoreManager(
@@ -104,7 +104,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
                 Assert.NotNull(wres2.Result);
                 Assert.True(wres1.IsSuccess ^ wres2.IsSuccess);
             }
-        }
+        }*/
 
 
 

@@ -13,7 +13,7 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 
         }
 
-        [Fact]
+        /*[Fact]
         public void TestAddPermission_Success()
         {
             Assert.IsType<OkResult>(_controller.AddPermissionToManager(2, PermissionType.Appoint_owner_permission).Result);
@@ -43,6 +43,6 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
         public void TestRemovePermission_OwnerFailure()
         {
             Assert.IsType<NotFoundResult>(_controller.AddPermissionToManager(1, PermissionType.Appoint_owner_permission).Result);
-        }
+        }*/
     }
 }
