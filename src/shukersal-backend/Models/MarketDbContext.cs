@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using shukersal_backend.Utility;
+using System.Collections;
 using System.Data;
 
 namespace shukersal_backend.Models
@@ -74,12 +75,15 @@ namespace shukersal_backend.Models
             base.OnModelCreating(modelBuilder);
 
             // TODO: Move to mock data
+
+            // Add admin
+            // TODO: Fix this (causes crash)
+            //var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
+            //modelBuilder.Entity<Member>().HasData(
+            //    new Member { Username = "Admin", PasswordHash = HashingUtilities.HashPassword("password"), Role = "Admin", Id = 1, ShoppingCart = adminCart }
+            //    );
+
             // Add categories to Categories table
-            modelBuilder.Entity<Member>().HasData(
-                new Member { Username = "Admin", PasswordHash = HashingUtilities.HashPassword("password"), Role = "Admin", Id = 0, ShoppingCart = new ShoppingCart()}
-                );
-
-
             modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Electronics" },
             new Category { Id = 2, Name = "Clothing" },
