@@ -4,12 +4,11 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppHeaderButton } from '../AppHeaderButton';
 
-export const AppLoginButton = () => {
+export const AppSellerButton = () => {
     const navigate = useNavigate();
 
     const handleClick = useCallback(() => {
-        navigate('/login');
+        navigate('/seller');
     }, []);
-
-    return <AppHeaderButton handleClick={handleClick}>Login</AppHeaderButton>
+    return <AppHeaderButton handleClick={handleClick}>Switch to Selling</AppHeaderButton>
 };

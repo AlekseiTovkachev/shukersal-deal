@@ -2,7 +2,7 @@ import { createBrowserRouter } from 'react-router-dom';
 
 import { MainPage } from './views/MainPage';
 import { BuyerPage } from './views/BuyerPage/BuyerPage';
-import { SellerPage } from './views/SellerPage/SelllerPage';
+import { SellerPage } from './views/SellerPage/SellerPage';
 import { AdminPage } from './views/AdminPage/AdminPage';
 
 import { LoginPage } from './views/LoginPage/LoginPage';
@@ -14,6 +14,8 @@ import { StoresPage } from './views/StoresPage/StoresPage';
 import { StorePage } from './views/StorePage/StorePage';
 import { ProductsPage } from './views/ProductsPage/ProductsPage';
 import { ProductPage } from './views/ProductPage/ProductPage';
+import { SellerStorePage } from './views/SellerPage/SellerStorePage';
+import { NotFoundPage } from './views/NotFoundPage/NotFoundPage';
 
 export const router = createBrowserRouter([
     {
@@ -61,7 +63,16 @@ export const router = createBrowserRouter([
             },
             {
                 path: 'seller',
-                element: <SellerPage />
+                children: [
+                    {
+                        path: '',
+                        element: <SellerPage />
+                    },
+                    {
+                        path: 'stores/:storeId',
+                        element: <SellerStorePage />
+                    }
+                ]
             },
             {
                 path: 'login',
@@ -81,6 +92,10 @@ export const router = createBrowserRouter([
                     }
                 ]
             },
+            {
+                path: '*',
+                element: <NotFoundPage />
+            }
         ],
     },
 ]);

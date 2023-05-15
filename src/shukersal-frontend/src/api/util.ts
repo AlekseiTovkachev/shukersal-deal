@@ -13,7 +13,7 @@ export const apiErrorHandlerWrapper = (promise: Promise<AxiosResponse>): Promise
         })
         .catch((err) => (
             Promise.reject({
-                message: err.response.data
+                message: err.response?.data ?? err.message ?? 'Error'
             })
         ))
 }

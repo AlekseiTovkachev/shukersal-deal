@@ -35,7 +35,7 @@ interface AppProductCardProps {
 }
 
 export const AppProductCard = ({ product }: AppProductCardProps) => {
-    const productUrl = useMemo(() => (`products/${encodeURIComponent(product.id)}`), [product.id]);
+    const productUrl = useMemo(() => (`/products/${encodeURIComponent(product.id)}`), [product.id]);
 
     return (
         <Box sx={(theme) => ({
@@ -111,7 +111,7 @@ export const AppProductCard = ({ product }: AppProductCardProps) => {
                         {product.description}
                     </Typography>
                 </Box>
-                <FlexSpacer sx={{ minHeight: 100 }} />
+                <FlexSpacer />
                 <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                     <PriceText price={product.price} />
                     <FlexSpacer />

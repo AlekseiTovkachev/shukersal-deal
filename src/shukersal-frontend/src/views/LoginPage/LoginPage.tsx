@@ -1,9 +1,15 @@
 import { Box, Paper } from '@mui/material';
-import { Outlet } from 'react-router-dom';
+import { Navigate, Outlet } from 'react-router-dom';
 import { AppLogoFadeIn } from '../../components/AppLogo/AppLogoFadeIn';
+import { useAuth } from '../../hooks/useAuth';
 
 // LoginPage component
 export const LoginPage = () => {
+    const authData = useAuth();
+    if (authData.isLoggedIn) {
+        return <Navigate to="/" />
+    }
+
     return (
         <Box sx={{
             width: '100%',
@@ -29,9 +35,9 @@ export const LoginPage = () => {
                     height: '80%'
                 },
             })}>
-                <Box sx={(theme) => ({ 
+                <Box sx={(theme) => ({
                     width: '100%',
-                    boxSizing: 'border-box', 
+                    boxSizing: 'border-box',
                     px: 8,
                     py: 2
                 })}>
@@ -41,13 +47,13 @@ export const LoginPage = () => {
                     }} />
                 </Box>
                 <Box sx={(theme) => ({
-                    width: '100%', 
+                    width: '100%',
                     height: '100%',
                     [theme.breakpoints.down('sm')]: {
                         pb: 4
                     },
-                    })}>
-                <Outlet />
+                })}>
+                    <Outlet />
                 </Box>
             </Paper>
         </Box>

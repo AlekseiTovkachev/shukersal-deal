@@ -12,11 +12,11 @@ export interface LocalStorage {
     auth: {
         currentMemberData: Entry<string | null>
     },
-    settings: {
-        loginPage: {
-            rememberMe: Entry<boolean>
-        }
-    }
+    // settings: {
+    //     loginPage: {
+    //         rememberMe: Entry<boolean>
+    //     }
+    // }
 };
 
 export const localStorageValues: LocalStorage = {
@@ -26,12 +26,12 @@ export const localStorageValues: LocalStorage = {
             defaultValue: null
         },
     },
-    settings: {
-        loginPage: {
-            rememberMe: {
-                name: 'settings.loginPage.rememberMe',
-                defaultValue: false
-            }
-        }
-    }
+    // settings: {
+    //     loginPage: {
+    //         rememberMe: {
+    //             name: 'settings.loginPage.rememberMe',
+    //             defaultValue: false
+    //         }
+    //     }
+    // }
 };
