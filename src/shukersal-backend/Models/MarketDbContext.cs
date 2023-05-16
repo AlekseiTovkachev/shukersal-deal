@@ -19,6 +19,7 @@ namespace shukersal_backend.Models
         #region Store Models
         // *------------------------------------------------- Store Models --------------------------------------------------*
         public virtual DbSet<DiscountRule> DiscountRules { get; set; } = null!;
+        public virtual DbSet<DiscountRuleBoolean> DiscountRuleBooleans { get; set; } = null!;
         public virtual DbSet<PurchaseRule> PurchaseRules { get; set; } = null!;
         public virtual DbSet<Product> Products { get; set; } = null!;
         public virtual DbSet<Store> Stores { get; set; } = null!;

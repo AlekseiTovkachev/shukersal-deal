@@ -27,7 +27,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 Discount = post.Discount,
                 discountType = post.discountType,
                 Components = componenets,
-                PurchaseRule = post.PurchaseRule,
+                discountRuleBoolean = post.discountRuleBoolean,
                 discountOn = post.discountOn,
                 discountOnString = post.discountOnString
             });
@@ -49,7 +49,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     Discount = post.Discount,
                     discountType = post.discountType,
                     Components = componenets,
-                    PurchaseRule = post.PurchaseRule,
+                    discountRuleBoolean = post.discountRuleBoolean,
                     discountOn = post.discountOn,
                     discountOnString = post.discountOnString
                 };
@@ -68,8 +68,8 @@ namespace shukersal_backend.DomainLayer.Objects
                 return calculateDiscountOnProducts(discountRule, items);
 
             else if (discountRule.discountType == DiscountType.CONDITIONAL &&
-                 discountRule.PurchaseRule != null &&
-                _purchaseRuleObject.Evaluate( discountRule.PurchaseRule, items))
+                 discountRule.discountRuleBoolean != null &&
+                 Evaluate(discountRule.discountRuleBoolean, items))
                 return calculateDiscountOnProducts(discountRule, items);
 
             else if (discountRule.discountType == DiscountType.MAX && discountRule.Components != null)
@@ -110,6 +110,105 @@ namespace shukersal_backend.DomainLayer.Objects
                 .Where(dr => dr.store.Id == storeId)
                 .ToListAsync();
             return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, discounts);
+        }
+
+
+
+
+
+
+        public async Task<Response<bool>> CreateDiscountRuleBoolean(DiscountRuleBoolean post, Store s)
+        {
+            ICollection<DiscountRuleBoolean>? componenets = null;
+            if (post.discountRuleBooleanType == DiscountRuleBooleanType.OR || post.discountRuleBooleanType == DiscountRuleBooleanType.AND || post.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION)
+                componenets = new List<DiscountRuleBoolean>();
+            _context.DiscountRuleBooleans.Add(new DiscountRuleBoolean
+            {
+                Id = post.Id,
+                store = s,
+                discountRuleBooleanType = post.discountRuleBooleanType,
+                Components = componenets,
+                conditionString = post.conditionString,
+                conditionLimit = post.conditionLimit,
+                minHour = post.minHour,
+                maxHour = post.maxHour,
+
+            });
+            await _context.SaveChangesAsync();
+            return Response<bool>.Success(HttpStatusCode.OK, true);
+        }
+        public async Task<Response<bool>> CreateChildDiscountRuleBoolean(long compositeId, DiscountRuleBoolean post)
+        {
+            var composite = await _context.DiscountRuleBooleans.FirstOrDefaultAsync(dr => dr.Id == compositeId);
+            if (composite != null && (composite.discountRuleBooleanType == DiscountRuleBooleanType.OR || composite.discountRuleBooleanType == DiscountRuleBooleanType.AND || composite.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION))
+            {
+                ICollection<DiscountRuleBoolean>? componenets = null;
+                if (post.discountRuleBooleanType == DiscountRuleBooleanType.OR || post.discountRuleBooleanType == DiscountRuleBooleanType.AND || post.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION)
+                    componenets = new List<DiscountRuleBoolean>();
+                var component = new DiscountRuleBoolean
+                {
+                    Id = post.Id,
+                    store = composite.store,
+                    discountRuleBooleanType = post.discountRuleBooleanType,
+                    Components = componenets,
+                    conditionString = post.conditionString,
+                    conditionLimit = post.conditionLimit,
+                    minHour = post.minHour,
+                    maxHour = post.maxHour,
+                };
+                _context.DiscountRuleBooleans.Add(component);
+                composite.Components?.Add(component);
+                await _context.SaveChangesAsync();
+                return Response<bool>.Success(HttpStatusCode.OK, true);
+            }
+            return Response<bool>.Success(HttpStatusCode.NotFound, false);
+        }
+        public bool Evaluate(DiscountRuleBoolean purchaseRule, ICollection<ShoppingItem> items)
+        {
+            if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.AND && purchaseRule.Components != null)
+                return purchaseRule.Components.Select(cm => Evaluate(cm, items)).All(res => res);
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.OR && purchaseRule.Components != null)
+                return purchaseRule.Components.Select(cm => Evaluate(cm, items)).Any(res => res);
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION && purchaseRule.Components != null)
+                return purchaseRule.Components.Count == 2 &&
+                    (!Evaluate(purchaseRule.Components.ElementAt(0), items)
+                    || Evaluate(purchaseRule.Components.ElementAt(1), items));
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.PRODUCT_AT_LEAST)
+                return items.Where(
+                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i.Quantity >= purchaseRule.conditionLimit).Count() > 0;
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.PRODUCT_LIMIT)
+                return items.Where(
+                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i.Quantity > purchaseRule.conditionLimit).Count() == 0;
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_AT_LEAST)
+                return items.Where(
+                    i => i.Product.Category.Name == purchaseRule.conditionString)
+                    .Sum(i => i.Quantity) >= purchaseRule.conditionLimit;
+
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_LIMIT)
+                return items.Where(
+                    i => i.Product.Category.Name == purchaseRule.conditionString)
+                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;
+            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.TIME_HOUR_AT_DAY)
+                return purchaseRule.minHour <= DateTime.Now.Hour && DateTime.Now.Hour < purchaseRule.maxHour;
+
+            //else if (purchaseRule.purchaseRuleType == PurchaseRuleType.TIME_DAY_AT_WEEK)
+            //    return purchaseRule.weekDays[(int)DateTime.Now.DayOfWeek];
+            return true;
+        }
+
+        public async Task<Response<ICollection<PurchaseRule>>> GetDiscountRuleBooleans(long storeId)
+        {
+            var purchaseRules = await _context.PurchaseRules
+                .Where(dr => dr.store.Id == storeId)
+                .ToListAsync();
+            return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
         }
     }
 }
