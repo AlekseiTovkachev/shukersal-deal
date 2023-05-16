@@ -8,9 +8,9 @@ import { Button, Grid, Paper, useMediaQuery, useTheme } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 
 const rows: GridRowsProp = [
-    { id: 1, col1: 'Hello', col2: 'World' },
-    { id: 2, col1: 'DataGridPro', col2: 'is Awesome' },
-    { id: 3, col1: 'MUI', col2: 'is Amazing' },
+    { id: 1, col1: 'A', col2: '1' },
+    { id: 2, col1: 'B', col2: '2' },
+    { id: 3, col1: 'C', col2: '3' },
 ];
 
 const columns: GridColDef[] = [
@@ -22,6 +22,7 @@ export const SellerStorePage = () => {
     // TODO: Implement
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+    
     const { storeId } = useParams();
     const fixedStoreId = Number(decodeURIComponent(storeId ?? '0'));
     const sellerStoreData = useSellerStore(fixedStoreId);

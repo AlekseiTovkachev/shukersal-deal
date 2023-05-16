@@ -4,8 +4,12 @@ import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { devWarnNotLoggedIn } from '../../util';
+import { useIsMobile } from '../../hooks/mediaHooks';
+import { AppHeaderButton } from '../AppHeaderButton';
 
 export const AppLogoutButton = () => {
+    const isMobile = useIsMobile();
+
     const navigate = useNavigate();
     const authData = useAuth();
 
@@ -13,17 +17,11 @@ export const AppLogoutButton = () => {
         authData.logout();
         navigate('/');
     }, []);
-    if(!authData.isLoggedIn) {
+    if (!authData.isLoggedIn) {
         devWarnNotLoggedIn();
     }
-    return <Box display='flex' flexDirection='column'>
-        <Typography variant='caption'>Welcome, {authData.currentMemberData?.currentMember.username}</Typography>
-        <Button
-            color='secondary'
-            variant='contained'
-            onClick={handleClick}
-        >
-            Logout
-        </Button>
+    return <Box display='flex' flexDirection='column' justifyContent="center">
+        <Typography variant='caption'>{!isMobile && ('Welcome, ' + authData.currentMemberData?.currentMember.username)}</Typography>
+        <AppHeaderButton handleClick={handleClick}>Logout</AppHeaderButton>
     </Box>
 };

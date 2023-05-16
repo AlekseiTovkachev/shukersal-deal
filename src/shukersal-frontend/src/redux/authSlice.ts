@@ -23,14 +23,18 @@ export const login = createAsyncThunk<
         const { rememberMe, ...credentials } = payload;
         return authApi.login(credentials)
             .then((res) => thunkAPI.fulfillWithValue({
+                // TODO: Fix this
+                //@ts-ignore
                 member: res.member,
+                //@ts-ignore
                 token: res.token,
                 rememberMe: rememberMe
             }))
             .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
-    });
+    }
+);
 
-    export const register = createAsyncThunk<
+export const register = createAsyncThunk<
     Member,
     RegisterFormFields,
     { rejectValue: ApiError }
@@ -41,7 +45,8 @@ export const login = createAsyncThunk<
         return authApi.register(credentials)
             .then((res) => thunkAPI.fulfillWithValue(res as Member))
             .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
-    });
+    }
+);
 
 export const logout = createAsyncThunk<
     undefined,
@@ -55,7 +60,8 @@ export const logout = createAsyncThunk<
         // return notificationsApi.disconnect()
         //     .then((res) => thunkAPI.fulfillWithValue(undefined))
         //     .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
-    });
+    }
+);
 // \---------------------------------------- THUNKS ----------------------------------------/
 
 
