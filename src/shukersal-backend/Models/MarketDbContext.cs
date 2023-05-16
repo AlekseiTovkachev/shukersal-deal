@@ -1,4 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using shukersal_backend.Utility;
+using System.Collections;
+using System.Data;
 
 namespace shukersal_backend.Models
 {
@@ -16,7 +19,7 @@ namespace shukersal_backend.Models
         #region Store Models
         // *------------------------------------------------- Store Models --------------------------------------------------*
         public virtual DbSet<DiscountRule> DiscountRules { get; set; } = null!;
-        public virtual DbSet<DiscountType> DiscountTypes { get; set; } = null!;
+        public virtual DbSet<PurchaseRule> PurchaseRules { get; set; } = null!;
         public virtual DbSet<Product> Products { get; set; } = null!;
         public virtual DbSet<Store> Stores { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
@@ -43,14 +46,14 @@ namespace shukersal_backend.Models
 
         #region Notification Models
         // *------------------------------------------------- Notification Models --------------------------------------------------*
-        public DbSet<Notification> Notifications { get; set; } = null!;
-        public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
+        virtual public DbSet<Notification> Notifications { get; set; } = null!;
+        virtual public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
         #endregion
 
-        #region Purchase Models
-        // *------------------------------------------------- Purchase Models --------------------------------------------------*
-        public DbSet<Purchase> Purchases { get; set; } = null!;
-        public DbSet<PurchaseItem> PurchaseItems { get; set; } = null!;
+        #region Transaction Models
+        // *------------------------------------------------- Transaction Models --------------------------------------------------*
+        virtual public DbSet<Transaction> Transactions { get; set; } = null!;
+        virtual public DbSet<TransactionItem> TransactionItems { get; set; } = null!;
         #endregion
 
         #region Review Models
@@ -62,8 +65,8 @@ namespace shukersal_backend.Models
         #region Shopping Cart
         // *------------------------------------------------- Shopping Cart Models --------------------------------------------------*
         public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
-        public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
-        public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
+        virtual public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
+        virtual public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
         #endregion
 
 
@@ -72,6 +75,14 @@ namespace shukersal_backend.Models
             base.OnModelCreating(modelBuilder);
 
             // TODO: Move to mock data
+
+            // Add admin
+            // TODO: Fix this (causes crash)
+            //var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
+            //modelBuilder.Entity<Member>().HasData(
+            //    new Member { Username = "Admin", PasswordHash = HashingUtilities.HashPassword("password"), Role = "Admin", Id = 1, ShoppingCart = adminCart }
+            //    );
+
             // Add categories to Categories table
             modelBuilder.Entity<Category>().HasData(
             new Category { Id = 1, Name = "Electronics" },

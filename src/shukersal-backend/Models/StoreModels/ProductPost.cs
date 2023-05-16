@@ -17,7 +17,7 @@ namespace shukersal_backend.Models
         [Url]
         public string? ImageUrl { get; set; } = "https://ih1.redbubble.net/image.489179920.2085/ap,550x550,12x12,1,transparent,t.u2.png";
         [Required]
-        public bool IsListed { get; set; } // Indicates if the product is available for normal purchase
+        public bool IsListed { get; set; } // Indicates if the product is available for normal Transaction
 
         //public virtual Category? Category { get; set; }
         public int CategoryId { get; set; }

@@ -15,6 +15,7 @@ namespace shukersal_backend.Models
         [ForeignKey("RootManagerId")]
         public virtual StoreManager? RootManager { get; set; }
         [Required]
+        [JsonIgnore]
         public virtual ICollection<Product> Products { get; set; }
         [Required]
         public virtual ICollection<DiscountRule> DiscountRules { get; set; }

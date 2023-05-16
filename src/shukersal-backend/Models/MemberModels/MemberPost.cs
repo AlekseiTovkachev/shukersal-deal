@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace shukersal_backend.Models
 {
+    [Index(nameof(Username), IsUnique = true)]
     public class MemberPost
     {
         [Required]

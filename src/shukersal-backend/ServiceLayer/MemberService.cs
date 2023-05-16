@@ -16,6 +16,7 @@ using shukersal_backend.Utility;
 
 namespace shukersal_backend.ServiceLayer
 {
+
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
@@ -31,6 +32,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Members
         [HttpGet]
+        [Route("GetMembers")]
         public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
             var response = await memberController.GetMembers();
@@ -43,6 +45,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Members/5
         [HttpGet("{id}")]
+        //[Route("getMember")]
         public async Task<ActionResult<Models.Member>> GetMember(long id)
         {
             var response = await memberController.GetMember(id);
@@ -57,6 +60,7 @@ namespace shukersal_backend.ServiceLayer
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 
         [HttpPost]
+        [Route("AddMember")]
         public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData)
         {
             if (ModelState.IsValid)
@@ -74,6 +78,8 @@ namespace shukersal_backend.ServiceLayer
                 return BadRequest(ModelState);
             }
         }
+
+
 
         // DELETE: api/Members/5
         [HttpDelete("{id}")]

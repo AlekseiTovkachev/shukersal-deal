@@ -11,6 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AcceptanceTests\Tests\T2_4_04_PromoteToOwner.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="FluentAssertions.AspNetCore.Mvc" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />

@@ -1,8 +1,9 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.ServiceLayer
 {
@@ -10,273 +11,162 @@ namespace shukersal_backend.ServiceLayer
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors("AllowOrigin")]
-    public class StoreManagersController : ControllerBase
+    public class StoreManagerService : ControllerBase
     {
         //private readonly ManagerContext _context;
         private readonly MarketDbContext _context;
+        private readonly StoreManagerController _controller;
+        private readonly Member? currentMember;
 
-
-        public StoreManagersController(MarketDbContext context)
+        public StoreManagerService(MarketDbContext context)
         {
             _context = context;
+            //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
+            _controller = new StoreManagerController(context);
         }
 
         // GET: api/StoreManagers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()
         {
-            return await _context.StoreManagers.ToListAsync();
+            var response = await _controller.GetStoreManagers();
+            return Ok(response.Result);
         }
 
         // GET: api/StoreManagers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
-            //addition for testing
-            var storeManager = await _context.StoreManagers
-                .Include(m => m.StorePermissions)
-                .FirstOrDefaultAsync(s => s.Id == id);
-
-            if (storeManager == null)
+            var response = await _controller.GetStoreManager(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
+            return Ok(response.Result);
+        }
 
-            return storeManager;
+        // GET: api/StoreManagers/member/5
+        [HttpGet("member/{memberId}")]
+        public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
+        {
+            var response = await _controller.GetStoreManagersByMemberId(memberId);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
+        [HttpGet("stores/{memberId}")]
+        public async Task<ActionResult<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
+        {
+            var response = await _controller.GetManagedStoresByMemberId(memberId);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
         }
 
         // POST: api/StoreManagers
         [HttpPost("api/storemanager/createstoremanager")]
         public async Task<ActionResult<StoreManager>> PostStoreManager(OwnerManagerPost post)
         {
-            if (_context.StoreManagers == null)
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.PostStoreManager(post, currentMember);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            if (_context.StorePermissions == null)
-            {
-                return NotFound();
-            }
-            bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
-                && sm.StoreId == post.StoreId);
-            if (isManagerOfStore)
-            {
-                return NotFound();
-            }
-            var member = _context.Members.FirstOrDefault(m => m.Id == post.MemberId);
-            var store = _context.Stores.FirstOrDefault(p => p.Id == post.StoreId);
-
-            if (store == null || member == null)
-            {
-                return NotFound();
-            }
-
-            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
-            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
-            if (appointer == null || boss == null)
-            {
-                return NotFound();
-            }
-            var storeManager = new StoreManager
-            {
-                Member = member,
-                MemberId = post.MemberId,
-                StoreId = post.StoreId,
-                Store = store,
-                ParentManager = boss,
-                ParentManagerId = boss.Id,
-                StorePermissions = new List<StorePermission>()
-            };
-            storeManager.StorePermissions.Add(new StorePermission
-            {
-                StoreManager = storeManager,
-                StoreManagerId = storeManager.Id,
-                PermissionType = PermissionType.Reply_permission
-            });
-            storeManager.StorePermissions.Add(new StorePermission
-            {
-                StoreManager = storeManager,
-                StoreManagerId = storeManager.Id,
-                PermissionType = PermissionType.Get_history_permission
-            });
-
-            _context.StoreManagers.Add(storeManager);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetStoreManager), new { id = storeManager.Id }, storeManager);
+            return Ok(response.Result);
         }
 
         [HttpPost("api/storemanager/createstoreowner")]
         public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
         {
-            if (_context.StoreManagers == null)
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.PostStoreOwner(post, currentMember);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-            if (_context.StorePermissions == null)
-            {
-                return NotFound();
-            }
-            bool isManagerOfStore = _context.StoreManagers.Any(sm => sm.MemberId == post.MemberId
-                && sm.StoreId == post.StoreId);
-            if (isManagerOfStore)
-            {
-                return NotFound();
-            }
-            var member = _context.Members.FirstOrDefault(m => m.Id == post.MemberId);
-            var store = _context.Stores.FirstOrDefault(p => p.Id == post.StoreId);
-
-            if (store == null || member == null)
-            {
-                return NotFound();
-            }
-
-            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == post.AppointerId);
-            var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
-            if (appointer == null || boss == null)
-            {
-                return NotFound();
-            }
-            var storeManager = new StoreManager
-            {
-                Member = member,
-                MemberId = post.MemberId,
-                StoreId = post.StoreId,
-                Store = store,
-                ParentManager = boss,
-                ParentManagerId = boss.Id,
-                StorePermissions = new List<StorePermission>()
-            };
-            storeManager.StorePermissions.Add(new StorePermission
-            {
-                StoreManager = storeManager,
-                StoreManagerId = storeManager.Id,
-                PermissionType = PermissionType.Manager_permission
-            });
-
-            _context.StoreManagers.Add(storeManager);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetStoreManager), new { id = storeManager.Id }, storeManager);
+            return Ok(response.Result);
         }
 
         // PUT: api/StoreManagers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStoreManager(long id, StoreManager storeManager)
         {
-            if (id != storeManager.Id)
+            var response = await _controller.PutStoreManager(id, storeManager);
+            if (!response.IsSuccess)
             {
-                return BadRequest();
-            }
-
-            _context.Entry(storeManager).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!StoreManagerExists(id))
+                if (response.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
-
-            return NoContent();
+            return Ok(response.Result);
         }
 
         // DELETE: api/StoreManagers/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStoreManager(long id)
         {
-            var storeManager = await _context.StoreManagers.FindAsync(id);
-            if (storeManager == null)
+            //var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            //if (currentMember == null)
+            //{
+            //    return Unauthorized();
+            //}
+            var response = await _controller.DeleteStoreManager(id);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            _context.StoreManagers.Remove(storeManager);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(response.Result);
         }
 
-        private bool StoreManagerExists(long id)
-        {
-            return _context.StoreManagers.Any(e => e.Id == id);
-        }
 
         // Add a permission to a shop manager
         [HttpPost("{id}/permissions")]
-        public async Task<IActionResult> AddPermissionToManager(long Id, [FromBody] PermissionType permission)
+        public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
         {
-            if (permission == PermissionType.Manager_permission)
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await _controller.AddPermissionToManager(id, permission, currentMember);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            if (_context.StoreManagers == null)
-            {
-                return NotFound();
-            }
-            if (_context.StorePermissions == null)
-            {
-                return NotFound();
-            }
-
-            var manager = _context.StoreManagers.FirstOrDefault(sm => sm.Id == Id);
-
-            if (manager == null)
-            {
-                return NotFound();
-            }
-
-            manager.StorePermissions.Add(new StorePermission
-            {
-                StoreManager = manager,
-                StoreManagerId = manager.Id,
-                PermissionType = permission
-            });
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            return Ok(response.Result);
         }
 
         // Remove a permission from a shop manager
         [HttpDelete("{id}/permissions")]
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
         {
-            if (_context.StoreManagers == null)
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
             {
-                return Problem("Entity set 'ManagerContext.StoreManagers'  is null.");
+                return Unauthorized();
             }
-            if (_context.StorePermissions == null)
-            {
-                return Problem("Entity set 'MAnagerContext.StorePermissions'  is null.");
-            }
-            var manager = await _context.StoreManagers.FindAsync(id);
-
-            if (manager == null)
+            var response = await _controller.RemovePermissionFromManager(id, permission);
+            if (!response.IsSuccess)
             {
                 return NotFound();
             }
-
-            var permissionToRemove = manager.StorePermissions.FirstOrDefault(p => p.PermissionType == permission);
-
-            if (permissionToRemove == null)
-            {
-                return NotFound();
-            }
-
-            manager.StorePermissions.Remove(permissionToRemove);
-            await _context.SaveChangesAsync();
-
-            return Ok();
+            return Ok(response.Result);
         }
     }
 }
