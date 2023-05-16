@@ -21,18 +21,21 @@ namespace shukersal_backend.ServiceLayer
         //private readonly MarketDbContext _context;
         private readonly ShoppingCartController _shoppingCartController;
         private readonly Member? currentMember;
+        private readonly ILogger logger;
 
-        public ShoppingCartService(MarketDbContext context)
+        public ShoppingCartService(MarketDbContext context, ILogger<ShoppingCartService> logger)
         {
             _shoppingCartController = new ShoppingCartController(context);
             currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            this.logger = logger;
 
         }
         // GET: api/ShoppingCarts/memberId/5
         [HttpGet("{memberId}/GetShoppingCartByUserId")]
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId)
         {
-            if(currentMember == null) { Unauthorized(); }
+            logger.LogInformation("GetShoppingCartByUserId Called with {memberId}", memberId);
+            if (currentMember == null) { Unauthorized(); }
 
             var response = await _shoppingCartController.GetShoppingCartByUserId(memberId);
             if (response.Result==null)
@@ -46,6 +49,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("{cartId}/GetShoppingCartByCartId")]
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId)
         {
+            logger.LogInformation("GetShoppingCartByCartId Called with {cartId}", cartId);
             if (currentMember == null) { Unauthorized(); }
 
             var response = await _shoppingCartController.GetShoppingCartById(cartId);
@@ -60,6 +64,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("{cartId}/AddItemToCart")]
         public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItem item)
         {
+            logger.LogInformation("AddItemToCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -76,6 +81,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{cartid}/RemoveItemFromCart")]
         public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item)
         {
+            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
             if (currentMember == null)
             {
                 return Unauthorized();
@@ -91,6 +97,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPut("{cartId}")]
         public async Task<ActionResult<ShoppingItem>> PutStoreManager(long cartId, ShoppingItem item)
         {
+            logger.LogInformation("PutStoreManager Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
             var response = await _shoppingCartController.EditItemQuantity(cartId, item);
             if (!response.IsSuccess)
             {

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
@@ -24,10 +25,12 @@ namespace shukersal_backend.ServiceLayer
     {
 
         private readonly MemberController memberController;
+        private readonly ILogger logger;
 
-        public MemberService(MarketDbContext context)
+        public MemberService(MarketDbContext context, ILogger<MemberService> logger)
         {
             memberController = new MemberController(context);
+            this.logger = logger;
         }
 
         // GET: api/Members
@@ -35,6 +38,7 @@ namespace shukersal_backend.ServiceLayer
         [Route("GetMembers")]
         public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
+            logger.LogInformation("GetMemebers Called");
             var response = await memberController.GetMembers();
             if (!response.IsSuccess)
             {
@@ -48,6 +52,7 @@ namespace shukersal_backend.ServiceLayer
         //[Route("getMember")]
         public async Task<ActionResult<Models.Member>> GetMember(long id)
         {
+            logger.LogInformation("LogInRequest Called With {id}", id);
             var response = await memberController.GetMember(id);
             if (!response.IsSuccess)
             {
@@ -86,6 +91,7 @@ namespace shukersal_backend.ServiceLayer
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<IActionResult> DeleteMember(long id)
         {
+            logger.LogInformation("DeleteMember Called With {id}", id);
             var response = await memberController.DeleteMember(id);
             if (!response.IsSuccess)
             {

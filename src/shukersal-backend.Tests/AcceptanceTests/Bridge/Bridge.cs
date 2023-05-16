@@ -41,10 +41,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
             //TODO: init configuration
             _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            authService = new AuthService(_configuration, _context.Object);
-            memberService = new MemberService(_context.Object);
+            authService = new AuthService(_configuration, _context.Object, new Mock<ILogger<AuthService>>().Object);
+            memberService = new MemberService(_context.Object, new Mock<ILogger<MemberService>>().Object);
             TransactionService = new TransactionService(_context.Object);
-            shoppingCartService = new ShoppingCartService(_context.Object);
+            shoppingCartService = new ShoppingCartService(_context.Object, new Mock<ILogger<ShoppingCartService>>().Object);
             
             storeService = new StoreService(_context.Object,_logger.Object);
         }
@@ -228,8 +228,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
                     PasswordHash = HashingUtilities.HashPassword("password")
                 }
             };
-            _context.Setup(m => m.Members).ReturnsDbSet(membersList);
-            _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>());
+            _context.Setup(m => m.Members).ReturnsDbSet(membersList.AsQueryable());
+            _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>().AsQueryable());
             string debug = (AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin"}).Result.ToJson());
             string debug2 =(AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin2"}).Result.ToJson());
 
@@ -239,19 +239,19 @@ namespace shukersal_backend.Tests.AcceptanceTests
             var product = new List<Product>
             {
                 p1,p2
-            }.AsQueryable();
+            };
 
             var stores = new List<Store>
             {
                 new Store { Id = 1, Name = "Store 1", RootManagerId = 1, Products = new List<Product>{p1,p2 }, DiscountRules = new List<DiscountRule>() },
                 new Store { Id = 2, Name = "Store 2", RootManagerId = 2, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() },
                 new Store { Id = 3, Name = "Store 3", RootManagerId = 3, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() }
-            }.AsQueryable();
+            };
 
-            _context.Setup(c => c.Stores).ReturnsDbSet(stores);
-            _context.Setup(p => p.Products).ReturnsDbSet(new List<Product>());
-            _context.Setup(m => m.StoreManagers).ReturnsDbSet(new List<StoreManager>());
-            _context.Setup(m => m.StorePermissions).ReturnsDbSet(new List<StorePermission>());
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores.AsQueryable());
+            _context.Setup(p => p.Products).ReturnsDbSet(new List<Product>().AsQueryable());
+            _context.Setup(m => m.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
+            _context.Setup(m => m.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
         }
     }
 }
