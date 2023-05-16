@@ -2,13 +2,13 @@
 
 namespace shukersal_backend.Models.StoreModels
 {
-    public class PurchaseRulePost
+    public class DiscountRuleBooleanPost
     {
         [Required]
         public long Id { get; set; }
         [Required]
-        public PurchaseRuleType purchaseRuleType { get; set; }
-        public virtual ICollection<PurchaseRule>? Components { get; set; }
+        public DiscountRuleBooleanType discountRuleBooleanType { get; set; }
+        public virtual ICollection<DiscountRuleBoolean>? Components { get; set; }
         public long storeId { get; set; }
         public string conditionString { get; set; }
         public int conditionLimit { get; set; }

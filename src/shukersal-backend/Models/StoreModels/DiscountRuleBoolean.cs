@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace shukersal_backend.Models
 {
-    public enum PurchaseRuleType
+    public enum DiscountRuleBooleanType
     {
         AND = 0,
         OR = 1,
@@ -15,13 +15,13 @@ namespace shukersal_backend.Models
         TIME_HOUR_AT_DAY = 7,
         TIME_DAY_AT_WEEK = 8
     }
-    public class PurchaseRule
+    public class DiscountRuleBoolean
     {
         [Required]
         public long Id { get; set; }
         [Required]
-        public PurchaseRuleType purchaseRuleType { get; set; }
-        public virtual ICollection<PurchaseRule>? Components { get; set; }
+        public DiscountRuleBooleanType discountRuleBooleanType { get; set; }
+        public virtual ICollection<DiscountRuleBoolean>? Components { get; set; }
         [JsonIgnore]
         public Store store { get; set; }
         public string conditionString { get; set; }
