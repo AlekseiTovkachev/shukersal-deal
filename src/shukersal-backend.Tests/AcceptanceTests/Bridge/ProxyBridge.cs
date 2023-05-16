@@ -31,8 +31,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories() { return StatusCode(501); }
         //Shopping Cart
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId) { return StatusCode(501); }
-        public async Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item) { return StatusCode(501); }
-        public async Task<IActionResult> RemoveItemFromCart(long id, long itemId) { return StatusCode(501); }
+        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long id, [FromBody] ShoppingItem item) { return StatusCode(501); }
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long id, ShoppingItem itemId) { return StatusCode(501); }
         //Transaction
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions() { return StatusCode(501); }
         public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId) { return StatusCode(501); }

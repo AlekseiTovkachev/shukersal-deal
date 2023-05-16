@@ -111,11 +111,11 @@ namespace shukersal_backend.Tests.AcceptanceTests
         {
             return await shoppingCartService.GetShoppingCartByUserId(memberId);
         }
-        public async Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item)
+        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long id, [FromBody] ShoppingItem item)
         {
             return await shoppingCartService.AddItemToCart(id, item);
         }
-        public async Task<IActionResult> RemoveItemFromCart(long id, long itemId)
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long id, ShoppingItem itemId)
         {
             return await shoppingCartService.RemoveItemFromCart(id, itemId);
         }

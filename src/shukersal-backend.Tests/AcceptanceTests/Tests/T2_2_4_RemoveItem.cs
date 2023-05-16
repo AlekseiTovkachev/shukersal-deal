@@ -19,8 +19,9 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public void RemoveItemPositive()
         {
             var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
-            var res = bridge.RemoveItemFromCart(1, 100);
+            var si = new ShoppingItem { Id = 100, Product = product, Quantity = 1 };
+            bridge.AddItemToCart(1, si).Wait();
+            var res = bridge.RemoveItemFromCart(1, si);
             res.Wait();
             Assert.True(res.Result is IActionResult);
         }
@@ -28,7 +29,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public void RemoveItemDoesntExist()
         {
             var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            var res = bridge.RemoveItemFromCart(1, 100);
+            var res = bridge.RemoveItemFromCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 });
             res.Wait();
             Assert.False(res.Result is IActionResult);
         }
@@ -36,9 +37,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public void RemoveItemDoubleRequest()
         {
             var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 }).Wait();
-            var res1 = bridge.RemoveItemFromCart(1, 100);
-            var res2 = bridge.RemoveItemFromCart(1, 100);
+            var si = new ShoppingItem { Id = 100, Product = product, Quantity = 1 };
+            bridge.AddItemToCart(1, si).Wait();
+            var res1 = bridge.RemoveItemFromCart(1, si);
+            var res2 = bridge.RemoveItemFromCart(1, si);
             res1.Wait();
             res2.Wait();
             Assert.True(res1.Result is IActionResult ^ res2.Result is IActionResult);

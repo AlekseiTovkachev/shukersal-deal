@@ -31,8 +31,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<ActionResult<IEnumerable<Category>>> GetCategories();
         //Shopping Cart
         Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId);
-        Task<IActionResult> AddItemToCart(long id, [FromBody] ShoppingItem item);
-        Task<IActionResult> RemoveItemFromCart(long id, long itemId);
+        Task<ActionResult<ShoppingItem>> AddItemToCart(long id, [FromBody] ShoppingItem item);
+        Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long id, ShoppingItem itemId);
         //Transaction
         Task<ActionResult<IEnumerable<Transaction>>> GetTransactions();
         Task<ActionResult<Transaction>> GetTransaction(long TransactionId);
