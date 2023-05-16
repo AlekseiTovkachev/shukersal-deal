@@ -32,6 +32,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
+            logger.LogInformation("GetStores method called.");
             var response = await storeController.GetStores();
             if (!response.IsSuccess)
             {
@@ -44,6 +45,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("{id}")]
         public async Task<ActionResult<Store>> GetStore(long id)
         {
+            logger.LogInformation("GetStore method called with ID: {id}", id);
             var response = await storeController.GetStore(id);
             if (!response.IsSuccess)
             {
@@ -56,6 +58,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
+            logger.LogInformation("CreateStore method called.");
             var member = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (member == null)
             {
@@ -82,6 +85,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("{id}")]
         public async Task<IActionResult> UpdateStore(long id, StorePatch patch)
         {
+            logger.LogInformation("UpdateStore method called with ID: {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -107,6 +111,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {
+            logger.LogInformation("DeleteStore method called with ID: {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -124,6 +129,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("stores/{storeId}/products")]
         public async Task<IActionResult> AddProduct(long storeId, ProductPost product)
         {
+            logger.LogInformation("AddProduct method called with for storeID: {storeId}", storeId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -145,6 +151,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPatch("stores/{storeId}/products/{productId}")]
         public async Task<IActionResult> UpdateProduct(long storeId, long productId, ProductPatch product)
         {
+            logger.LogInformation("AddProduct method called with for storeID: {storeId} and productId: {productId}", storeId, productId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -166,6 +173,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("stores/{storeId}/products")]
         public async Task<IActionResult> DeleteProduct(long storeId, long productId)
         {
+            logger.LogInformation("DeleteProduct method called with for storeID: {storeId} and productId: {productId}", storeId, productId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -195,6 +203,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("stores/{storeId}/products")]
         public async Task<ActionResult<Store>> GetStoreProducts(long storeId)
         {
+            logger.LogInformation("GetStoreProducts method called with for storeID: {storeId}", storeId);
             var response = await storeController.GetStoreProducts(storeId);
             if (!response.IsSuccess)
             {
@@ -207,6 +216,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("stores/categories")]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
+            logger.LogInformation("GetCategories method called");
             var response = await storeController.GetCategories();
             return Ok(response.Result);
         }
@@ -215,6 +225,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("products/{id}")]
         public async Task<ActionResult<Product>> GetProduct(long id)
         {
+            logger.LogInformation("GetProduct method called with for productId: {id}", id);
             var response = await storeController.GetProduct(id);
             if (!response.IsSuccess)
             {

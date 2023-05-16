@@ -17,10 +17,12 @@ namespace shukersal_backend.ServiceLayer
         private readonly MarketDbContext _context;
         private readonly StoreManagerController _controller;
         private readonly Member? currentMember;
+        private readonly ILogger logger;
 
-        public StoreManagerService(MarketDbContext context)
+        public StoreManagerService(MarketDbContext context, ILogger<StoreService> logger)
         {
             _context = context;
+            this.logger = logger;
             //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
             _controller = new StoreManagerController(context);
         }
@@ -29,6 +31,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet]
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()
         {
+            logger.LogInformation("GetStoreManagers method called");
             var response = await _controller.GetStoreManagers();
             return Ok(response.Result);
         }
@@ -37,6 +40,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
+            logger.LogInformation("GetStoreManager with id = {id} method called", id);
             var response = await _controller.GetStoreManager(id);
             if (!response.IsSuccess)
             {
@@ -49,6 +53,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("member/{memberId}")]
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
         {
+            logger.LogInformation("GetStoreManagersByMemberId with id = {memberId} method called", memberId);
             var response = await _controller.GetStoreManagersByMemberId(memberId);
             if (!response.IsSuccess)
             {
@@ -60,6 +65,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("stores/{memberId}")]
         public async Task<ActionResult<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
         {
+            logger.LogInformation("GetStoresByMemberId with id = {memberId} method called", memberId);
             var response = await _controller.GetManagedStoresByMemberId(memberId);
             if (!response.IsSuccess)
             {
@@ -72,6 +78,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("api/storemanager/createstoremanager")]
         public async Task<ActionResult<StoreManager>> PostStoreManager(OwnerManagerPost post)
         {
+            logger.LogInformation("PostStoreManager method called");
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null)
             {
@@ -88,6 +95,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("api/storemanager/createstoreowner")]
         public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
         {
+            logger.LogInformation("PostStoreOwner method called");
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null)
             {
@@ -105,6 +113,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStoreManager(long id, StoreManager storeManager)
         {
+            logger.LogInformation("PutStoreManager method called with id = {id}", id);
             var response = await _controller.PutStoreManager(id, storeManager);
             if (!response.IsSuccess)
             {
@@ -139,6 +148,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("{id}/permissions")]
         public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
         {
+            logger.LogInformation("AddPermission method called for managerid = {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null)
             {
@@ -156,6 +166,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("{id}/permissions")]
         public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
         {
+            logger.LogInformation("RemovePermission method called for managerid = {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null)
             {
