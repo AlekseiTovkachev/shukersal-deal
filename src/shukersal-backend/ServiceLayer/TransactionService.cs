@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using System.Net;
 
 namespace shukersal_backend.ServiceLayer
 {
@@ -20,17 +12,19 @@ namespace shukersal_backend.ServiceLayer
     public class TransactionService : ControllerBase
     {
         private readonly TransactionController TransactionController;
+        private readonly ILogger logger;
 
-
-        public TransactionService(MarketDbContext context)
+        public TransactionService(MarketDbContext context, ILogger logger)
         {
             TransactionController = new TransactionController(context);
+            this.logger = logger;
         }
 
         // GET: api/Transactions
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
+            logger.LogInformation("GetTransactions method called.");
             var response = await TransactionController.GetTransactions();
             if (!response.IsSuccess)
             {
@@ -43,6 +37,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("Transactionid")]
         public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
+            logger.LogInformation("GetTransaction method called with id = {TransactionId}", TransactionId);
             var response = await TransactionController.GetTransaction(TransactionId);
             if (!response.IsSuccess)
             {
@@ -58,6 +53,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost]
         public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
+            logger.LogInformation("PurchaseAShoppingCart method called");
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.PurchaseAShoppingCart(TransactionPost);
@@ -78,6 +74,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpDelete("Transactionid/{TransactionId}")]
         public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
+            logger.LogInformation("DeleteTransaction method called with id = {TransactionId}", TransactionId);
             var response = await TransactionController.DeleteTransaction(TransactionId);
             if (!response.IsSuccess)
             {
@@ -91,6 +88,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPut("Transactionid/{Transactionid}")]
         public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post)
         {
+            logger.LogInformation("UpdateTransaction method called with id = {Transactionid}", Transactionid);
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.UpdateTransaction(Transactionid, post);
@@ -111,6 +109,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("memberId/{memberId}")]
         public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
+            logger.LogInformation("BrowseTransactionHistory method called with memberId = {memberId}", memberId);
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.BrowseShopTransactionHistory(memberId);
@@ -131,6 +130,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpGet("storeId/{storeId}")]
         public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
+            logger.LogInformation("BrowseTransactionHistory method called with storeId = {storeId}", storeId);
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.BrowseShopTransactionHistory(storeId);
