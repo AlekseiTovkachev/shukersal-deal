@@ -1,23 +1,10 @@
-﻿using FluentAssertions.Common;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
-using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
 using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 
 namespace shukersal_backend.Tests.AcceptanceTests
@@ -33,8 +20,9 @@ namespace shukersal_backend.Tests.AcceptanceTests
         public readonly Mock<MarketDbContext> _context;
         public readonly Mock<ILogger<StoreService>> _logger;
         private readonly IConfiguration _configuration;
-        public Bridge() {
-            
+        public Bridge()
+        {
+
             _context = new Mock<MarketDbContext>();
             _logger = new Mock<ILogger<StoreService>>();
             //_context.Setup(c => c.Database.EnsureCreated()).Returns(true);
@@ -43,13 +31,16 @@ namespace shukersal_backend.Tests.AcceptanceTests
             _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             authService = new AuthService(_configuration, _context.Object, new Mock<ILogger<AuthService>>().Object);
             memberService = new MemberService(_context.Object, new Mock<ILogger<MemberService>>().Object);
-            TransactionService = new TransactionService(_context.Object);
+            TransactionService = new TransactionService(_context.Object, new Mock<ILogger<TransactionService>>().Object);
             shoppingCartService = new ShoppingCartService(_context.Object, new Mock<ILogger<ShoppingCartService>>().Object);
             
             storeService = new StoreService(_context.Object,_logger.Object);
+            shoppingCartService = new ShoppingCartService(_context.Object, new Mock<ILogger<ShoppingCartService>>().Object);
+
+            storeService = new StoreService(_context.Object, _logger.Object);
         }
         //Member
-        public async Task<ActionResult<IEnumerable<Member>>> GetMembers() 
+        public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
         {
             return await memberService.GetMembers();
         }
@@ -232,6 +223,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
             _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(new List<ShoppingCart>().AsQueryable());
             string debug = (AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin"}).Result.ToJson());
             string debug2 =(AddMember(new MemberPost { Password = HashingUtilities.HashPassword("AdminPass"), Role = "Administator", Username = "Admin2"}).Result.ToJson());
+            _context.Setup(m => m.Members.Add(It.IsAny<Member>())).Callback<Member>(member => membersList.Add(member));
+            var shoppingCartList = new List<ShoppingCart>();
+            _context.Setup(s => s.ShoppingCarts).ReturnsDbSet(shoppingCartList.AsQueryable());
+            _context.Setup(m => m.ShoppingCarts.Add(It.IsAny<ShoppingCart>())).Callback<ShoppingCart>(shoppingCart => shoppingCartList.Add(shoppingCart));
 
 
             var p1 = new Product { Id = 1, Name = "1", Description = "1", Price = 1, IsListed = true, UnitsInStock = 1 };
@@ -252,6 +247,22 @@ namespace shukersal_backend.Tests.AcceptanceTests
             _context.Setup(p => p.Products).ReturnsDbSet(new List<Product>().AsQueryable());
             _context.Setup(m => m.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());
             _context.Setup(m => m.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
+
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores.AsQueryable());
+            var productList = new List<Product>();
+            _context.Setup(p => p.Products).ReturnsDbSet(productList.AsQueryable());
+            var storeManagerList = new List<StoreManager>();
+            _context.Setup(m => m.StoreManagers).ReturnsDbSet(storeManagerList.AsQueryable());
+            var storePermissionList = new List<StorePermission>();
+            _context.Setup(m => m.StorePermissions).ReturnsDbSet(storePermissionList.AsQueryable());
+
+            _context.Setup(m => m.Stores.Add(It.IsAny<Store>())).Callback<Store>(store => stores.Add(store));
+            _context.Setup(m => m.Products.Add(It.IsAny<Product>())).Callback<Product>(product => productList.Add(product));
+            _context.Setup(m => m.StoreManagers.Add(It.IsAny<StoreManager>())).Callback<StoreManager>(manager => storeManagerList.Add(manager));
+            _context.Setup(m => m.StorePermissions.Add(It.IsAny<StorePermission>())).Callback<StorePermission>(permission => storePermissionList.Add(permission));
+
+
+
         }
     }
 }
