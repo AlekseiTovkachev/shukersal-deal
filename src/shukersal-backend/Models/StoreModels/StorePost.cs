@@ -8,8 +8,8 @@ namespace shukersal_backend.Models
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
-        [Required]
-        public long RootManagerMemberId { get; set; } //Member Id of the store founder
+        //[Required]
+        //public long RootManagerMemberId { get; set; } //Member Id of the store founder
 
     }
 }

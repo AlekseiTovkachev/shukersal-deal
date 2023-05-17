@@ -103,16 +103,16 @@ namespace shukersal_backend.Tests.ServiceTests
             {
                 Name = "Test Store",
                 Description = "This is a test store.",
-                RootManagerMemberId = 1
+                //RootManagerMemberId = 1
             };
             var membersList = new List<Models.Member>
             {
-                new Models.Member { Id = storeData.RootManagerMemberId }
+                new Models.Member { Id = -1 }
             }.AsQueryable();
 
             _context.Setup(m => m.Members).ReturnsDbSet(membersList);
-            var member = new Models.Member { Id = storeData.RootManagerMemberId };
-            _context.Setup(m => m.Members.FindAsync(storeData.RootManagerMemberId)).ReturnsAsync(member);
+            var member = new Models.Member { Id = -1 };
+            _context.Setup(m => m.Members.FindAsync(-1)).ReturnsAsync(member);
             _context.Setup(c => c.Stores).ReturnsDbSet(new List<Store>().AsQueryable());
             _context.Setup(c => c.StorePermissions).ReturnsDbSet(new List<StorePermission>().AsQueryable());
             _context.Setup(c => c.StoreManagers).ReturnsDbSet(new List<StoreManager>().AsQueryable());

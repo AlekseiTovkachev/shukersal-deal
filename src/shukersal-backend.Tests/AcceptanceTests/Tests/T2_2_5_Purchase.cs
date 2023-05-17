@@ -1,12 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
-using shukersal_backend.Models;
+﻿using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.AcceptanceTests
@@ -18,8 +12,9 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private List<DeliveryDetails> deliveryDetails;
 
 
-        public T2_2_5_Transaction(ITestOutputHelper output) : base(output) {
-            TransactionAT_init(); 
+        public T2_2_5_Transaction(ITestOutputHelper output) : base(output)
+        {
+            TransactionAT_init();
             //using the init data from the bridge
         }
 
@@ -88,7 +83,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         [Fact]
         public async void PurchaseAShoppingCart_Member_Valid()
         {
-            var storeResp = await bridge.CreateStore(new StorePost { Name = "mystore", Description = "mystoredesc", RootManagerMemberId = 2 });
+            var storeResp = await bridge.CreateStore(new StorePost { Name = "mystore", Description = "mystoredesc"/*, RootManagerMemberId = 2 */});
             var product = await bridge.AddProduct(storeResp.Value.Id, new ProductPost { Name = "myproduct1", Description = "myproduct1Desc", Price = 10, UnitsInStock = 3, IsListed = true, CategoryId = 1 });
             await bridge.AddItemToCart(1, new ShoppingItem { Product = product as Product, Quantity = 1 });
             var purchaseResult = await bridge.PurchaseAShoppingCart(
@@ -141,7 +136,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
             var purchaseResult = await bridge.PurchaseAShoppingCart(
             new TransactionPost
             {
-                MemberId = 1, 
+                MemberId = 1,
                 BillingDetails = billingDetails.ElementAt(0),
                 DeliveryDetails = deliveryDetails.ElementAt(2),//Bad delivery see at the delivery list.
                 TransactionItems = new List<TransactionItem> {
@@ -163,7 +158,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
             var purchaseResult = await bridge.PurchaseAShoppingCart(
             new TransactionPost
             {
-                MemberId = 1, 
+                MemberId = 1,
                 BillingDetails = billingDetails.ElementAt(2),//Bad payment see at the payent list.
                 DeliveryDetails = deliveryDetails.ElementAt(0),
                 TransactionItems = new List<TransactionItem> {

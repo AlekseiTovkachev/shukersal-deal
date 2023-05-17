@@ -1,12 +1,5 @@
 ﻿using shukersal_backend.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using shukersal_backend.Models.MemberModels;
-using shukersal_backend.ServiceLayer;
-using shukersal_backend.Utility;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
@@ -14,6 +7,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
     {
         public ProxyBridge() { }
         //Member
+        public async Task<ActionResult<Member>> Logout(long id) { return StatusCode(501); }
         public async Task<ActionResult<IEnumerable<Member>>> GetMembers() { return StatusCode(501); }
         public async Task<ActionResult<Member>> GetMember(long id) { return StatusCode(501); }
         public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData) { return StatusCode(501); }
