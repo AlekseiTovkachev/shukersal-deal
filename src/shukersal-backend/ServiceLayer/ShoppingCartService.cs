@@ -89,7 +89,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpPut("{cartId}")]
-        public async Task<ActionResult<ShoppingItem>> PutStoreManager(long cartId, ShoppingItem item)
+        public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItem item)
         {
             var response = await _shoppingCartController.EditItemQuantity(cartId, item);
             if (!response.IsSuccess)

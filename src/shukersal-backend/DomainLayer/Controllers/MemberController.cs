@@ -74,6 +74,10 @@ namespace shukersal_backend.DomainLayer.Controllers
             return (_context.Members?.Any(e => e.Id == id)).GetValueOrDefault();
         }
 
+        public async Task<Response<Member>> Logout(long id)
+        {
+            return await _memberObject.Logout(id);
+        }
     }
 
 }

@@ -182,5 +182,15 @@ namespace shukersal_backend.DomainLayer.Objects
         {
             return (_context.Members?.Any(e => e.Id == id)).GetValueOrDefault();
         }
+
+        public async Task<Response<Member>> Logout(long id)
+        {
+            var member = await _context.Members.FindAsync(id);
+            if (member == null)
+            {
+                return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
+            }
+            return Response<Member>.Success(HttpStatusCode.OK,member);
+        }
     }
 }

@@ -94,5 +94,16 @@ namespace shukersal_backend.ServiceLayer
             return NoContent();
         }
 
+        public async Task<ActionResult<Member>> Logout(long id)
+        {
+            var response = await memberController.Logout(id);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+
     }
 }

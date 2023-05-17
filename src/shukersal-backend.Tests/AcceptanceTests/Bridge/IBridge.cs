@@ -18,6 +18,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<ActionResult<Member>> GetMember(long id);
         Task<ActionResult<MemberPost>> AddMember(MemberPost memberData);
         Task<IActionResult> DeleteMember(long id);
+        Task<ActionResult<Member>> Logout(long id);
         //Store
         Task<ActionResult<IEnumerable<Store>>> GetStores();
         Task<ActionResult<Store>> GetStore(long id);
