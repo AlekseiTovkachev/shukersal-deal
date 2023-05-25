@@ -9,19 +9,18 @@ namespace shukersal_backend.DomainLayer.Objects
     public class DiscountObject
     {
         private MarketDbContext _context;
-        private PurchaseRuleObject _purchaseRuleObject;
 
         public DiscountObject(MarketDbContext context)
         {
             _context = context;
-            _purchaseRuleObject = new PurchaseRuleObject(context);
         }
         public async Task<Response<bool>> CreateDiscount(DiscountRulePost post, Store s)
         {
             ICollection<DiscountRule>? componenets = null;
             if (post.discountType == DiscountType.ADDITIONAL || post.discountType == DiscountType.MAX)
-                componenets= new List<DiscountRule>();
-            _context.DiscountRules.Add(new DiscountRule {
+                componenets = new List<DiscountRule>();
+            var dr = new DiscountRule
+            {
                 Id = post.Id,
                 store = s,
                 Discount = post.Discount,
@@ -30,8 +29,11 @@ namespace shukersal_backend.DomainLayer.Objects
                 discountRuleBoolean = post.discountRuleBoolean,
                 discountOn = post.discountOn,
                 discountOnString = post.discountOnString
-            });
+            };
+            _context.DiscountRules.Add(dr);
+            s.DiscountRules.Add(dr);
             await _context.SaveChangesAsync();
+
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
         public async Task<Response<bool>> CreateChildDiscount(long compositeId, DiscountRulePost post)
@@ -60,10 +62,26 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return Response<bool>.Success(HttpStatusCode.NotFound, false);
         }
-        public double CalculateDiscount(DiscountRule discountRule, ICollection<ShoppingItem> items)
+        public async Task<double> CalculateDiscount(DiscountRule discountRule, ICollection<TransactionItem> transactionItems)
         {
+            var res = calculateDiscount(discountRule, transactionItems);
+            foreach (var r in res)
+                r.transcationItem.FinalPrice = r.transcationItem.FullPrice - r.discount;
+            await _context.SaveChangesAsync();
+            return res.Select(r => r.transcationItem.FullPrice).Sum();
+
+        }
+        private IEnumerable<TranscationCalculation> calculateDiscount(DiscountRule discountRule, ICollection<TransactionItem> items)
+        {
+            List<TranscationCalculation> transcations = new List<TranscationCalculation> { };
+            foreach (TransactionItem t in items)
+            {
+                transcations.Add(new TranscationCalculation { discount = 0, transcationItem = t });
+            }
             if (discountRule == null)
-                return 0;
+            {
+                //do nothing
+            }
             else if (discountRule.discountType == DiscountType.SIMPLE)
                 return calculateDiscountOnProducts(discountRule, items);
 
@@ -73,36 +91,61 @@ namespace shukersal_backend.DomainLayer.Objects
                 return calculateDiscountOnProducts(discountRule, items);
 
             else if (discountRule.discountType == DiscountType.MAX && discountRule.Components != null)
-                return discountRule.Components.
-                    Select(cm => CalculateDiscount(cm, items)).
-                    DefaultIfEmpty(0).
-                    Max();
+            {
+                var tcList = discountRule.Components.Select(cm => calculateDiscount(cm, items));
+                return tcList.Where(tc => tc.Select(i => i.discount).Sum()
+                     == tcList.Select(
+                        t => t.Select(i => i.discount).Sum())
+                    .Max()).FirstOrDefault();
+
+            }
 
             else if (discountRule.discountType == DiscountType.ADDITIONAL && discountRule.Components != null)
-                return discountRule.Components.
-                    Select(cm => CalculateDiscount(cm, items)).
-                    DefaultIfEmpty(0).
-                    Sum();
-
-            return 0;
+            {
+                var tcList = discountRule.Components.Select(cm => calculateDiscount(cm, items));
+                return transcations.Select(ta => new TranscationCalculation
+                {
+                    transcationItem = ta.transcationItem,
+                    discount = tcList.Select(
+                        t => t.Where(i => i.transcationItem == ta.transcationItem).FirstOrDefault().discount)
+                    .Sum()
+                });
+            }
+            return transcations;
         }
 
-        private double calculateDiscountOnProducts(DiscountRule discountRule, ICollection<ShoppingItem> items)
+        private IEnumerable<TranscationCalculation> calculateDiscountOnProducts(DiscountRule discountRule, ICollection<TransactionItem> items)
         {
+            List<TranscationCalculation> transcations = new List<TranscationCalculation> { };
+            foreach (TransactionItem t in items)
+            {
+                transcations.Add(new TranscationCalculation { discount = 0, transcationItem = t });
+            }
             if (discountRule.discountOn == DiscountOn.STORE)
-                return items.Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
+                return transcations.Select(t => new TranscationCalculation {
+                    transcationItem = t.transcationItem,
+                    discount = t.transcationItem.FullPrice * discountRule.Discount / 100
+                });
+
 
             else if (discountRule.discountOn == DiscountOn.CATEGORY)
-                return items.Where(i => i.Product.Category.Name == discountRule.discountOnString)
-                    .Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
+                return transcations.Select(t => new TranscationCalculation
+                {
+                    transcationItem = t.transcationItem,
+                    discount = t.transcationItem.FullPrice * discountRule.Discount / 100
+                });
 
             else if (discountRule.discountOn == DiscountOn.PRODUCT)
-                return items.Where(i => i.Product.Name == discountRule.discountOnString)
-                    .Select(i => i.Product.Price)
-                    .Sum() * discountRule.Discount / 100;
-            return 0;
+                return transcations.Select(t =>
+                    t.transcationItem.ProductName == discountRule.discountOnString ?
+                        new TranscationCalculation
+                        {
+                            transcationItem = t.transcationItem,
+                            discount = t.transcationItem.FullPrice * discountRule.Discount / 100
+                        }
+                    : t
+                );
+            return transcations;
         }
         public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
         {
@@ -112,17 +155,21 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, discounts);
         }
 
-
-
-
-
-
-        public async Task<Response<bool>> CreateDiscountRuleBoolean(DiscountRuleBoolean post, Store s)
+        public async Task<Response<DiscountRule>> SelectDiscount(Store s, long DiscountRuleId)
+        {
+            var r = s.DiscountRules.Where(dr => dr.Id == DiscountRuleId);
+            if (r == null || r.Count() == 0)
+                return Response<DiscountRule>.Error(HttpStatusCode.NotFound,"discount doesnt exist");
+            s.AppliedDiscountRule = r.FirstOrDefault();
+            await _context.SaveChangesAsync();
+            return Response<DiscountRule>.Success(HttpStatusCode.OK, r.FirstOrDefault());
+        }
+        public async Task<Response<bool>> CreateDiscountRuleBoolean(DiscountRuleBoolean post, Store s, DiscountRule discountRule)
         {
             ICollection<DiscountRuleBoolean>? componenets = null;
             if (post.discountRuleBooleanType == DiscountRuleBooleanType.OR || post.discountRuleBooleanType == DiscountRuleBooleanType.AND || post.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION)
                 componenets = new List<DiscountRuleBoolean>();
-            _context.DiscountRuleBooleans.Add(new DiscountRuleBoolean
+            var drb = new DiscountRuleBoolean
             {
                 Id = post.Id,
                 store = s,
@@ -133,7 +180,9 @@ namespace shukersal_backend.DomainLayer.Objects
                 minHour = post.minHour,
                 maxHour = post.maxHour,
 
-            });
+            };
+            discountRule.discountRuleBoolean = drb;
+            _context.DiscountRuleBooleans.Add(drb);
             await _context.SaveChangesAsync();
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
@@ -163,7 +212,8 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return Response<bool>.Success(HttpStatusCode.NotFound, false);
         }
-        public bool Evaluate(DiscountRuleBoolean purchaseRule, ICollection<ShoppingItem> items)
+        
+        public bool Evaluate(DiscountRuleBoolean purchaseRule, ICollection<TransactionItem> items)
         {
             if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.AND && purchaseRule.Components != null)
                 return purchaseRule.Components.Select(cm => Evaluate(cm, items)).All(res => res);
@@ -178,15 +228,15 @@ namespace shukersal_backend.DomainLayer.Objects
 
             else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.PRODUCT_AT_LEAST)
                 return items.Where(
-                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i => i.ProductName == purchaseRule.conditionString &&
                     i.Quantity >= purchaseRule.conditionLimit).Count() > 0;
 
             else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.PRODUCT_LIMIT)
                 return items.Where(
-                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i => i.ProductName == purchaseRule.conditionString &&
                     i.Quantity > purchaseRule.conditionLimit).Count() == 0;
 
-            else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_AT_LEAST)
+            /*else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_AT_LEAST)
                 return items.Where(
                     i => i.Product.Category.Name == purchaseRule.conditionString)
                     .Sum(i => i.Quantity) >= purchaseRule.conditionLimit;
@@ -194,7 +244,7 @@ namespace shukersal_backend.DomainLayer.Objects
             else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_LIMIT)
                 return items.Where(
                     i => i.Product.Category.Name == purchaseRule.conditionString)
-                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;
+                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;*/
             else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.TIME_HOUR_AT_DAY)
                 return purchaseRule.minHour <= DateTime.Now.Hour && DateTime.Now.Hour < purchaseRule.maxHour;
 
@@ -210,5 +260,11 @@ namespace shukersal_backend.DomainLayer.Objects
                 .ToListAsync();
             return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
         }
+    }
+
+    public class TranscationCalculation
+    {
+        public TransactionItem transcationItem { get; set; }
+        public double discount { get; set; }
     }
 }

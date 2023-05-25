@@ -22,7 +22,7 @@ namespace shukersal_backend.Models
         public DiscountRule? AppliedDiscountRule { get; set; }
         [Required]
         public virtual ICollection<PurchaseRule> PurchaseRules { get; set; }
-        public DiscountRule? AppliedPurchaseRule { get; set; }
+        public PurchaseRule? AppliedPurchaseRule { get; set; }
 
     }
 }

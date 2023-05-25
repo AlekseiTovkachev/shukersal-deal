@@ -208,7 +208,8 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
 
             var member = await _memberObject.GetMember(memberId);
-            
+            var d = new DiscountObject(_context);
+            await d.CalculateDiscount(shop.Result.AppliedDiscountRule, TransactionItems);
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
 
         }
