@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService;
-using shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService;
+using shukersal_backend.ExternalServices.ExternalDeliveryService;
+using shukersal_backend.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
 using shukersal_backend.Utility;
@@ -171,6 +171,18 @@ namespace shukersal_backend.DomainLayer.Objects
         public DeliveryProxy getDeliveryProxy() { return _deliveryProvider; }
 
         public PaymentProxy getPaymentProxy() { return _paymentProvider; }
+
+        public void SetPaymentProvider(string url) 
+        {
+
+            _paymentProvider.SetPaymentProvider(new RealPaymentAdapter(new PaymentAdaptee(url)));
+        }
+
+        public void SetDeliveryProvider(string url)
+        {
+
+            _deliveryProvider.SetDeliveryProvider(new RealDeliveryAdapter(new DeliveryAdaptee(url)));
+        }
 
         public bool TransactionExists(long id)
         {

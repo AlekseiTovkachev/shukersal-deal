@@ -1,21 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
-using NuGet.ContentModel;
 using NuGet.Packaging;
-using shukersal_backend.DomainLayer.ExternalServices;
-using shukersal_backend.DomainLayer.ExternalServices.ExternalDeliveryService;
-using shukersal_backend.DomainLayer.ExternalServices.ExternalPaymentService;
 using shukersal_backend.DomainLayer.Objects;
+using shukersal_backend.ExternalServices.ExternalDeliveryService;
+using shukersal_backend.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
-using shukersal_backend.Models.PurchaseModels;
-using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
 using System.Net;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
@@ -38,6 +30,8 @@ namespace shukersal_backend.DomainLayer.Controllers
             _storeObject = new StoreObject(context, _marketObject, new StoreManagerObject());
             _memberObject= new MemberObject(context);
             _transactionObject = new TransactionObject(context,_marketObject);
+            _marketObject.SetDeliveryProvider("https://php-server-try.000webhostapp.com/");
+            _marketObject.SetPaymentProvider("https://php-server-try.000webhostapp.com/");
         }
 
 

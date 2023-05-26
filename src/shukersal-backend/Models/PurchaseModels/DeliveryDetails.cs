@@ -24,6 +24,13 @@ namespace shukersal_backend.Models.PurchaseModels
 
         [Required]
         [JsonIgnore]
+        public string ReceiverCity { get; set; }
+        [Required]
+        [JsonIgnore]
+        public string ReceiverCountry { get; set; }
+
+        [Required]
+        [JsonIgnore]
         [StringLength(7, MinimumLength = 7)]
         public string ReceiverPostalCode { get; set; }       
 
