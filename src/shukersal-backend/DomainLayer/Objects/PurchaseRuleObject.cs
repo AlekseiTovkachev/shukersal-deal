@@ -62,42 +62,7 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public bool Evaluate(PurchaseRule purchaseRule, ICollection<TransactionItem> items)
         {
-            if (purchaseRule.purchaseRuleType == PurchaseRuleType.AND && purchaseRule.Components != null)
-                return purchaseRule.Components.Select(cm => Evaluate(cm, items)).All(res => res);
-
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.OR && purchaseRule.Components != null)
-                return purchaseRule.Components.Select(cm => Evaluate(cm, items)).Any(res => res);
-
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CONDITION && purchaseRule.Components != null)
-                return purchaseRule.Components.Count == 2 &&
-                    (!Evaluate(purchaseRule.Components.ElementAt(0), items)
-                    || Evaluate(purchaseRule.Components.ElementAt(1), items));
-
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.PRODUCT_AT_LEAST)
-                return items.Where(
-                    i => i.ProductName == purchaseRule.conditionString &&
-                    i.Quantity >= purchaseRule.conditionLimit).Count() > 0;
-
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.PRODUCT_LIMIT)
-                return items.Where(
-                    i => i.ProductName == purchaseRule.conditionString &&
-                    i.Quantity > purchaseRule.conditionLimit).Count() == 0;
-
-            /*else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CATEGORY_AT_LEAST)
-                return items.Where(
-                    i => i.Product.Category.Name == purchaseRule.conditionString)
-                    .Sum(i => i.Quantity) >= purchaseRule.conditionLimit;
-
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CATEGORY_LIMIT)
-                return items.Where(
-                    i => i.Product.Category.Name == purchaseRule.conditionString)
-                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;*/
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.TIME_HOUR_AT_DAY)
-                return purchaseRule.minHour <= DateTime.Now.Hour && DateTime.Now.Hour < purchaseRule.maxHour;
-
-            //else if (purchaseRule.purchaseRuleType == PurchaseRuleType.TIME_DAY_AT_WEEK)
-            //    return purchaseRule.weekDays[(int)DateTime.Now.DayOfWeek];
-            return true;
+            return PurchaseRuleComponent.Build(purchaseRule).Eval(items);
         }
 
         /*public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
