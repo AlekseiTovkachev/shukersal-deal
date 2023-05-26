@@ -66,7 +66,7 @@ namespace shukersal_backend.DomainLayer.Objects
             foreach (var r in res)
                 r.transcationItem.FinalPrice = r.transcationItem.FullPrice - r.discount;
             await _context.SaveChangesAsync();
-            return res.Select(r => r.transcationItem.FullPrice).Sum();
+            return res.Select(r => r.transcationItem.FinalPrice).Sum();
 
         }
         private IEnumerable<TranscationCalculation> calculateDiscount(DiscountRule discountRule, ICollection<TransactionItem> items)
@@ -238,7 +238,7 @@ namespace shukersal_backend.DomainLayer.Objects
             else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.PRODUCT_LIMIT)
                 return items.Where(
                     i => i.ProductName == purchaseRule.conditionString &&
-                    i.Quantity > purchaseRule.conditionLimit).Count() == 0;
+                    i.Quantity < purchaseRule.conditionLimit).Count() > 0;
 
             /*else if (purchaseRule.discountRuleBooleanType == DiscountRuleBooleanType.CATEGORY_AT_LEAST)
                 return items.Where(
