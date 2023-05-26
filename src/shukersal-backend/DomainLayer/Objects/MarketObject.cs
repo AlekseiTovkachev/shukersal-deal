@@ -13,12 +13,16 @@ namespace shukersal_backend.DomainLayer.Objects
         private MarketDbContext _context;
         private readonly PaymentProxy _paymentProvider;
         private readonly DeliveryProxy _deliveryProvider;
+        private PurchaseRuleObject _purchaseRuleObject;
+        private DiscountObject _discountObject;
 
         public MarketObject(MarketDbContext context)
         {
             _context = context;
             _paymentProvider = new PaymentProxy();
             _deliveryProvider = new DeliveryProxy();
+            _purchaseRuleObject = new PurchaseRuleObject(_context);
+            _discountObject = new DiscountObject(_context);
         }
         public async Task<Response<IEnumerable<Store>>> GetStores()
         {
@@ -225,7 +229,12 @@ namespace shukersal_backend.DomainLayer.Objects
             var shop = await GetStore(storeId);
             if (shop.Result == null)
             {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, shop.ErrorMessage);
+                return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+            }
+            var pr = new PurchaseRuleObject(_context);
+            if (!pr.Evaluate(shop.Result.AppliedPurchaseRule, TransactionItems))
+            {
+                return Response<bool>.Success(HttpStatusCode.BadRequest, false);
             }
 
             return Response<bool>.Success(HttpStatusCode.NoContent, true);

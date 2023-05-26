@@ -27,17 +27,20 @@ namespace shukersal_backend.ServiceLayer
         private readonly MarketDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly MemberController memberController;
-        public AuthService(IConfiguration configuration, MarketDbContext context)
+        private readonly ILogger logger;
+        public AuthService(IConfiguration configuration, MarketDbContext context, ILogger<AuthService> logger)
         {
             _context = context;
             _configuration = configuration;
             memberController = new MemberController(context);
+            this.logger = logger;
         }
 
         [HttpPost]
         [Route("Login")]
         public async Task<ActionResult<LoginResponse>> Login(LoginPost loginRequest, IConfiguration _configuration)
         {
+            logger.LogInformation("LogInRequestCalled With {USERNAME}", loginRequest.Username);
             if (ModelState.IsValid)
             {
                 var response = await memberController.LoginMember(loginRequest, _configuration);
@@ -61,7 +64,7 @@ namespace shukersal_backend.ServiceLayer
         [Route("Register")]
         public async Task<ActionResult<RegisterPost>> Register(RegisterPost registerRequest)
         {
-
+            logger.LogInformation("RequestRequestCalled With {USERNAME}", registerRequest.Username);
             if (ModelState.IsValid)
             {
                 var response = await memberController.RegisterMember(registerRequest);
@@ -87,6 +90,7 @@ namespace shukersal_backend.ServiceLayer
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AllGroup)]
         public async Task<ActionResult<Member>> GetLoggedUser()
         {
+            logger.LogInformation("GetLoggedCalled");
             string? username = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (username == null)
             {
@@ -108,6 +112,7 @@ namespace shukersal_backend.ServiceLayer
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AllGroup)]
         public async Task<ActionResult<Member>> ChangePassword(ChangePasswordPost changePasswordRequest)
         {
+            logger.LogInformation("ChangePasswordCalled");
             string? username = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (username == null)
             {

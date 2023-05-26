@@ -19,18 +19,19 @@ namespace shukersal_backend.DomainLayer.Objects
             ICollection<PurchaseRule>? componenets = null;
             if (post.purchaseRuleType == PurchaseRuleType.OR || post.purchaseRuleType == PurchaseRuleType.AND || post.purchaseRuleType == PurchaseRuleType.CONDITION)
                 componenets = new List<PurchaseRule>();
-            _context.PurchaseRules.Add(new PurchaseRule
+            var pr = new PurchaseRule
             {
                 Id = post.Id,
-                store = s,
                 purchaseRuleType = post.purchaseRuleType,
                 Components = componenets,
                 conditionString = post.conditionString,
-                conditionLimit =    post.conditionLimit,
+                conditionLimit = post.conditionLimit,
                 minHour = post.minHour,
                 maxHour = post.maxHour,
-                
-            });
+
+            };
+            s.PurchaseRules.Add(pr);
+            _context.PurchaseRules.Add(pr);
             await _context.SaveChangesAsync();
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
@@ -45,7 +46,6 @@ namespace shukersal_backend.DomainLayer.Objects
                 var component = new PurchaseRule
                 {
                     Id = post.Id,
-                    store = composite.store,
                     purchaseRuleType = post.purchaseRuleType,
                     Components = componenets,
                     conditionString = post.conditionString,
@@ -60,7 +60,7 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return Response<bool>.Success(HttpStatusCode.NotFound, false);
         }
-        public bool Evaluate(PurchaseRule purchaseRule, ICollection<ShoppingItem> items)
+        public bool Evaluate(PurchaseRule purchaseRule, ICollection<TransactionItem> items)
         {
             if (purchaseRule.purchaseRuleType == PurchaseRuleType.AND && purchaseRule.Components != null)
                 return purchaseRule.Components.Select(cm => Evaluate(cm, items)).All(res => res);
@@ -75,15 +75,15 @@ namespace shukersal_backend.DomainLayer.Objects
 
             else if (purchaseRule.purchaseRuleType == PurchaseRuleType.PRODUCT_AT_LEAST)
                 return items.Where(
-                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i => i.ProductName == purchaseRule.conditionString &&
                     i.Quantity >= purchaseRule.conditionLimit).Count() > 0;
 
             else if (purchaseRule.purchaseRuleType == PurchaseRuleType.PRODUCT_LIMIT)
                 return items.Where(
-                    i => i.Product.Name == purchaseRule.conditionString &&
+                    i => i.ProductName == purchaseRule.conditionString &&
                     i.Quantity > purchaseRule.conditionLimit).Count() == 0;
 
-            else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CATEGORY_AT_LEAST)
+            /*else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CATEGORY_AT_LEAST)
                 return items.Where(
                     i => i.Product.Category.Name == purchaseRule.conditionString)
                     .Sum(i => i.Quantity) >= purchaseRule.conditionLimit;
@@ -91,7 +91,7 @@ namespace shukersal_backend.DomainLayer.Objects
             else if (purchaseRule.purchaseRuleType == PurchaseRuleType.CATEGORY_LIMIT)
                 return items.Where(
                     i => i.Product.Category.Name == purchaseRule.conditionString)
-                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;
+                    .Sum(i => i.Quantity) <= purchaseRule.conditionLimit;*/
             else if (purchaseRule.purchaseRuleType == PurchaseRuleType.TIME_HOUR_AT_DAY)
                 return purchaseRule.minHour <= DateTime.Now.Hour && DateTime.Now.Hour < purchaseRule.maxHour;
 
@@ -100,12 +100,23 @@ namespace shukersal_backend.DomainLayer.Objects
             return true;
         }
 
-        public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
+        /*public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
             var purchaseRules = await _context.PurchaseRules
                 .Where(dr => dr.store.Id == storeId)
                 .ToListAsync();
             return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
+        }*/
+
+        public async Task<Response<PurchaseRule>> SelectPurchaseRule(Store s, long PurchaseRuleId)
+        {
+            var r = s.PurchaseRules.Where(dr => dr.Id == PurchaseRuleId);
+            if (r == null || r.Count() == 0)
+                return Response<PurchaseRule>.Error(HttpStatusCode.NotFound, "discount doesnt exist");
+            s.AppliedPurchaseRule = r.FirstOrDefault();
+            await _context.SaveChangesAsync();
+            return Response<PurchaseRule>.Success(HttpStatusCode.OK, r.FirstOrDefault());
+
         }
     }
 }

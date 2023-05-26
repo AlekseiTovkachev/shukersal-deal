@@ -8,6 +8,7 @@ using shukersal_backend.Models.MemberModels;
 using shukersal_backend.ServiceLayer;
 using Xunit;
 using shukersal_backend.Utility;
+using Microsoft.Extensions.Logging;
 
 
 //TODO: tests dont work properly. look at AT 2.1 for similar tests.
@@ -27,7 +28,7 @@ namespace shukersal_backend.Tests.ServiceLayer
             _contextMock = new Mock<MarketDbContext>();
             _configurationMock = new Mock<IConfiguration>();
             _memberControllerMock = new Mock<MemberController>(_contextMock.Object);
-            _authService = new AuthService(_configurationMock.Object, _contextMock.Object);
+            _authService = new AuthService(_configurationMock.Object, _contextMock.Object, new Mock<ILogger<AuthService>>().Object);
         }
 
         [Fact]

@@ -19,6 +19,10 @@ namespace shukersal_backend.Models
         public virtual ICollection<Product> Products { get; set; }
         [Required]
         public virtual ICollection<DiscountRule> DiscountRules { get; set; }
+        public DiscountRule? AppliedDiscountRule { get; set; }
+        [Required]
+        public virtual ICollection<PurchaseRule> PurchaseRules { get; set; }
+        public PurchaseRule? AppliedPurchaseRule { get; set; }
 
     }
 }
