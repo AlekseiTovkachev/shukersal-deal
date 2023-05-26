@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace shukersal_backend.Models.StoreModels
+namespace shukersal_backend.Models
 {
     public class DiscountRuleBooleanPost
     {

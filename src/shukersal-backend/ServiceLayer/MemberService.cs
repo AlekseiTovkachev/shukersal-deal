@@ -27,7 +27,7 @@ namespace shukersal_backend.ServiceLayer
         private readonly MemberController memberController;
         private readonly ILogger logger;
 
-        public MemberService(MarketDbContext context, ILogger<MemberService> logger)
+        public MemberService(MarketDbContext context, ILogger logger)
         {
             memberController = new MemberController(context);
             this.logger = logger;

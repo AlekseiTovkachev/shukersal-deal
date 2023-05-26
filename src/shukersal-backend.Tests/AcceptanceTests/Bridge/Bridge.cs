@@ -29,10 +29,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
             //TODO: init configuration
             _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            authService = new AuthService(_configuration, _context.Object);
-            memberService = new MemberService(_context.Object);
+            authService = new AuthService(_configuration, _context.Object, _logger.Object);
+            memberService = new MemberService(_context.Object, _logger.Object);
             TransactionService = new TransactionService(_context.Object, _logger.Object);
-            shoppingCartService = new ShoppingCartService(_context.Object);
+            shoppingCartService = new ShoppingCartService(_context.Object, _logger.Object);
 
             storeService = new StoreService(_context.Object, _logger.Object);
         }

@@ -170,7 +170,7 @@ namespace shukersal_backend.DomainLayer.Objects
             await _context.SaveChangesAsync();
             return Response<DiscountRule>.Success(HttpStatusCode.OK, r.FirstOrDefault());
         }
-        public async Task<Response<bool>> CreateDiscountRuleBoolean(DiscountRuleBoolean post, Store s, DiscountRule discountRule)
+        public async Task<Response<bool>> CreateDiscountRuleBoolean(DiscountRuleBooleanPost post, DiscountRule discountRule)
         {
             ICollection<DiscountRuleBoolean>? componenets = null;
             if (post.discountRuleBooleanType == DiscountRuleBooleanType.OR || post.discountRuleBooleanType == DiscountRuleBooleanType.AND || post.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION)
