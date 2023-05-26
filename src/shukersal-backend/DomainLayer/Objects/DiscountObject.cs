@@ -191,7 +191,7 @@ namespace shukersal_backend.DomainLayer.Objects
             await _context.SaveChangesAsync();
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
-        public async Task<Response<bool>> CreateChildDiscountRuleBoolean(long compositeId, DiscountRuleBoolean post)
+        public async Task<Response<bool>> CreateChildDiscountRuleBoolean(long compositeId, DiscountRuleBooleanPost post)
         {
             var composite = await _context.DiscountRuleBooleans.FirstOrDefaultAsync(dr => dr.Id == compositeId);
             if (composite != null && (composite.discountRuleBooleanType == DiscountRuleBooleanType.OR || composite.discountRuleBooleanType == DiscountRuleBooleanType.AND || composite.discountRuleBooleanType == DiscountRuleBooleanType.CONDITION))
