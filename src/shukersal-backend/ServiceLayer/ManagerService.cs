@@ -19,7 +19,7 @@ namespace shukersal_backend.ServiceLayer
         private readonly Member? currentMember;
         private readonly ILogger logger;
 
-        public StoreManagerService(MarketDbContext context, ILogger<StoreService> logger)
+        public StoreManagerService(MarketDbContext context, ILogger<StoreManagerService> logger)
         {
             _context = context;
             this.logger = logger;

@@ -145,14 +145,21 @@ namespace shukersal_backend.DomainLayer.Objects
                 );
             return transcations;
         }
-        /*public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
+        public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
         {
-            
-            var discounts = await _context.DiscountRules
-                .Where(dr => dr.store.Id == storeId)
-                .ToListAsync();
-            return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, discounts);
-        }*/
+            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            if (store != null)
+                return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, store.DiscountRules);
+            return Response<ICollection<DiscountRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+        }
+
+        public async Task<Response<DiscountRule>> GetAppliedDiscount(long storeId)
+        {
+            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            if (store != null)
+                return Response<DiscountRule>.Success(HttpStatusCode.OK, store.AppliedDiscountRule);
+            return Response<DiscountRule>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+        }
 
         public async Task<Response<DiscountRule>> SelectDiscount(Store s, long DiscountRuleId)
         {
@@ -249,14 +256,6 @@ namespace shukersal_backend.DomainLayer.Objects
             //    return purchaseRule.weekDays[(int)DateTime.Now.DayOfWeek];
             return true;
         }
-
-        /*public async Task<Response<ICollection<PurchaseRule>>> GetDiscountRuleBooleans(long storeId)
-        {
-            var purchaseRules = await _context.PurchaseRules
-                .Where(dr => dr.store.Id == storeId)
-                .ToListAsync();
-            return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
-        }*/
     }
 
     public class TranscationCalculation

@@ -13,5 +13,6 @@ namespace shukersal_backend.Models
         public DiscountRuleBoolean? discountRuleBoolean { get; set; }
         public DiscountOn discountOn { get; set; }
         public string discountOnString { get; set; }
+        public long StoreId { get; set; }
     }
 }
