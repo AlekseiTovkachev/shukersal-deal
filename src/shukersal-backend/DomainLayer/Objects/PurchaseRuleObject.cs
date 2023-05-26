@@ -22,7 +22,6 @@ namespace shukersal_backend.DomainLayer.Objects
             var pr = new PurchaseRule
             {
                 Id = post.Id,
-                store = s,
                 purchaseRuleType = post.purchaseRuleType,
                 Components = componenets,
                 conditionString = post.conditionString,
@@ -47,7 +46,6 @@ namespace shukersal_backend.DomainLayer.Objects
                 var component = new PurchaseRule
                 {
                     Id = post.Id,
-                    store = composite.store,
                     purchaseRuleType = post.purchaseRuleType,
                     Components = componenets,
                     conditionString = post.conditionString,
@@ -102,13 +100,13 @@ namespace shukersal_backend.DomainLayer.Objects
             return true;
         }
 
-        public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
+        /*public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
             var purchaseRules = await _context.PurchaseRules
                 .Where(dr => dr.store.Id == storeId)
                 .ToListAsync();
             return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
-        }
+        }*/
 
         public async Task<Response<PurchaseRule>> SelectPurchaseRule(Store s, long PurchaseRuleId)
         {

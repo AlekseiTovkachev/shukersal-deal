@@ -22,7 +22,6 @@ namespace shukersal_backend.DomainLayer.Objects
             var dr = new DiscountRule
             {
                 Id = post.Id,
-                store = s,
                 Discount = post.Discount,
                 discountType = post.discountType,
                 Components = componenets,
@@ -47,7 +46,6 @@ namespace shukersal_backend.DomainLayer.Objects
                 var component = new DiscountRule
                 {
                     Id = post.Id,
-                    store = composite.store,
                     Discount = post.Discount,
                     discountType = post.discountType,
                     Components = componenets,
@@ -147,13 +145,14 @@ namespace shukersal_backend.DomainLayer.Objects
                 );
             return transcations;
         }
-        public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
+        /*public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
         {
+            
             var discounts = await _context.DiscountRules
                 .Where(dr => dr.store.Id == storeId)
                 .ToListAsync();
             return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, discounts);
-        }
+        }*/
 
         public async Task<Response<DiscountRule>> SelectDiscount(Store s, long DiscountRuleId)
         {
@@ -172,7 +171,6 @@ namespace shukersal_backend.DomainLayer.Objects
             var drb = new DiscountRuleBoolean
             {
                 Id = post.Id,
-                store = s,
                 discountRuleBooleanType = post.discountRuleBooleanType,
                 Components = componenets,
                 conditionString = post.conditionString,
@@ -197,7 +195,6 @@ namespace shukersal_backend.DomainLayer.Objects
                 var component = new DiscountRuleBoolean
                 {
                     Id = post.Id,
-                    store = composite.store,
                     discountRuleBooleanType = post.discountRuleBooleanType,
                     Components = componenets,
                     conditionString = post.conditionString,
@@ -253,13 +250,13 @@ namespace shukersal_backend.DomainLayer.Objects
             return true;
         }
 
-        public async Task<Response<ICollection<PurchaseRule>>> GetDiscountRuleBooleans(long storeId)
+        /*public async Task<Response<ICollection<PurchaseRule>>> GetDiscountRuleBooleans(long storeId)
         {
             var purchaseRules = await _context.PurchaseRules
                 .Where(dr => dr.store.Id == storeId)
                 .ToListAsync();
             return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
-        }
+        }*/
     }
 
     public class TranscationCalculation

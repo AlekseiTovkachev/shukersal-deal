@@ -22,8 +22,6 @@ namespace shukersal_backend.Models
         [Required]
         public DiscountRuleBooleanType discountRuleBooleanType { get; set; }
         public virtual ICollection<DiscountRuleBoolean>? Components { get; set; }
-        [JsonIgnore]
-        public Store store { get; set; }
         public string conditionString { get; set; }
         public int conditionLimit { get; set; }
         [Range(0, 24)]

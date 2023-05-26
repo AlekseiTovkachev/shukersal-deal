@@ -9,7 +9,6 @@ namespace shukersal_backend.Models.StoreModels
         [Required]
         public PurchaseRuleType purchaseRuleType { get; set; }
         public virtual ICollection<PurchaseRule>? Components { get; set; }
-        public long storeId { get; set; }
         public string conditionString { get; set; }
         public int conditionLimit { get; set; }
         [Range(0, 24)]
