@@ -6,7 +6,7 @@ using System.Net;
 
 namespace shukersal_backend.ServiceLayer
 {
-    [Route("api/[controller]")]
+    [Route("api/transactions")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class TransactionService : ControllerBase
@@ -34,7 +34,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // GET: api/Transactions/5
-        [HttpGet("Transactionid")]
+        [HttpGet("{Transactionid}")]
         public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
             logger.LogInformation("GetTransaction method called with id = {TransactionId}", TransactionId);
@@ -71,7 +71,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // DELETE: api/Transactions/5
-        [HttpDelete("Transactionid/{TransactionId}")]
+        [HttpDelete("{TransactionId}")]
         public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
             logger.LogInformation("DeleteTransaction method called with id = {TransactionId}", TransactionId);
@@ -85,7 +85,7 @@ namespace shukersal_backend.ServiceLayer
 
 
         // PUT: api/Transaction/5
-        [HttpPut("Transactionid/{Transactionid}")]
+        [HttpPut("{Transactionid}")]
         public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post)
         {
             logger.LogInformation("UpdateTransaction method called with id = {Transactionid}", Transactionid);
@@ -106,7 +106,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // GET: api/Transactions/memberId/5
-        [HttpGet("memberId/{memberId}")]
+        [HttpGet("member/{memberId}")]
         public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
             logger.LogInformation("BrowseTransactionHistory method called with memberId = {memberId}", memberId);
@@ -127,7 +127,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // GET: api/Transactions/storeId/5
-        [HttpGet("storeId/{storeId}")]
+        [HttpGet("store/{storeId}")]
         public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
             logger.LogInformation("BrowseTransactionHistory method called with storeId = {storeId}", storeId);

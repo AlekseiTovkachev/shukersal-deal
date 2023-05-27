@@ -8,7 +8,7 @@ using System.Net;
 namespace shukersal_backend.ServiceLayer
 {
     // TODO: Move logic to domain
-    [Route("api/[controller]")]
+    [Route("api/storemanagers")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class StoreManagerService : ControllerBase
@@ -36,7 +36,6 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // GET: api/StoreManagers/5
         [HttpGet("{id}")]
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
@@ -49,7 +48,6 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // GET: api/StoreManagers/member/5
         [HttpGet("member/{memberId}")]
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
         {
@@ -74,8 +72,7 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // POST: api/StoreManagers
-        [HttpPost("api/storemanager/createstoremanager")]
+        [HttpPost]
         public async Task<ActionResult<StoreManager>> PostStoreManager(OwnerManagerPost post)
         {
             logger.LogInformation("PostStoreManager method called");
@@ -84,32 +81,44 @@ namespace shukersal_backend.ServiceLayer
             {
                 return Unauthorized();
             }
-            var response = await _controller.PostStoreManager(post, currentMember);
-            if (!response.IsSuccess)
+            if (post.Owner)
             {
-                return NotFound();
+                var response = await _controller.PostStoreOwner(post, currentMember);
+                if (!response.IsSuccess)
+                {
+                    return NotFound();
+                }
+                return Ok(response.Result);
             }
-            return Ok(response.Result);
+            else
+            {
+                var response = await _controller.PostStoreManager(post, currentMember);
+                if (!response.IsSuccess)
+                {
+                    return NotFound();
+                }
+                return Ok(response.Result);
+            }
         }
 
-        [HttpPost("api/storemanager/createstoreowner")]
-        public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
-        {
-            logger.LogInformation("PostStoreOwner method called");
-            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
-            if (currentMember == null)
-            {
-                return Unauthorized();
-            }
-            var response = await _controller.PostStoreOwner(post, currentMember);
-            if (!response.IsSuccess)
-            {
-                return NotFound();
-            }
-            return Ok(response.Result);
-        }
+        //[HttpPost("api/storemanager/createstoreowner")]
+        //public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
+        //{
+        //    logger.LogInformation("PostStoreOwner method called");
+        //    var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+        //    if (currentMember == null)
+        //    {
+        //        return Unauthorized();
+        //    }
+        //    var response = await _controller.PostStoreOwner(post, currentMember);
+        //    if (!response.IsSuccess)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(response.Result);
+        //}
 
-        // PUT: api/StoreManagers/5
+        // PUT: api/storeManagers/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutStoreManager(long id, StoreManager storeManager)
         {
@@ -126,22 +135,22 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // DELETE: api/StoreManagers/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteStoreManager(long id)
-        {
-            //var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
-            //if (currentMember == null)
-            //{
-            //    return Unauthorized();
-            //}
-            var response = await _controller.DeleteStoreManager(id);
-            if (!response.IsSuccess)
-            {
-                return NotFound();
-            }
-            return Ok(response.Result);
-        }
+        //// DELETE: api/StoreManagers/5
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> DeleteStoreManager(long id)
+        //{
+        //    //var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+        //    //if (currentMember == null)
+        //    //{
+        //    //    return Unauthorized();
+        //    //}
+        //    var response = await _controller.DeleteStoreManager(id);
+        //    if (!response.IsSuccess)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(response.Result);
+        //}
 
 
         // Add a permission to a shop manager
