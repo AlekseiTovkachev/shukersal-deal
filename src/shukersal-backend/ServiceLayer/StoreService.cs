@@ -11,12 +11,11 @@ using System.Net;
 namespace shukersal_backend.ServiceLayer
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/")]
     [EnableCors("AllowOrigin")]
     public class StoreService : ControllerBase
     {
         private readonly StoreController storeController;
-        private readonly Member? currentMember;
         private readonly ILogger<ControllerBase> logger;
         private readonly MarketDbContext context;
 
@@ -24,13 +23,12 @@ namespace shukersal_backend.ServiceLayer
         {
             storeController = new StoreController(context);
             this.context = context;
-            currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             this.logger = logger;
             logger.LogInformation("testing the log");
         }
 
-        // GET: api/Store
-        [HttpGet]
+        // GET: api/stores
+        [HttpGet("stores")]
         public async Task<ActionResult<IEnumerable<Store>>> GetStores()
         {
             logger.LogInformation("GetStores method called.");
@@ -42,8 +40,8 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // GET: api/Store/5
-        [HttpGet("{id}")]
+        // GET: api/stores/5
+        [HttpGet("stores/{id}")]
         public async Task<ActionResult<Store>> GetStore(long id)
         {
             logger.LogInformation("GetStore method called with ID: {id}", id);
@@ -55,8 +53,8 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
-        // POST: api/Store
-        [HttpPost]
+        // POST: api/stores
+        [HttpPost("stores")]
         public async Task<ActionResult<Store>> CreateStore(StorePost storeData)
         {
             logger.LogInformation("CreateStore method called.");
@@ -82,8 +80,8 @@ namespace shukersal_backend.ServiceLayer
             }
         }
 
-        // PUT: api/Store/5
-        [HttpPatch("{id}")]
+        // PUT: api/store/5
+        [HttpPatch("stores/{id}")]
         public async Task<IActionResult> UpdateStore(long id, StorePatch patch)
         {
             logger.LogInformation("UpdateStore method called with ID: {id}", id);
@@ -108,8 +106,8 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest();
         }
 
-        // DELETE: api/Store/5
-        [HttpDelete("{id}")]
+        // DELETE: api/store/5
+        [HttpDelete("stores/{id}")]
         public async Task<IActionResult> DeleteStore(long id)
         {
             logger.LogInformation("DeleteStore method called with ID: {id}", id);
@@ -148,7 +146,42 @@ namespace shukersal_backend.ServiceLayer
             }
         }
 
-        // Action method for updating a product in a store
+        [HttpGet("stores/{storeId}/products")]
+        public async Task<ActionResult<Store>> GetStoreProducts(long storeId)
+        {
+            logger.LogInformation("GetStoreProducts method called with for storeID: {storeId}", storeId);
+            var response = await storeController.GetStoreProducts(storeId);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
+        [HttpGet("products/{id}")]
+        public async Task<ActionResult<Product>> GetProduct(long id)
+        {
+            logger.LogInformation("GetProduct method called with for productId: {id}", id);
+            var response = await storeController.GetProduct(id);
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
+        // GET: api/products
+        [HttpGet("products")]
+        public async Task<ActionResult<IEnumerable<Store>>> GetAllProducts()
+        {
+            var response = await storeController.GetAllProducts();
+            if (!response.IsSuccess)
+            {
+                return NotFound();
+            }
+            return Ok(response.Result);
+        }
+
         [HttpPatch("stores/{storeId}/products/{productId}")]
         public async Task<IActionResult> UpdateProduct(long storeId, long productId, ProductPatch product)
         {
@@ -170,8 +203,7 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest();
         }
 
-        // Action method for deleting a product from a store
-        [HttpDelete("stores/{storeId}/products")]
+        [HttpDelete("stores/{storeId}/products/{productId}")]
         public async Task<IActionResult> DeleteProduct(long storeId, long productId)
         {
             logger.LogInformation("DeleteProduct method called with for storeID: {storeId} and productId: {productId}", storeId, productId);
@@ -188,50 +220,12 @@ namespace shukersal_backend.ServiceLayer
             return NoContent();
         }
 
-        //// GET: api/Products
-        //[HttpGet("stores/Products")]
-        //public async Task<ActionResult<IEnumerable<Store>>> GetAllProducts()
-        //{
-        //    var response = await storeController.GetAllProducts();
-        //    if (!response.IsSuccess)
-        //    {
-        //        return NotFound();
-        //    }
-        //    return Ok(response.Result);
-        //}
-
-        // GET: api/Store/Products
-        [HttpGet("stores/{storeId}/products")]
-        public async Task<ActionResult<Store>> GetStoreProducts(long storeId)
-        {
-            logger.LogInformation("GetStoreProducts method called with for storeID: {storeId}", storeId);
-            var response = await storeController.GetStoreProducts(storeId);
-            if (!response.IsSuccess)
-            {
-                return NotFound();
-            }
-            return Ok(response.Result);
-        }
-
         // GET: api/Category
-        [HttpGet("stores/categories")]
+        [HttpGet("categories")]
         public async Task<ActionResult<IEnumerable<Category>>> GetCategories()
         {
             logger.LogInformation("GetCategories method called");
             var response = await storeController.GetCategories();
-            return Ok(response.Result);
-        }
-
-        // GET: api/Store/5
-        [HttpGet("products/{id}")]
-        public async Task<ActionResult<Product>> GetProduct(long id)
-        {
-            logger.LogInformation("GetProduct method called with for productId: {id}", id);
-            var response = await storeController.GetProduct(id);
-            if (!response.IsSuccess)
-            {
-                return NotFound();
-            }
             return Ok(response.Result);
         }
 

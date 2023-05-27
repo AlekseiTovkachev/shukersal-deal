@@ -12,6 +12,8 @@ namespace shukersal_backend.Models
         public long MemberId { get; set; }
         [Required]
         public long StoreId { get; set; }
+        [Required]
+        public bool Owner { get; set; }
     }
 
     //public class FounderPost

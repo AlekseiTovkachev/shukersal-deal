@@ -1,24 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-using HotelBackend.Util;
+﻿using HotelBackend.Util;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using NuGet.Protocol.Plugins;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
-using shukersal_backend.Utility;
 
 namespace shukersal_backend.ServiceLayer
 {
 
-    [Route("api/[controller]")]
+    [Route("api/member")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class MemberService : ControllerBase
