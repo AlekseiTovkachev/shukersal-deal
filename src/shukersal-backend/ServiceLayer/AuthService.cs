@@ -2,24 +2,19 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol.Plugins;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
 using shukersal_backend.Utility;
 using System.Data;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
 
 namespace shukersal_backend.ServiceLayer
 {
     // TODO: Move logic to domain
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class AuthService : ControllerBase
@@ -73,7 +68,7 @@ namespace shukersal_backend.ServiceLayer
                     return BadRequest(ModelState);
                 }
                 var member = response.Result;
-                return CreatedAtAction("GetMember","MemberService", new { id = member.Id }, member);
+                return CreatedAtAction("GetMember", "MemberService", new { id = member.Id }, member);
             }
             else
             {

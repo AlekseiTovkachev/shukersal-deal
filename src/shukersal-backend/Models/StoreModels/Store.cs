@@ -8,6 +8,7 @@ namespace shukersal_backend.Models
     {
         public long Id { get; set; }
         [Required]
+
         public string Name { get; set; }
         public string Description { get; set; }
         public long RootManagerId { get; set; }

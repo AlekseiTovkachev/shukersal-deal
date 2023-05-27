@@ -4,14 +4,16 @@ namespace shukersal_backend.Models
 {
     public class OwnerManagerPost
     {
-        [Required]
-        public long AppointerId { get; set; }
+        //[Required]
+        //public long AppointerId { get; set; }
         [Required]
         public long BossId { get; set; }
         [Required]
         public long MemberId { get; set; }
         [Required]
         public long StoreId { get; set; }
+        [Required]
+        public bool Owner { get; set; }
     }
 
     //public class FounderPost
