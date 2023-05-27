@@ -1,13 +1,26 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
 import { Store } from '../types/appTypes';
-import { ApiError } from '../types/apiTypes';
+import { ApiError, ApiListData } from '../types/apiTypes';
 import { StorePatchFormFields, StorePostFormFields } from '../types/formTypes';
 import { storesApi } from '../api/storesApi';
 
 const sliceName = 'store';
 
 // /---------------------------------------- THUNKS ----------------------------------------\
+
+export const getAllStore = createAsyncThunk<
+    ApiListData<Store>,
+    undefined,
+    { rejectValue: ApiError }
+>(
+    `${sliceName}/getStore`,
+    async (_, thunkAPI) => {
+        return storesApi.getAll()
+            .then((res) => thunkAPI.fulfillWithValue(res as ApiListData<Store>))
+            .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
+    }
+);
 
 export const getStore = createAsyncThunk<
     Store,
@@ -142,6 +155,6 @@ export const storeReducer = createSlice({
     }
 })
 
-export const { } = storeReducer.actions
+// export const { } = storeReducer.actions
 
 export default storeReducer.reducer

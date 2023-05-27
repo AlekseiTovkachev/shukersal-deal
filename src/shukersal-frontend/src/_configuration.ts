@@ -5,7 +5,7 @@ export const APP_CURRENCY_SIGN = "$";
 export interface LocalStorageEntry<T> {
     name: string, // The local storage name
     defaultValue: T
-};
+}
 type Entry<T> = LocalStorageEntry<T> // Syntactic Sugar for internal use
 
 export interface LocalStorage {
@@ -17,7 +17,7 @@ export interface LocalStorage {
     //         rememberMe: Entry<boolean>
     //     }
     // }
-};
+}
 
 export const localStorageValues: LocalStorage = {
     auth: {
