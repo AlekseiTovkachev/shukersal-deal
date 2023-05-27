@@ -174,14 +174,13 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public void SetPaymentProvider(string url) 
         {
-
-            _paymentProvider.SetPaymentProvider(new RealPaymentAdapter(new PaymentAdaptee(url)));
+            _paymentProvider.SetPaymentProvider(url);
         }
 
         public void SetDeliveryProvider(string url)
         {
 
-            _deliveryProvider.SetDeliveryProvider(new RealDeliveryAdapter(new DeliveryAdaptee(url)));
+            _deliveryProvider.SetDeliveryProvider(url);
         }
 
         public bool TransactionExists(long id)

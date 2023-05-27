@@ -66,8 +66,8 @@ namespace shukersal_backend.Models
         #region Shopping Cart
         // *------------------------------------------------- Shopping Cart Models --------------------------------------------------*
         public virtual DbSet<ShoppingCart> ShoppingCarts { get; set; } = null!;
-        virtual public DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
-        virtual public DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
+        public virtual DbSet<ShoppingBasket> ShoppingBaskets { get; set; } = null!;
+        public virtual DbSet<ShoppingItem> ShoppingItems { get; set; } = null!;
         #endregion
 
 

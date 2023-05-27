@@ -13,7 +13,7 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
         public bool Handshake()
         {
             var response=adaptee.handshake();
-            if(response==null || response.Result!="OK") 
+            if(response==null ||response.Result!="OK") 
             { 
                 return false; 
             }

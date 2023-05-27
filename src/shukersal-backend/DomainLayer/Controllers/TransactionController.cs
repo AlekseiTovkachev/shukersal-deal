@@ -8,6 +8,7 @@ using shukersal_backend.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Net;
+using System.Security.Policy;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace shukersal_backend.DomainLayer.Controllers
@@ -35,7 +36,14 @@ namespace shukersal_backend.DomainLayer.Controllers
             _marketObject.SetPaymentProvider("https://php-server-try.000webhostapp.com/");
         }
 
-
+        public void SetRealDeliveryAdapter(string url)
+        {
+            _marketObject.SetDeliveryProvider("");
+        }
+        public void SetRealpaymentAdapter(string url)
+        {
+            _marketObject.SetPaymentProvider("");
+        }
         public DeliveryProxy getDeliveryProxy() { return _marketObject.getDeliveryProxy(); }
 
         public PaymentProxy getPaymentProxy() { return _marketObject.getPaymentProxy(); }
@@ -165,7 +173,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             List<Transaction> purchaseHistory = await _context.Transactions.Include(i => i.TransactionItems).Where(p => purchasesId.Contains(p.Id)).ToListAsync();
             foreach(Transaction t in purchaseHistory){
-                List<TransactionItem> toRemove = new List<TransactionItem>(t.TransactionItems.Where(i=>i.StoreId!=shopId));
+                List<TransactionItem> toRemove = t.TransactionItems.Where(i=>i.StoreId!=shopId).ToList();
                 foreach(TransactionItem item in toRemove)
                 {
                     t.TransactionItems.Remove(item);
@@ -228,7 +236,7 @@ namespace shukersal_backend.DomainLayer.Controllers
                 var compliesWithTransactionPolicy = await _marketObject.CheckPurchasePolicy(basket.Key, TransactionBaskets[basket.Key]);
                 if (!compliesWithTransactionPolicy.Result)
                 {
-                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, compliesWithTransactionPolicy.ErrorMessage);
+                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, "Purchase rule vaiolation");
                 }
 
                 var discountsApplied = await ApplyDiscounts(basket.Key, TransactionBaskets[basket.Key], memberId);

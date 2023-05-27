@@ -1,4 +1,7 @@
-﻿using shukersal_backend.Models.PurchaseModels;
+﻿using Microsoft.IdentityModel.Tokens;
+using shukersal_backend.ExternalServices.ExternalDeliveryService;
+using shukersal_backend.Models.PurchaseModels;
+using System.Security.Policy;
 
 namespace shukersal_backend.ExternalServices.ExternalPaymentService
 {
@@ -26,9 +29,13 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
             if (RealPaymentAdapter == null) { return ProxyAns; }
             return RealPaymentAdapter.Handshake();
         }
-        public void SetPaymentProvider(RealPaymentAdapter Adapter)
+        public void SetPaymentProvider(string url)
         {
-            RealPaymentAdapter = Adapter;
+            if (url.IsNullOrEmpty())
+            {
+                RealPaymentAdapter = null;
+            }
+            else RealPaymentAdapter = new RealPaymentAdapter(new PaymentAdaptee(url));
         }
 
 
