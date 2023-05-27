@@ -229,6 +229,10 @@ namespace shukersal_backend.ServiceLayer
             return Ok(response.Result);
         }
 
+        /*
+         * Discounts 
+         */
+
         [HttpPost("discounts")]
         public async Task<IActionResult> AddDiscount(DiscountRulePost post)
         {
@@ -324,7 +328,7 @@ namespace shukersal_backend.ServiceLayer
 
         }
 
-        [HttpGet("discounts/applied/{storeId}")]
+        [HttpGet("store/{storeId}/discounts/applied")]
         public async Task<IActionResult> GetAppliedDiscount(long storeId)
         {
             logger.LogInformation("GetAppliedDiscount method called with for storeID: {storeId}", storeId);
@@ -334,7 +338,7 @@ namespace shukersal_backend.ServiceLayer
             return Ok(res_disc);
         }
 
-        [HttpPatch("discounts/{storeId}/{discountId}")]
+        [HttpPatch("stores/{storeId}/discounts/{discountId}")]
         public async Task<IActionResult> SelectDiscount(long storeId, long discountId)
         {
             logger.LogInformation("SelectDiscount method called with for storeID: {storeId}, discountId : {discountId}", storeId, discountId);
@@ -349,7 +353,7 @@ namespace shukersal_backend.ServiceLayer
             return Ok(res_disc);
         }
 
-        [HttpGet("purchaseRules/all/{storeId}")]
+        [HttpGet("stores/{storeId}/purchaserules/all")]
         public async Task<IActionResult> GetPurchaseRules(long storeId)
         {
             logger.LogInformation("GetPurchaseRules method called with for storeID: {storeId}", storeId);
@@ -360,7 +364,7 @@ namespace shukersal_backend.ServiceLayer
 
         }
 
-        [HttpGet("purchaseRules/applied/{storeId}")]
+        [HttpGet("stores/{storeId}/purchaserules/applied")]
         public async Task<IActionResult> GetAppliedPurchaseRule(long storeId)
         {
             logger.LogInformation("GetAppliedPurchaseRule method called with for storeID: {storeId}", storeId);
@@ -370,7 +374,7 @@ namespace shukersal_backend.ServiceLayer
             return Ok(res_disc);
         }
 
-        [HttpPatch("purchaseRules/{storeId}/{discountId}")]
+        [HttpPatch("stores/{storeId}/purchaserules/{discountId}")]
         public async Task<IActionResult> SelectPurchaseRule(long storeId, long discountId)
         {
             logger.LogInformation("SelectPurchaseRule method called with for storeID: {storeId}, discountId : {discountId}", storeId, discountId);
@@ -385,7 +389,7 @@ namespace shukersal_backend.ServiceLayer
             return Ok(res_disc);
         }
 
-        [HttpPost("purchaseRules")]
+        [HttpPost("purchaserules")]
         public async Task<IActionResult> AddPurchaseRule(PurchaseRulePost post)
         {
             logger.LogInformation("AddPurchaseRule method called with for storeID: {storeId}", post.StoreId);
@@ -406,7 +410,7 @@ namespace shukersal_backend.ServiceLayer
             }
         }
 
-        [HttpPost("purchaseRules/{id}")]
+        [HttpPost("purchaserules/{id}")]
         public async Task<IActionResult> AddChildPurchaseRule(long compositeId, PurchaseRulePost post)
         {
             logger.LogInformation("AddChildPurchaseRule method called with for compositeId: {compositeId}", post.StoreId);
