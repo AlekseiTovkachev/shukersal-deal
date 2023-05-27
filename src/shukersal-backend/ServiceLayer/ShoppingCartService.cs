@@ -21,9 +21,9 @@ namespace shukersal_backend.ServiceLayer
         //private readonly MarketDbContext _context;
         private readonly ShoppingCartController _shoppingCartController;
         private readonly Member? currentMember;
-        private readonly ILogger logger;
+        private readonly ILogger<ControllerBase> logger;
 
-        public ShoppingCartService(MarketDbContext context, ILogger logger)
+        public ShoppingCartService(MarketDbContext context, ILogger<ControllerBase> logger)
         {
             _shoppingCartController = new ShoppingCartController(context);
             currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);

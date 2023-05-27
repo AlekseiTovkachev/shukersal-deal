@@ -12,9 +12,9 @@ namespace shukersal_backend.ServiceLayer
     public class TransactionService : ControllerBase
     {
         private readonly TransactionController TransactionController;
-        private readonly ILogger logger;
+        private readonly ILogger<ControllerBase> logger;
 
-        public TransactionService(MarketDbContext context, ILogger logger)
+        public TransactionService(MarketDbContext context, ILogger<ControllerBase> logger)
         {
             TransactionController = new TransactionController(context);
             this.logger = logger;

@@ -27,8 +27,8 @@ namespace shukersal_backend.ServiceLayer
         private readonly MarketDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly MemberController memberController;
-        private readonly ILogger logger;
-        public AuthService(IConfiguration configuration, MarketDbContext context, ILogger logger)
+        private readonly ILogger<ControllerBase> logger;
+        public AuthService(IConfiguration configuration, MarketDbContext context, ILogger<ControllerBase> logger)
         {
             _context = context;
             _configuration = configuration;
