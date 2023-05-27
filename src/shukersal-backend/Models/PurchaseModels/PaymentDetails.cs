@@ -24,14 +24,16 @@ namespace shukersal_backend.Models.PurchaseModels
         public string CardNumber { get; set; }
 
         [Required]
-        [JsonIgnore]
+        [JsonIgnore]  //only month & year need to be presented 
         public DateOnly ExpirationDate { get; set; }
 
         [Required]
         [JsonIgnore]
         [StringLength(3, MinimumLength = 3)]
         public string CVC { get; set; }
-        public double TotalPrice { get; set; }
+
+        [JsonIgnore]
+        public double TotalPrice { get; set; } 
 
     }
 }

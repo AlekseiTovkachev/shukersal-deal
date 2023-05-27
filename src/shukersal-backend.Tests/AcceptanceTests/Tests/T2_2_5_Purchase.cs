@@ -57,24 +57,27 @@ namespace shukersal_backend.Tests.AcceptanceTests
                 {
                      ReceiverFirstName = "Holder",
                     ReceiverLastName = "Holder",
-                    ReceiverPhoneNum = "0506255065",
                     ReceiverAddress = "Holder",
+                    ReceiverCountry="Israel",
+                    ReceiverCity="Beer Sheva",
                     ReceiverPostalCode = "2804601"
                 },
                 new DeliveryDetails
                 {
                     ReceiverFirstName= "ReceiverFirstName",
                     ReceiverLastName= "ReceiverLastName",
-                    ReceiverPhoneNum="0500000000",
                     ReceiverAddress= "ReceiverAddress",
+                    ReceiverCountry="Israel",
+                    ReceiverCity="Beer Sheva",
                     ReceiverPostalCode="1234567"
                 },
                 new DeliveryDetails
                 {
                     ReceiverFirstName= "bad_delivery",
                     ReceiverLastName= "bad_delivery",
-                    ReceiverPhoneNum="bad_delivery",
                     ReceiverAddress= "bad_delivery",
+                    ReceiverCountry="Israel",
+                    ReceiverCity="Beer Sheva",
                     ReceiverPostalCode="bad_delivery"
                 }
             };
