@@ -62,26 +62,33 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public bool Evaluate(PurchaseRule purchaseRule, ICollection<TransactionItem> items)
         {
-            return PurchaseRuleComponent.Build(purchaseRule).Eval(items);
+            return PurchaseRuleComponent.Build(purchaseRule, _context).Eval(items);
         }
 
-        /*public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
+        public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
-            var purchaseRules = await _context.PurchaseRules
-                .Where(dr => dr.store.Id == storeId)
-                .ToListAsync();
-            return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, purchaseRules);
-        }*/
+            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            if (store != null)
+                return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, store.PurchaseRules);
+            return Response<ICollection<PurchaseRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+        }
+
+        public async Task<Response<PurchaseRule>> GetAppliedPurchaseRule(long storeId)
+        {
+            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            if (store != null)
+                return Response<PurchaseRule>.Success(HttpStatusCode.OK, store.AppliedPurchaseRule);
+            return Response<PurchaseRule>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+        }
 
         public async Task<Response<PurchaseRule>> SelectPurchaseRule(Store s, long PurchaseRuleId)
         {
             var r = s.PurchaseRules.Where(dr => dr.Id == PurchaseRuleId);
             if (r == null || r.Count() == 0)
-                return Response<PurchaseRule>.Error(HttpStatusCode.NotFound, "discount doesnt exist");
+                return Response<PurchaseRule>.Error(HttpStatusCode.NotFound, "purchase rule doesnt exist");
             s.AppliedPurchaseRule = r.FirstOrDefault();
             await _context.SaveChangesAsync();
             return Response<PurchaseRule>.Success(HttpStatusCode.OK, r.FirstOrDefault());
-
         }
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
 using System.Net;
 
@@ -258,7 +259,7 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("discounts/{id}")]
         public async Task<IActionResult> AddChildDiscount(long compositeId, DiscountRulePost post)
         {
-            logger.LogInformation("AddDiscount method called with for storeID: {storeId}", post.StoreId);
+            logger.LogInformation("AddChildDiscount method called with for storeID: {storeId}", post.StoreId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             if (currentMember == null)
             {
@@ -276,7 +277,49 @@ namespace shukersal_backend.ServiceLayer
             }
         }
 
-        [HttpGet("discounts/{storeId}")]
+        [HttpPost("discounts/boolean/new/{id}")]
+        public async Task<IActionResult> AddDiscountBoolean(long compositeId, DiscountRuleBooleanPost post)
+        {
+            logger.LogInformation("DiscountRuleBooleanPost method called with for storeID: {storeId}", post.StoreId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            if (ModelState.IsValid)
+            {
+                var response = await storeController.CreateDiscountRuleBoolean(post, currentMember, compositeId);
+                var res_disc = response.Result;
+                return Ok(res_disc);
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+        }
+
+        [HttpPost("discounts/boolean/child/{id}")]
+        public async Task<IActionResult> AddChildDiscountBoolean(long compositeId, DiscountRuleBooleanPost post)
+        {
+            logger.LogInformation("AddChildDiscountBoolean method called with for storeID: {storeId}", post.StoreId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            if (ModelState.IsValid)
+            {
+                var response = await storeController.CreateChildDiscountRuleBoolean(compositeId, post, currentMember);
+                var res_disc = response.Result;
+                return Ok(res_disc);
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+        }
+
+        [HttpGet("discounts/all/{storeId}")]
         public async Task<IActionResult> GetDiscounts(long storeId)
         {
             logger.LogInformation("GetDiscounts method called with for storeID: {storeId}", storeId);
@@ -285,6 +328,109 @@ namespace shukersal_backend.ServiceLayer
             var res_disc = response.Result;
             return Ok(res_disc);
 
+        }
+
+        [HttpGet("discounts/applied/{storeId}")]
+        public async Task<IActionResult> GetAppliedDiscount(long storeId)
+        {
+            logger.LogInformation("GetAppliedDiscount method called with for storeID: {storeId}", storeId);
+
+            var response = await storeController.GetAppliedDiscount(storeId);
+            var res_disc = response.Result;
+            return Ok(res_disc);
+        }
+
+        [HttpPatch("discounts/{storeId}/{discountId}")]
+        public async Task<IActionResult> SelectDiscount(long storeId, long discountId)
+        {
+            logger.LogInformation("SelectDiscount method called with for storeID: {storeId}, discountId : {discountId}", storeId, discountId);
+
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await storeController.SelectDiscount(storeId, discountId, currentMember);
+            var res_disc = response.Result;
+            return Ok(res_disc);
+        }
+
+        [HttpGet("purchaseRules/all/{storeId}")]
+        public async Task<IActionResult> GetPurchaseRules(long storeId)
+        {
+            logger.LogInformation("GetPurchaseRules method called with for storeID: {storeId}", storeId);
+
+            var response = await storeController.GetPurchaseRules(storeId);
+            var res_disc = response.Result;
+            return Ok(res_disc);
+
+        }
+
+        [HttpGet("purchaseRules/applied/{storeId}")]
+        public async Task<IActionResult> GetAppliedPurchaseRule(long storeId)
+        {
+            logger.LogInformation("GetAppliedPurchaseRule method called with for storeID: {storeId}", storeId);
+
+            var response = await storeController.GetAppliedPurchaseRule(storeId);
+            var res_disc = response.Result;
+            return Ok(res_disc);
+        }
+
+        [HttpPatch("purchaseRules/{storeId}/{discountId}")]
+        public async Task<IActionResult> SelectPurchaseRule(long storeId, long discountId)
+        {
+            logger.LogInformation("SelectPurchaseRule method called with for storeID: {storeId}, discountId : {discountId}", storeId, discountId);
+
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var response = await storeController.SelectPurchaseRule(storeId, discountId, currentMember);
+            var res_disc = response.Result;
+            return Ok(res_disc);
+        }
+
+        [HttpPost("purchaseRules")]
+        public async Task<IActionResult> AddPurchaseRule(PurchaseRulePost post)
+        {
+            logger.LogInformation("AddPurchaseRule method called with for storeID: {storeId}", post.StoreId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            if (ModelState.IsValid)
+            {
+                var response = await storeController.CreatePurchaseRule(post, currentMember);
+                var res_disc = response.Result;
+                return Ok(res_disc);
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
+        }
+
+        [HttpPost("purchaseRules/{id}")]
+        public async Task<IActionResult> AddChildPurchaseRule(long compositeId, PurchaseRulePost post)
+        {
+            logger.LogInformation("AddChildPurchaseRule method called with for compositeId: {compositeId}", post.StoreId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            if (ModelState.IsValid)
+            {
+                var response = await storeController.CreateChildPurchaseRule(compositeId, post, currentMember);
+                var res_disc = response.Result;
+                return Ok(res_disc);
+            }
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
     }
 }
