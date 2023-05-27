@@ -97,16 +97,18 @@ namespace shukersal_backend.Tests.ServiceTests.TransactionUnitTests
                 {
                      ReceiverFirstName = "Holder",
                     ReceiverLastName = "Holder",
-                    ReceiverPhoneNum = "0506255065",
                     ReceiverAddress = "Holder",
+                    ReceiverCountry="Israel",
+                    ReceiverCity="Beer Sheva",
                     ReceiverPostalCode = "2804601"
                 },
                 new DeliveryDetails
                 {
                     ReceiverFirstName= "ReceiverFirstName",
                     ReceiverLastName= "ReceiverLastName",
-                    ReceiverPhoneNum="0500000000",
                     ReceiverAddress= "ReceiverAddress",
+                    ReceiverCountry="Israel",
+                    ReceiverCity="Beer Sheva",
                     ReceiverPostalCode="1234567"
                 }
             };

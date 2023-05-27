@@ -12,12 +12,12 @@ namespace shukersal_backend.Models.PurchaseModels
         [Required]
         [JsonIgnore]
         public string ReceiverLastName { get; set; }
-
+/*
         [Required]
         [JsonIgnore]
         [StringLength(10, MinimumLength = 10)]
         public string ReceiverPhoneNum { get; set; }
-
+*/
         [Required]
         [JsonIgnore]
         public string ReceiverAddress { get; set; }
