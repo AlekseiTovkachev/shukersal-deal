@@ -23,6 +23,7 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
         }
         public bool CancelDelivery(long TransactionId)
         {
+            if (!Handshake()) { return false; }
             var response = adaptee.cancel_supply(TransactionId.ToString());
             if (response == null || response.Result == -1)
             {
@@ -34,6 +35,7 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
 
         public bool ConfirmDelivery(DeliveryDetails deliveryDetails, List<TransactionItem> items)
         {
+            if (!Handshake()) { return false; }
             var name = deliveryDetails.ReceiverFirstName + " " + deliveryDetails.ReceiverLastName;
             var response = adaptee.supply(name, deliveryDetails.ReceiverAddress, deliveryDetails.ReceiverCity, deliveryDetails.ReceiverCountry,deliveryDetails.ReceiverPostalCode);
 

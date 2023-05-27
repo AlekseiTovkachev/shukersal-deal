@@ -8,6 +8,7 @@ using shukersal_backend.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Net;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
@@ -96,24 +97,30 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             var allValid = await CheckRulesAndApplyDiscounts(TransactionBaskets,memberId);
 
-            if (!allValid.IsSuccess) { return Response<Transaction>.Error(HttpStatusCode.BadRequest, allValid.ErrorMessage); }
-
+            if (!allValid.IsSuccess|| allValid.Result == null) { return Response<Transaction>.Error(HttpStatusCode.BadRequest, allValid.ErrorMessage); }
 
             Transaction.TotalPrice = TransactionBaskets.Aggregate(0.0, (total, nextBasket) => total + nextBasket.Value.Aggregate(0.0, (totalBasket, item) => totalBasket + item.FinalPrice * item.Quantity));
             TransactionPost.BillingDetails.TotalPrice = TransactionPost.TotalPrice=Transaction.TotalPrice;
             TransactionBaskets.Values.ToList().ForEach(basket => Transaction.TransactionItems.AddRange(basket));
-
+            
             var gotExternalServicesConfirmation = _marketObject.confirmDeliveryAndPayment(TransactionPost.DeliveryDetails, Transaction.TransactionItems.ToList(),TransactionPost.BillingDetails);
-            if(!gotExternalServicesConfirmation.IsSuccess) {return Response<Transaction>.Error(HttpStatusCode.BadRequest, gotExternalServicesConfirmation.ErrorMessage); }
+            if(!gotExternalServicesConfirmation.Result.IsSuccess) {
+                //rollback
+                foreach (TransactionItem item in Transaction.TransactionItems)
+                {  
+                    var productToRollBack = await _context.Products.FindAsync(item.ProductId); ;
+                    if (productToRollBack != null)
+                    {
+                        productToRollBack.UnitsInStock = productToRollBack.UnitsInStock + item.Quantity;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, gotExternalServicesConfirmation.Result.ErrorMessage); 
+            }
 
+            
             foreach (var (storeId, items) in TransactionBaskets)
             {
-                var stockUpdated= await _marketObject.UpdateStock(storeId, items);
-
-                if (!stockUpdated.IsSuccess || !stockUpdated.Result)
-                {
-                    return Response<Transaction>.Error(HttpStatusCode.BadRequest, stockUpdated.ErrorMessage);
-                }
                 //TODO: sendTransactionNotification(storeId);
             }
 
@@ -218,13 +225,6 @@ namespace shukersal_backend.DomainLayer.Controllers
         {
             foreach (KeyValuePair<long, List<TransactionItem>> basket in TransactionBaskets)
             {
-
-                var allAvailable = await _marketObject.CheckAvailabilityInStock(basket.Key, TransactionBaskets[basket.Key]);
-                if (!allAvailable.Result)
-                {
-                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
-                }
-
                 var compliesWithTransactionPolicy = await _marketObject.CheckPurchasePolicy(basket.Key, TransactionBaskets[basket.Key]);
                 if (!compliesWithTransactionPolicy.Result)
                 {
@@ -235,6 +235,12 @@ namespace shukersal_backend.DomainLayer.Controllers
                 if (!discountsApplied.Result)
                 {
                     return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, discountsApplied.ErrorMessage);
+                }
+
+                var allAvailable = await _marketObject.UpdateStock(basket.Key, TransactionBaskets[basket.Key]);
+                if (!allAvailable.Result)
+                {
+                    return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.BadRequest, allAvailable.ErrorMessage);
                 }
             }
             return Response<Dictionary<long, List<TransactionItem>>>.Success(HttpStatusCode.BadRequest, TransactionBaskets);
