@@ -14,9 +14,22 @@ export const getAllStore = createAsyncThunk<
     undefined,
     { rejectValue: ApiError }
 >(
-    `${sliceName}/getStore`,
+    `${sliceName}/getAllStore`,
     async (_, thunkAPI) => {
         return storesApi.getAll()
+            .then((res) => thunkAPI.fulfillWithValue(res as ApiListData<Store>))
+            .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
+    }
+);
+
+export const getMyStores = createAsyncThunk<
+    ApiListData<Store>,
+    number,
+    { rejectValue: ApiError }
+>(
+    `${sliceName}/getMyStores`,
+    async (memberId, thunkAPI) => {
+        return storesApi.getMyStores(memberId)
             .then((res) => thunkAPI.fulfillWithValue(res as ApiListData<Store>))
             .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
     }
@@ -80,6 +93,7 @@ export const deleteStore = createAsyncThunk<
 
 interface StoreState {
     isLoading: boolean;
+    myStores: ApiListData<Store>;
     currentStore?: Store;
     error?: ApiError;
 }
@@ -87,6 +101,7 @@ interface StoreState {
 
 const initialState: StoreState = {
     isLoading: false,
+    myStores: []
 };
 
 export const storeReducer = createSlice({
@@ -97,6 +112,20 @@ export const storeReducer = createSlice({
     },
     extraReducers: builder => {
         builder
+            // getMyStores
+            .addCase(getMyStores.pending, (state, action) => {
+                state.isLoading = true;
+                state.error = undefined;
+            })
+            .addCase(getMyStores.fulfilled, (state, { payload }) => {
+                state.isLoading = false;
+                state.myStores = payload;
+            })
+            .addCase(getMyStores.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload ?? { message: 'Error. ' };
+            })
+
             // getStore
             .addCase(getStore.pending, (state, action) => {
                 state.isLoading = true;

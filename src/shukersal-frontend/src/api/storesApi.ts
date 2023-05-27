@@ -1,7 +1,4 @@
-import {
-  ApiResponse,
-  ApiResponseListData,
-} from "../types/apiTypes";
+import { ApiResponse, ApiResponseListData } from "../types/apiTypes";
 import { Product, Store } from "../types/appTypes";
 import { apiClient } from "./apiClient";
 import { apiErrorHandlerWrapper } from "./util";
@@ -16,39 +13,43 @@ export interface StorePatchData {
   description?: string;
 }
 
-const serviceName = "storeservice";
+const storeServiceName = "storeservice";
+const sellerServiceName = "sellerservice";
 
 export const storesApi = {
   getAll: (): Promise<ApiResponseListData<Store>> =>
-    apiErrorHandlerWrapper(apiClient.get(`${serviceName}/`)),
+    apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/`)),
+
+  getMyStores: (memberId: number): Promise<ApiResponseListData<Store>> =>
+    apiErrorHandlerWrapper(apiClient.get(`${sellerServiceName}/stores/${memberId}`)),
 
   get: (storeId: number): Promise<ApiResponse<Store>> =>
-    apiErrorHandlerWrapper(apiClient.get(`${serviceName}/${storeId}/`)),
+    apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/${storeId}/`)),
 
   create: (postData: StorePostData): Promise<ApiResponse<Store>> =>
-    apiErrorHandlerWrapper(apiClient.post(`${serviceName}/`, postData)),
+    apiErrorHandlerWrapper(apiClient.post(`${storeServiceName}/`, postData)),
 
   patch: (
     storeId: number,
     newData: Partial<Store>
   ): Promise<ApiResponse<Store>> =>
     apiErrorHandlerWrapper(
-      apiClient.patch(`${serviceName}/${storeId}/`, newData)
+      apiClient.patch(`${storeServiceName}/${storeId}/`, newData)
     ),
 
   delete: (storeId: number): Promise<ApiResponse<undefined>> =>
-    apiErrorHandlerWrapper(apiClient.delete(`${serviceName}/${storeId}/`)),
+    apiErrorHandlerWrapper(apiClient.delete(`${storeServiceName}/${storeId}/`)),
 };
 
 export const storeProductsApi = {
   getAll: (storeId: number): Promise<ApiResponseListData<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.post(`${serviceName}/stores/${storeId}/products/`)
+      apiClient.post(`${storeServiceName}/stores/${storeId}/products/`)
     ),
 
   get: (storeId: number, productId: number): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.get(`${serviceName}/stores/${storeId}/products/${productId}/`)
+      apiClient.get(`${storeServiceName}/stores/${storeId}/products/${productId}/`)
     ),
 
   create: (
@@ -56,7 +57,7 @@ export const storeProductsApi = {
     postData: StorePostData
   ): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.post(`${serviceName}/stores/${storeId}/products/`, postData)
+      apiClient.post(`${storeServiceName}/stores/${storeId}/products/`, postData)
     ),
 
   patch: (
@@ -66,7 +67,7 @@ export const storeProductsApi = {
   ): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
       apiClient.patch(
-        `${serviceName}/stores/${storeId}/products/${productId}/`,
+        `${storeServiceName}/stores/${storeId}/products/${productId}/`,
         newData
       )
     ),
@@ -77,7 +78,7 @@ export const storeProductsApi = {
   ): Promise<ApiResponse<undefined>> =>
     apiErrorHandlerWrapper(
       apiClient.delete(
-        `${serviceName}/stores/${storeId}/products/${productId}/`
+        `${storeServiceName}/stores/${storeId}/products/${productId}/`
       )
     ),
 };

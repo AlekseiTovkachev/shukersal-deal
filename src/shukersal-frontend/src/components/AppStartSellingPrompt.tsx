@@ -10,7 +10,7 @@ export const  AppStartSellingPrompt = () => {
         // TODO: Implement opening of a seller account
         // await sendToApi
         // navigate to seller for refresh
-        navigate('seller');
+        navigate('/seller');
     }, [navigate]);
 
     return <Box>
