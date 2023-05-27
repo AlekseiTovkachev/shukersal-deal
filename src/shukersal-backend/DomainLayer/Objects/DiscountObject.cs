@@ -62,7 +62,7 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public async Task<double> CalculateDiscount(DiscountRule discountRule, ICollection<TransactionItem> transactionItems)
         {
-            var res = DiscountComponent.Build( discountRule).Calculate(transactionItems);
+            var res = DiscountComponent.Build( discountRule, _context).Calculate(transactionItems);
             foreach (var r in res)
                 r.transcationItem.FinalPrice = r.transcationItem.FullPrice - r.discount;
             await _context.SaveChangesAsync();

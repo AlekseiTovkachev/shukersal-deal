@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
@@ -13,7 +7,7 @@ using shukersal_backend.Utility;
 namespace shukersal_backend.ServiceLayer
 {
     // TODO: Move logic to domain
-    [Route("api/[controller]")]
+    [Route("api/shoppingcarts")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class ShoppingCartService : ControllerBase
@@ -31,14 +25,14 @@ namespace shukersal_backend.ServiceLayer
 
         }
         // GET: api/ShoppingCarts/memberId/5
-        [HttpGet("{memberId}/GetShoppingCartByUserId")]
+        [HttpGet("member/{memberId}")]
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId)
         {
             logger.LogInformation("GetShoppingCartByUserId Called with {memberId}", memberId);
             if (currentMember == null) { Unauthorized(); }
 
             var response = await _shoppingCartController.GetShoppingCartByUserId(memberId);
-            if (response.Result==null)
+            if (response.Result == null)
             {
                 return NotFound();
             }
@@ -46,7 +40,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // GET: api/ShoppingCarts/memberId/5
-        [HttpGet("{cartId}/GetShoppingCartByCartId")]
+        [HttpGet("{cartId}")]
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId)
         {
             logger.LogInformation("GetShoppingCartByCartId Called with {cartId}", cartId);
@@ -61,7 +55,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // POST: api/ShoppingCarts/5/items
-        [HttpPost("{cartId}/AddItemToCart")]
+        [HttpPost("{cartId}/items")]
         public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItem item)
         {
             logger.LogInformation("AddItemToCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
@@ -70,23 +64,6 @@ namespace shukersal_backend.ServiceLayer
                 return Unauthorized();
             }
             var itemResp = await _shoppingCartController.AddItemToCart(cartId, item);
-            if (itemResp.Result!=null && itemResp.IsSuccess) 
-            {
-                return itemResp.Result;
-            }
-            return BadRequest(itemResp.ErrorMessage);
-        }
-
-        // DELETE: api/ShoppingCarts/5/items/1
-        [HttpDelete("{cartid}/RemoveItemFromCart")]
-        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item)
-        {
-            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
-            if (currentMember == null)
-            {
-                return Unauthorized();
-            }
-            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId,item);
             if (itemResp.Result != null && itemResp.IsSuccess)
             {
                 return itemResp.Result;
@@ -94,7 +71,23 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest(itemResp.ErrorMessage);
         }
 
-        [HttpPut("{cartId}")]
+        [HttpDelete("{cartid}/items")]
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item)
+        {
+            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId, item);
+            if (itemResp.Result != null && itemResp.IsSuccess)
+            {
+                return itemResp.Result;
+            }
+            return BadRequest(itemResp.ErrorMessage);
+        }
+
+        [HttpPut("{cartId}/items")]
         public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItem item)
         {
             logger.LogInformation("PutStoreManager Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);

@@ -31,6 +31,17 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _managerObject.GetStoreManagersByMemberId(id);
         }
 
+        public async Task<Response<StoreManagerTreeNode>> GetStoreManagersByStoreId(long storeId, Member member)
+        {
+            bool hasPermission = await _managerObject
+                .CheckPermission(storeId, member.Id, PermissionType.Get_manager_info_permission);
+
+            if (!hasPermission)
+            {
+                return Response<StoreManagerTreeNode>.Error(HttpStatusCode.Unauthorized, "");
+            }
+            return await _managerObject.GetStoreManagersByStoreId(storeId);
+        }
 
         public async Task<Response<StoreManager>> PostStoreManager(OwnerManagerPost post, Member member)
         {
@@ -41,7 +52,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             {
                 return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
             }
-            return await _managerObject.PostStoreManager(post);
+            return await _managerObject.PostStoreManager(post, member.Id);
         }
 
         public async Task<Response<StoreManager>> PostStoreOwner(OwnerManagerPost post, Member member)
@@ -53,7 +64,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             {
                 return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
             }
-            return await _managerObject.PostStoreOwner(post);
+            return await _managerObject.PostStoreOwner(post, member.Id);
         }
 
 
@@ -63,16 +74,10 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        public async Task<Response<bool>> DeleteStoreManager(long id)
+        public async Task<Response<bool>> DeleteStoreManager(long id, Member boss)
         {
-            //bool hasPermission = await _managerObject
-            //    .CheckPermission(post.StoreId, member.Id, PermissionType.);
 
-            //if (!hasPermission)
-            //{
-            //    return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
-            //}
-            return await _managerObject.DeleteStoreManager(id);
+            return await _managerObject.DeleteStoreManager(id, boss);
         }
 
         public async Task<Response<bool>> AddPermissionToManager(long id, [FromBody] PermissionType permission, Member member)

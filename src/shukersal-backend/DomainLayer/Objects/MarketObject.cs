@@ -57,7 +57,8 @@ namespace shukersal_backend.DomainLayer.Objects
                 Name = storeData.Name,
                 Description = storeData.Description,
                 Products = new List<Product>(),
-                DiscountRules = new List<DiscountRule>()
+                DiscountRules = new List<DiscountRule>(),
+                PurchaseRules = new List<PurchaseRule>()
             };
 
             _context.Stores.Add(store);
@@ -172,7 +173,7 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public PaymentProxy getPaymentProxy() { return _paymentProvider; }
 
-        public void SetPaymentProvider(string url) 
+        public void SetPaymentProvider(string url)
         {
             _paymentProvider.SetPaymentProvider(url);
         }
@@ -225,11 +226,11 @@ namespace shukersal_backend.DomainLayer.Objects
         public async Task<Response<IEnumerable<ShoppingBasketObject>>> EmptyCart(long memberId)
         {
             var cartResp = await GetShoppingCartByUserId(memberId);
-            if(cartResp == null || cartResp.Result==null)
+            if (cartResp == null || cartResp.Result == null)
             {
                 return Response<IEnumerable<ShoppingBasketObject>>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
             }
-            var cart =new ShoppingCartObject(_context,cartResp.Result);
+            var cart = new ShoppingCartObject(_context, cartResp.Result);
             var emptied = await cart.EmptyCart();
 
             return emptied;
@@ -254,7 +255,7 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<bool>> confirmDeliveryAndPayment(DeliveryDetails deliveryDetails, List<TransactionItem> transactionItems, PaymentDetails paymentDetails)
         {
-            //connction with external delivery service
+            //connction with external payment service
             bool paymentConfirmed = _paymentProvider.ConfirmPayment(paymentDetails);
 
             if (!paymentConfirmed)
@@ -262,7 +263,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Payment declined");
 
             }
-
+          
             //connction with external delivery service
             bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(deliveryDetails, transactionItems);
             if (!deliveryConfirmed)
@@ -271,6 +272,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Delivey declined");
 
             }
+
             return Response<bool>.Success(HttpStatusCode.BadRequest, true);
         }
 
