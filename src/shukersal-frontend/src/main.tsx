@@ -13,11 +13,12 @@ import { router } from './router';
 
 import './index.css'
 
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <Provider store={store}>
       <ThemeProvider theme={theme}>
-        <RouterProvider router={router} />
+          <RouterProvider router={router} />
       </ThemeProvider>
     </Provider>
   </React.StrictMode>,

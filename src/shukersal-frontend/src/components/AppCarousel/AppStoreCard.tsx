@@ -18,11 +18,11 @@ export const AppStoreCard = ({ store, isSeller = false }: AppStoreCardProps) => 
         isSeller
             ? `/seller/stores/${encodeURIComponent(store.id)}`
             : `/stores/${encodeURIComponent(store.id)}`
-    ), [store.id]);
+    ), [isSeller, store.id]);
 
         const handleClickManageStore = useCallback(() => {
             navigate(decodeURIComponent(storeUrl));
-        }, [storeUrl]);
+        }, [navigate, storeUrl]);
 
     return (
         <Box sx={(theme) => ({

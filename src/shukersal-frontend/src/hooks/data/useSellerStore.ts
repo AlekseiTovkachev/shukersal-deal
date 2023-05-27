@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { demoStores } from './DEMO_DATA_useStores';
-import { Store } from '../../types/appTypes';
 import { demoProducts } from './DEMO_DATA_useProducts';
 import { useAppSelector } from '../useAppSelector';
 import { useAppDispatch } from '../useAppDispatch';
-import { StorePatchFormFields, StorePostFormFields } from '../../types/formTypes';
-import { createStore, deleteStore, getStore, updateStore } from '../../redux/storeSlice';
+import { StorePatchFormFields } from '../../types/formTypes';
+import { deleteStore, getStore, updateStore } from '../../redux/storeSlice';
 
 export const useSellerStore = (storeId: number) => {
     const dispatch = useAppDispatch();
@@ -24,7 +23,7 @@ export const useSellerStore = (storeId: number) => {
         }
         return false;
 
-    }, [dispatch]);
+    }, [dispatch, storeId]);
 
     const deleteStoreCallback = useCallback(async () => {
         const response = await dispatch(deleteStore(storeId));
@@ -32,11 +31,11 @@ export const useSellerStore = (storeId: number) => {
             return true;
         }
         return false;
-    }, [dispatch]);
+    }, [dispatch, storeId]);
 
     useEffect(() => {
         dispatch(getStore(storeId));
-    }, [storeId]);
+    }, [dispatch, storeId]);
 
     return {
         store: currentStore,

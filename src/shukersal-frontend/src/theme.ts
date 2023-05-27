@@ -33,8 +33,7 @@ export const theme = createTheme({
     background: {
       default: '#F2F9FA',
       
-      // Additional colors are supported by mui, this is for the typescript compiler
-      //@ts-expect-error
+      //@ts-expect-error: Additional colors are supported by mui, this is for the typescript compiler
       default2: '#FEFEFE',
       artifacts: '#F9F9F9'
     }

@@ -1,5 +1,7 @@
 import { Navigate, useNavigate } from 'react-router-dom';
 
+import NiceModal from '@ebay/nice-modal-react';
+
 import AddIcon from '@mui/icons-material/Add';
 
 import { useAuth } from '../../hooks/useAuth';
@@ -8,6 +10,9 @@ import { AppLoader } from "../../components/AppLoader/AppLoader";
 import { AppStartSellingPrompt } from '../../components/AppStartSellingPrompt';
 import { Button, Box, Grid, Paper, Typography, useTheme, useMediaQuery } from '@mui/material';
 import { AppStoreCard } from '../../components/AppCarousel/AppStoreCard';
+import { useCallback } from 'react';
+import { OpenNewStoreDialog } from './OpenNewStore/OpenNewStoreDialog';
+
 
 export const SellerPage = () => {
     const theme = useTheme();
@@ -17,6 +22,10 @@ export const SellerPage = () => {
     const authData = useAuth();
 
     const isLoading = sellerData.isLoading || authData.isLoading;
+
+    const handleOpenNewStore = useCallback(() => {
+        NiceModal.show(OpenNewStoreDialog);
+    }, []);
 
     if (isLoading) {
         return <AppLoader />
@@ -36,7 +45,9 @@ export const SellerPage = () => {
                 <Button
                     fullWidth={isMobile}
                     startIcon={<AddIcon />}
-                    variant="contained">
+                    variant="contained"
+                    onClick={() => {handleOpenNewStore()}}
+                    >
                     Open New Store
                 </Button>
             </Grid>

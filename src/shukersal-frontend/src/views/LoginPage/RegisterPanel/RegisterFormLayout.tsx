@@ -13,7 +13,7 @@ import '../styles.css';
 export const RegisterFormLayout = () => {
     const theme = useTheme();
     const isScreenLessThanMedium = useMediaQuery(theme.breakpoints.down("md"));
-    
+
     const form = useFormContext<RegisterFormFields>();
     const formValues = form.getValues();
 

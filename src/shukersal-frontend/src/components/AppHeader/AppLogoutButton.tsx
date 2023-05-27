@@ -16,7 +16,7 @@ export const AppLogoutButton = () => {
     const handleClick = useCallback(() => {
         authData.logout();
         navigate('/');
-    }, []);
+    }, [authData, navigate]);
     if (!authData.isLoggedIn) {
         devWarnNotLoggedIn();
     }
