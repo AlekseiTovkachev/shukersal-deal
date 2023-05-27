@@ -4,8 +4,8 @@ namespace shukersal_backend.Models
 {
     public class OwnerManagerPost
     {
-        [Required]
-        public long AppointerId { get; set; }
+        //[Required]
+        //public long AppointerId { get; set; }
         [Required]
         public long BossId { get; set; }
         [Required]
