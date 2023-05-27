@@ -475,10 +475,4 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-/src/shukersal-backend/DomainLayer/Controllers/StoreController.cs
-/src/shukersal-backend/DomainLayer/Objects/DiscountObject.cs
-/src/shukersal-backend/Models/StoreModels/Discount/DiscountRule.cs
-/src/shukersal-backend/Models/StoreModels/Discount/DiscountRulePost.cs
-/src/shukersal-backend/Models/StoreModels/PurchaseRule/PurchaseRule.cs
-/src/shukersal-backend/Models/StoreModels/PurchaseRule/PurchaseRulePost.cs
-/src/shukersal-backend/ServiceLayer/StoreService.cs
+

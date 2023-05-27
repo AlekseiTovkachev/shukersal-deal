@@ -1,4 +1,5 @@
-﻿using shukersal_backend.ExternalServices.ExternalPaymentService;
+﻿using Microsoft.IdentityModel.Tokens;
+using shukersal_backend.ExternalServices.ExternalPaymentService;
 using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
 
@@ -36,9 +37,13 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
         public void SetProxyAnswer(bool NewAns) { ProxyAns = NewAns; }
 
 
-        public void SetDeliveryProvider(RealDeliveryAdapter Adapter)
+        public void SetDeliveryProvider(string url)
         {
-            RealDeliveryAdapter = Adapter;
+            if (url.IsNullOrEmpty()) 
+            {
+                RealDeliveryAdapter=null;
+            }
+            else RealDeliveryAdapter = new RealDeliveryAdapter(new DeliveryAdaptee(url));
         }
 
     }

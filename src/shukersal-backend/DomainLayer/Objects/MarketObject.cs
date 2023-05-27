@@ -175,14 +175,13 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public void SetPaymentProvider(string url)
         {
-
-            _paymentProvider.SetPaymentProvider(new RealPaymentAdapter(new PaymentAdaptee(url)));
+            _paymentProvider.SetPaymentProvider(url);
         }
 
         public void SetDeliveryProvider(string url)
         {
 
-            _deliveryProvider.SetDeliveryProvider(new RealDeliveryAdapter(new DeliveryAdaptee(url)));
+            _deliveryProvider.SetDeliveryProvider(url);
         }
 
         public bool TransactionExists(long id)
@@ -254,21 +253,23 @@ namespace shukersal_backend.DomainLayer.Objects
 
         }
 
-        public Response<bool> confirmDeliveryAndPayment(DeliveryDetails deliveryDetails, List<TransactionItem> transactionItems, PaymentDetails paymentDetails)
+        public async Task<Response<bool>> confirmDeliveryAndPayment(DeliveryDetails deliveryDetails, List<TransactionItem> transactionItems, PaymentDetails paymentDetails)
         {
-            //connction with external delivery service
-            bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(deliveryDetails, transactionItems);
-            if (!deliveryConfirmed)
-            {
-                return Response<bool>.Error(HttpStatusCode.BadRequest, "Delivey declined");
-
-            }
-            //connction with external delivery service
+            //connction with external payment service
             bool paymentConfirmed = _paymentProvider.ConfirmPayment(paymentDetails);
 
             if (!paymentConfirmed)
             {
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Payment declined");
+
+            }
+          
+            //connction with external delivery service
+            bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(deliveryDetails, transactionItems);
+            if (!deliveryConfirmed)
+            {
+                _paymentProvider.CancelPayment(transactionItems.ElementAt(0).TransactionId);
+                return Response<bool>.Error(HttpStatusCode.BadRequest, "Delivey declined");
 
             }
 
@@ -277,6 +278,7 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<bool>> UpdateStock(long storeId, List<TransactionItem> TransactionItems)
         {
+            Dictionary<long, int> updated = new Dictionary<long, int>();
             var shop = await GetStore(storeId);
             if (shop.Result == null)
             {
@@ -287,16 +289,30 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 var product = await _context.Products.FindAsync(TransactionItem.ProductId);
                 if (product == null) { return Response<bool>.Error(HttpStatusCode.NotFound, "Product does not exist"); }
-                if (product.UnitsInStock < TransactionItem.Quantity)
+                if (product.UnitsInStock >= TransactionItem.Quantity)
                 {
-                    return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store");
+                    product.UnitsInStock = product.UnitsInStock - TransactionItem.Quantity;
+                    await _context.SaveChangesAsync();
+                    updated.Add(product.Id, TransactionItem.Quantity);
                 }
                 else
                 {
-                    product.UnitsInStock = product.UnitsInStock - TransactionItem.Quantity;
+                    //rollback
+                    foreach (KeyValuePair<long, int> itemQuantityPair in updated)
+                    {
+                        var productToRollBack = await _context.Products.FindAsync(itemQuantityPair.Key);
+                        if (productToRollBack != null) 
+                        {
+                            productToRollBack.UnitsInStock = productToRollBack.UnitsInStock + itemQuantityPair.Value;
+                            await _context.SaveChangesAsync();
+                        }
+                        
+                    }
+                    return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store");
+
                 }
+                
             }
-            await _context.SaveChangesAsync();
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }
 

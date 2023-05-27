@@ -13,7 +13,7 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
         public bool Handshake()
         {
             var response=adaptee.handshake();
-            if(response==null || response.Result!="OK") 
+            if(response==null ||response.Result!="OK") 
             { 
                 return false; 
             }
@@ -22,6 +22,7 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
         }
         public bool ConfirmPayment(PaymentDetails paymentDetails)
         {
+            if (!Handshake()) { return false; }
             var month = paymentDetails.ExpirationDate.Month.ToString();
             var year = paymentDetails.ExpirationDate.Year.ToString();
             var holder = paymentDetails.HolderFirstName + " " + paymentDetails.HolderFirstName;
@@ -35,6 +36,7 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
         }
         public bool CancelPayment(long transactionId)
         {
+            if (!Handshake()) { return false; }
             var response = adaptee.cancel_pay(transactionId.ToString());
             if(response==null||response.Result==-1) 
             { 
