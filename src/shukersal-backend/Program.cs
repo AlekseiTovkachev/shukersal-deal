@@ -44,7 +44,7 @@ builder.Services.AddControllers();
 
 // Add DbContext
 builder.Services.AddDbContext<MarketDbContext>(opt =>
-    opt.UseInMemoryDatabase("MarketDbContext"));
+    opt.UseSqlServer("Server=your_server_name;Database=your_database_name;User Id=your_username;Password=your_password;"));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
