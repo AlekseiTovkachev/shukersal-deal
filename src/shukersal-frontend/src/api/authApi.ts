@@ -1,3 +1,4 @@
+import { ApiResponse } from '../types/apiTypes';
 import { Member } from '../types/appTypes';
 import { apiClient } from './apiClient';
 import { apiErrorHandlerWrapper } from './util';
@@ -21,8 +22,8 @@ export type TokenResponseBody = {
 const serviceName = 'authservice';
 
 export const authApi = {
-    login: (credentials: LoginPostData): Promise<TokenResponseBody> =>
+    login: (credentials: LoginPostData): Promise<ApiResponse<TokenResponseBody>> =>
         apiErrorHandlerWrapper(apiClient.post(`${serviceName}/login/`, credentials)),
-    register: (credentials: RegisterPostData) =>
+    register: (credentials: RegisterPostData): Promise<ApiResponse<Member>> =>
         apiErrorHandlerWrapper(apiClient.post(`${serviceName}/register/`, credentials)),
 } 

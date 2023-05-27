@@ -9,3 +9,13 @@ export interface RegisterFormFields {
     password: string,
     confirmPassword: string
 }
+
+export interface StorePostFormFields {
+    name: string,
+    description: string
+}
+
+export interface StorePatchFormFields {
+    name?: string,
+    description?: string
+}
