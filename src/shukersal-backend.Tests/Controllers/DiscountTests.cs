@@ -2,6 +2,7 @@
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
+using shukersal_backend.Models.StoreModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,7 @@ namespace shukersal_backend.Tests.Controllers
     {
         private readonly Mock<MarketDbContext> _context;
         private readonly DiscountObject _object;
+        private readonly PurchaseRuleObject _prObject;
         private readonly ICollection<TransactionItem> items;
         private readonly ITestOutputHelper output;
         private readonly Store store;
@@ -30,13 +32,19 @@ namespace shukersal_backend.Tests.Controllers
             _context.Setup(d => d.DiscountRuleBooleans).ReturnsDbSet(l2.AsQueryable());
             _context.Setup(d => d.DiscountRuleBooleans.Add(It.IsAny<DiscountRuleBoolean>())).Callback<DiscountRuleBoolean>(d => l2.Add(d));
 
-            store = new Store { Id = 1, DiscountRules = new List<DiscountRule> { } };
+            store = new Store { Id = 1, DiscountRules = new List<DiscountRule> { }, PurchaseRules = new List<PurchaseRule> { } };
 
             var l3 = new List<Store> { store };
             _context.Setup(d => d.Stores).ReturnsDbSet(l3.AsQueryable());
             _context.Setup(d => d.Stores.Add(It.IsAny<Store>())).Callback<Store>(d => l3.Add(d));
+
+            var l4 = new List<PurchaseRule> { };
+            _context.Setup(d => d.PurchaseRules).ReturnsDbSet(l4.AsQueryable());
+            _context.Setup(d => d.PurchaseRules.Add(It.IsAny<PurchaseRule>())).Callback<PurchaseRule>(d => l4.Add(d));
+
             this.output = output;
             _object = new DiscountObject(_context.Object);
+            _prObject = new PurchaseRuleObject(_context.Object);
             items = new List<TransactionItem> { };
 
             
@@ -126,6 +134,112 @@ namespace shukersal_backend.Tests.Controllers
                         new DiscountRule
                         {
                             Id = 7,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 20,
+                            discountOn = DiscountOn.STORE
+                        }
+                    }
+
+                },
+                new List<TransactionItem> {
+                    new TransactionItem{
+                        ProductName = "1",
+                        Quantity = 1,
+                        FullPrice = 100
+
+                    }
+                }
+                )
+            );
+        }
+        [Fact]
+        public async void TestXorDiscount()
+        {
+            Assert.Equal(90, await _object.CalculateDiscount(
+                new DiscountRule
+                {
+                    Id = 21,
+                    discountType = DiscountType.XOR_MIN,
+                    Components = new List<DiscountRule>
+                    {
+                        new DiscountRule
+                        {
+                            Id = 22,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 10,
+                            discountOn = DiscountOn.STORE
+                        },
+                        new DiscountRule
+                        {
+                            Id = 23,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 20,
+                            discountOn = DiscountOn.STORE
+                        }
+                    }
+
+                },
+                new List<TransactionItem> {
+                    new TransactionItem{
+                        ProductName = "1",
+                        Quantity = 1,
+                        FullPrice = 100
+
+                    }
+                }
+                )
+            );
+            Assert.Equal(80, await _object.CalculateDiscount(
+                new DiscountRule
+                {
+                    Id = 24,
+                    discountType = DiscountType.XOR_MAX,
+                    Components = new List<DiscountRule>
+                    {
+                        new DiscountRule
+                        {
+                            Id = 25,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 10,
+                            discountOn = DiscountOn.STORE
+                        },
+                        new DiscountRule
+                        {
+                            Id = 26,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 20,
+                            discountOn = DiscountOn.STORE
+                        }
+                    }
+
+                },
+                new List<TransactionItem> {
+                    new TransactionItem{
+                        ProductName = "1",
+                        Quantity = 1,
+                        FullPrice = 100
+
+                    }
+                }
+                )
+            );
+            Assert.Equal(90, await _object.CalculateDiscount(
+                new DiscountRule
+                {
+                    Id = 27,
+                    discountType = DiscountType.XOR_PRIORRITY,
+                    Components = new List<DiscountRule>
+                    {
+                        new DiscountRule
+                        {
+                            Id = 28,
+                            discountType = DiscountType.SIMPLE,
+                            Discount = 10,
+                            discountOn = DiscountOn.STORE
+                        },
+                        new DiscountRule
+                        {
+                            Id = 29,
                             discountType = DiscountType.SIMPLE,
                             Discount = 20,
                             discountOn = DiscountOn.STORE
@@ -266,6 +380,142 @@ namespace shukersal_backend.Tests.Controllers
                 conditionLimit = 5
             });  
             Assert.Equal(5, (await _object.GetDiscounts(store.Id)).Result.FirstOrDefault().Components.FirstOrDefault().discountRuleBoolean.Components.FirstOrDefault().conditionLimit);
+        }
+
+        [Fact]
+        public async void TestConditiionalPurchaseRule()
+        {
+            Assert.False(_prObject.Evaluate(
+                new PurchaseRule
+                {
+                    Id = 3,
+                    purchaseRuleType = PurchaseRuleType.CONDITION,
+                    Components = new List<PurchaseRule>
+                    {
+                        new PurchaseRule
+                        {
+                            Id = 4,
+                            purchaseRuleType = PurchaseRuleType.PRODUCT_AT_LEAST,
+                            conditionLimit = 3,
+                            conditionString = "1"
+                        },
+                        new PurchaseRule
+                        {
+                            Id = 5,
+                            purchaseRuleType = PurchaseRuleType.PRODUCT_LIMIT,
+                            conditionLimit = 3,
+                            conditionString = "2"
+                        }
+                    }
+
+                },
+                new List<TransactionItem> {
+                    new TransactionItem{
+                        ProductName = "1",
+                        Quantity = 1,
+                        FullPrice = 200
+
+                    },
+                    new TransactionItem{
+                        ProductName = "2",
+                        Quantity = 1,
+                        FullPrice = 100
+
+                    }
+                }
+                )
+            );
+
+            
+
+            Assert.True(_prObject.Evaluate(
+                new PurchaseRule
+                {
+                    Id = 6,
+                    purchaseRuleType = PurchaseRuleType.CONDITION,
+                    Components = new List<PurchaseRule>
+                    {
+                        new PurchaseRule
+                        {
+                            Id = 7,
+                            purchaseRuleType = PurchaseRuleType.PRODUCT_LIMIT,
+                            conditionLimit = 3,
+                            conditionString = "1"
+                        },
+                        new PurchaseRule
+                        {
+                            Id = 8,
+                            purchaseRuleType = PurchaseRuleType.PRODUCT_AT_LEAST,
+                            conditionLimit = 3,
+                            conditionString = "2"
+                        }
+                    }
+
+                },
+                new List<TransactionItem> {
+                    new TransactionItem{
+                        ProductName = "1",
+                        Quantity = 1,
+                        FullPrice = 200
+
+                    },
+                    new TransactionItem{
+                        ProductName = "2",
+                        Quantity = 1,
+                        FullPrice = 100
+
+                    }
+                }
+                )
+            );
+        }
+        [Fact]
+        public async void TestHourCondition()
+        {
+            Assert.True(_prObject.Evaluate(
+                new PurchaseRule
+                {
+                    Id = 9,
+                    purchaseRuleType = PurchaseRuleType.TIME_HOUR_AT_DAY,
+                    minHour = 0,
+                    maxHour = 24
+
+                },
+                new List<TransactionItem> { })
+            );
+
+            Assert.False(_prObject.Evaluate(
+                new PurchaseRule
+                {
+                    Id = 10,
+                    purchaseRuleType = PurchaseRuleType.TIME_HOUR_AT_DAY,
+                    minHour = 5,
+                    maxHour = 3
+
+                },
+                new List<TransactionItem> { })
+            );
+        }
+
+        [Fact]
+        public async void AddPurchaseRuleTest()
+        {
+            await _prObject.CreatePurchaseRule(new PurchaseRulePost
+            {
+                Id = 1,
+                purchaseRuleType = PurchaseRuleType.AND
+            },
+            store);
+            await _prObject.CreateChildPurchaseRule(1, new PurchaseRulePost
+            {
+                Id = 2,
+                purchaseRuleType = PurchaseRuleType.PRODUCT_LIMIT,
+                conditionString = "",
+                conditionLimit = 5
+            });
+            await _prObject.SelectPurchaseRule(store, 1);
+            Assert.Equal(5, (await _prObject.GetAppliedPurchaseRule(store.Id)).Result.Components.FirstOrDefault().conditionLimit);
+            Assert.Equal(5, (await _prObject.GetPurchaseRules(store.Id)).Result.FirstOrDefault().Components.FirstOrDefault().conditionLimit);
         }
 
         [Fact]

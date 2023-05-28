@@ -25,6 +25,8 @@ namespace shukersal_backend.DomainLayer.Objects
                 return new PurchaseRuleComponentAtLeastCategory(model, context);
             if (model.purchaseRuleType == PurchaseRuleType.CATEGORY_LIMIT)
                 return new PurchaseRuleComponentLimitCategory(model, context);
+            if (model.purchaseRuleType == PurchaseRuleType.TIME_HOUR_AT_DAY)
+                return new PurchaseRuleComponentTimeAtDay(model, context);
             return new PurchaseRuleComponentDefault(model, context);
         }
         public abstract bool Eval(ICollection<TransactionItem> items);
@@ -106,14 +108,14 @@ namespace shukersal_backend.DomainLayer.Objects
             return
                 _model.Components == null ||
                 _model.Components.Count != 2 ||
-                !Build(_model.Components.ElementAt(0), _context).Eval(items) ||
-                Build(_model.Components.ElementAt(0), _context).Eval(items);
+                Build(_model.Components.ElementAt(0), _context).Eval(items) ||
+                !Build(_model.Components.ElementAt(1), _context).Eval(items);
         }
     }
 
-    public class PurchaseRuleTimeAtDay : PurchaseRuleComponent
+    public class PurchaseRuleComponentTimeAtDay : PurchaseRuleComponent
     {
-        public PurchaseRuleTimeAtDay(PurchaseRule model, MarketDbContext context) : base(model, context) { }
+        public PurchaseRuleComponentTimeAtDay(PurchaseRule model, MarketDbContext context) : base(model, context) { }
         public override bool Eval(ICollection<TransactionItem> items)
         {
             return _model.minHour <= DateTime.Now.Hour && DateTime.Now.Hour < _model.maxHour;

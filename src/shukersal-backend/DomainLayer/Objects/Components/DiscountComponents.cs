@@ -17,11 +17,11 @@ namespace shukersal_backend.DomainLayer.Objects
             if (model.discountType == DiscountType.CONDITIONAL)
                 return new DiscountComponentConditional(model, context);
             if (model.discountType == DiscountType.XOR_MIN)
-                return new DiscountComponentSimple(model, context);
+                return new DiscountComponentXorMin(model, context);
             if (model.discountType == DiscountType.XOR_MAX)
-                return new DiscountComponentSimple(model, context);
+                return new DiscountComponentXorMax(model, context);
             if (model.discountType == DiscountType.XOR_PRIORRITY)
-                return new DiscountComponentSimple(model, context);
+                return new DiscountComponentXorPriority(model, context);
             if (model.discountType == DiscountType.ADDITIONAL)
                 return new DiscountComponentAdditional(model, context);
             if (model.discountType == DiscountType.MAX)

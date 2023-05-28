@@ -158,7 +158,7 @@ namespace shukersal_backend.Tests.AcceptanceTests
         }
         public async Task<ActionResult<StoreManager>> PostStoreOwner(OwnerManagerPost post)
         {
-            return await storeManagersService.PostStoreOwner(post);
+            return await storeManagersService.PostStoreManager(post);
         }
         public async Task<IActionResult> PutStoreManager(long id, StoreManager storeManager)
         {
