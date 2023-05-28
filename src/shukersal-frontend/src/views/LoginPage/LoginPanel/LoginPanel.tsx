@@ -8,6 +8,7 @@ import { LoginFormFields } from '../../../types/formTypes';
 import { useAuth } from '../../../hooks/useAuth';
 import { LoadingButton } from '@mui/lab';
 import { FlexSpacer } from '../../../components/FlexSpacer';
+import { errorToString } from '../../../util';
 
 export const LoginPanel = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ export const LoginPanel = () => {
         if (isSuccess) {
             navigate('/', { relative: 'path' });
         }
-    }), [navigate, form.getValues]);
+    }), [navigate, login, form]);
 
     return (
         <FormProvider {...form}>
@@ -51,7 +52,7 @@ export const LoginPanel = () => {
                         <LoginFormLayout />
                     </Grid>
                     {error && <Typography variant="body1" color="error">
-                        {error.message}
+                        {errorToString(error.message)}
                     </Typography>}
                     <FlexSpacer minHeight={100} />
                     <LoadingButton

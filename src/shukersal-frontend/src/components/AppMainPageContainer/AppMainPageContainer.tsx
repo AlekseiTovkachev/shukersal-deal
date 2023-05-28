@@ -1,9 +1,9 @@
 import { styled, Box } from '@mui/material';
 export const AppMainPageContainer = styled(Box)(({ theme }) => {
     const bgColorA = theme.palette.background.default;
-    //@ts-expect-error
+    //@ts-expect-error: Mui theme error
     const bgColorB = theme.palette.background.default2;
-    //@ts-expect-error
+    //@ts-expect-error: Mui theme error
     const bgColorArtifacts = theme.palette.background.artifacts;
     // const bgLineWidth = '0px';
     // const bgShapeSize = '48px';

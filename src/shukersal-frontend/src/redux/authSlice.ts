@@ -24,9 +24,9 @@ export const login = createAsyncThunk<
         return authApi.login(credentials)
             .then((res) => thunkAPI.fulfillWithValue({
                 // TODO: Fix this
-                //@ts-ignore
+                //@ts-expect-error: res is not casted yet
                 member: res.member,
-                //@ts-ignore
+                //@ts-expect-error: res is not casted yet
                 token: res.token,
                 rememberMe: rememberMe
             }))
@@ -144,6 +144,6 @@ export const authSlice = createSlice({
     }
 })
 
-export const { } = authSlice.actions
+// export const { } = authSlice.actions
 
 export default authSlice.reducer

@@ -8,6 +8,7 @@ import { RegisterFormFields } from '../../../types/formTypes';
 import { useAuth } from '../../../hooks/useAuth';
 import { LoadingButton } from '@mui/lab';
 import { FlexSpacer } from '../../../components/FlexSpacer';
+import { errorToString } from '../../../util';
 
 export const RegisterPanel = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ export const RegisterPanel = () => {
         if (isSuccess) {
             navigate('/login', { relative: 'path' });
         }
-    }), [navigate, form.getValues]);
+    }), [navigate, register, form]);
 
     return (
         <FormProvider {...form}>
@@ -51,7 +52,7 @@ export const RegisterPanel = () => {
                         <RegisterFormLayout />
                     </Grid>
                     {error && <Typography variant="body1" color="error">
-                        {error.message}
+                        {errorToString(error.message)}
                     </Typography>}
                     <FlexSpacer minHeight={100} />
                     <LoadingButton

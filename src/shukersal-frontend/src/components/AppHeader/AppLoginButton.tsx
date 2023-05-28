@@ -9,7 +9,7 @@ export const AppLoginButton = () => {
 
     const handleClick = useCallback(() => {
         navigate('/login');
-    }, []);
+    }, [navigate]);
 
     return <AppHeaderButton handleClick={handleClick}>Login</AppHeaderButton>
 };

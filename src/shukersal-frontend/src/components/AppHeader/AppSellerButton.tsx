@@ -9,6 +9,6 @@ export const AppSellerButton = () => {
 
     const handleClick = useCallback(() => {
         navigate('/seller');
-    }, []);
+    }, [navigate]);
     return <AppHeaderButton handleClick={handleClick}>Switch to Selling</AppHeaderButton>
 };
