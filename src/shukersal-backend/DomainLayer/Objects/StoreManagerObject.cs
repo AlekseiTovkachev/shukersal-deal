@@ -133,8 +133,8 @@ namespace shukersal_backend.DomainLayer.Objects
 
             foreach (var manager in storeManagers)
             {
-                if (managerDictionary.TryGetValue(manager.Id, out var node) && node.StoreManager.ParentManagerId != 0 &&
-                    managerDictionary.TryGetValue(node.StoreManager.ParentManagerId, out var parentManager))
+                if (managerDictionary.TryGetValue(manager.Id, out var node) && node.StoreManager.ParentManagerId != null && node.StoreManager.ParentManagerId != 0 &&
+                    managerDictionary.TryGetValue((long)node.StoreManager.ParentManagerId, out var parentManager)) // This is ok since we check before that the parent id is not null
                 {
                     parentManager.Subordinates = parentManager.Subordinates ?? new List<StoreManagerTreeNode>();
                     parentManager.Subordinates.Add(node);

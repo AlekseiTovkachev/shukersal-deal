@@ -73,6 +73,21 @@ namespace shukersal_backend.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Not In Use
+            //// We manually manage the deleting of the comments TODO: Manually delete comments
+            //modelBuilder.Entity<Comment>()
+            //    .HasOne(x => x.ParentComment)
+            //    .WithMany(x => x.ChildComments)
+            //    .HasForeignKey(x => x.ParentCommentId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //// We manually manage the deleting of the managers TODO: Manually delete managers
+            //modelBuilder.Entity<StoreManager>()
+            //    .HasOne(x => x.ParentManager)
+            //    .WithMany(x => x.ChildManagers)
+            //    .HasForeignKey(x => x.ParentManagerId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
             base.OnModelCreating(modelBuilder);
 
             // TODO: Move to mock data
