@@ -152,6 +152,36 @@ namespace shukersal_backend.DomainLayer.Objects
         }
 
 
+
+        public async Task<Response<Member>> AddAdmin(AdminPost adminData)
+        {
+            if (_context.Members == null)
+            {
+                return Response<Member>.Error(HttpStatusCode.NotFound, "\"Entity set 'MemberContext.Members'  is null.\"");
+            }
+            var member = new Member
+            {
+                Username = adminData.Username,
+                PasswordHash = HashingUtilities.HashPassword(adminData.Password),
+                Role = "Administrator"
+            };
+            // Create a new shopping cart and associate it with the new member
+            var shoppingCart = new ShoppingCart
+            {
+                Member = member,
+                ShoppingBaskets = new List<ShoppingBasket>()
+            };
+
+            // Add the shopping cart and member to the database
+            _context.ShoppingCarts.Add(shoppingCart);
+            _context.Members.Add(member);
+
+            await _context.SaveChangesAsync();
+
+            return Response<Member>.Success(HttpStatusCode.Created, member);
+        }
+
+
         public async Task<Response<bool>> DeleteMember(long id)
         {
             if (_context.Members == null)
