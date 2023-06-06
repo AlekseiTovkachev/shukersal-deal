@@ -6,7 +6,7 @@ export const apiErrorHandlerWrapper = <T>(
 ): Promise<T> => {
   return promise
     .then((res) => {
-        if (res.status >= 400 && res.status < 500)
+      if (res.status >= 400 && res.status < 500)
         Promise.reject({
           message: res.data,
         });

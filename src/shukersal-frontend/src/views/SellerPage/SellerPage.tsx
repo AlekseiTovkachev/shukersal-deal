@@ -35,7 +35,7 @@ export const SellerPage = () => {
         return <Navigate to='login' />
     }
 
-    if (sellerData.sellerIds.length < 1) {
+    if (sellerData.stores?.length < 1) {
         return <AppStartSellingPrompt />
     }
 
