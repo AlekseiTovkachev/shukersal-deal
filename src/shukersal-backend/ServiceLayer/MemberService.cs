@@ -5,11 +5,12 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Models.MemberModels;
 
 namespace shukersal_backend.ServiceLayer
 {
 
-    [Route("api/member")]
+    [Route("api/members")]
     [ApiController]
     [EnableCors("AllowOrigin")]
     public class MemberService : ControllerBase
@@ -26,7 +27,6 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Members
         [HttpGet]
-        [Route("GetMembers")]
         public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
             logger.LogInformation("GetMemebers Called");
@@ -56,7 +56,6 @@ namespace shukersal_backend.ServiceLayer
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 
         [HttpPost]
-        [Route("AddMember")]
         public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData)
         {
             if (ModelState.IsValid)
@@ -91,16 +90,37 @@ namespace shukersal_backend.ServiceLayer
             return NoContent();
         }
 
+
         [HttpPost]
-        public async Task<ActionResult<Member>> Logout(long id)
+        [Route("admins/")]
+        public async Task<ActionResult<MemberPost>> addAdmin(AdminPost adminData)
         {
-            var response = await memberController.Logout(id);
-            if (!response.IsSuccess)
+            if (ModelState.IsValid)
             {
-                return NotFound();
+                var response = await memberController.AddAdmin(adminData);
+                if (!response.IsSuccess || response.Result == null)
+                {
+                    return BadRequest(ModelState);
+                }
+                var member = response.Result;
+                return CreatedAtAction("GetMember", new { id = member.Id }, member);
             }
-            return NoContent();
+            else
+            {
+                return BadRequest(ModelState);
+            }
         }
+
+        //[HttpPost]
+        //public async Task<ActionResult<Member>> Logout(long id)
+        //{
+        //    var response = await memberController.Logout(id);
+        //    if (!response.IsSuccess)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return NoContent();
+        //}
 
 
     }

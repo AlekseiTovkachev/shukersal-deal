@@ -46,6 +46,12 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _memberObject.AddMember(memberData);
         }
 
+        public async Task<Response<Member>> AddAdmin(AdminPost adminData)
+        {
+            return await _memberObject.AddAdmin(adminData);
+        }
+
+
 
         public async Task<Response<Member>> RegisterMember(RegisterPost registerData)
         {
@@ -59,8 +65,6 @@ namespace shukersal_backend.DomainLayer.Controllers
         }
 
 
-        // DELETE: api/Members/5
-        [HttpDelete("{id}")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<Response<bool>> DeleteMember(long id)
         {
