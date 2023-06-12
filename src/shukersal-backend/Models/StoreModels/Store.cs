@@ -6,6 +6,7 @@ namespace shukersal_backend.Models
 {
     public class Store
     {
+        [Key]
         public long Id { get; set; }
         [Required]
 
@@ -14,6 +15,7 @@ namespace shukersal_backend.Models
         public long RootManagerId { get; set; }
         [JsonIgnore]
         [ForeignKey("RootManagerId")]
+        //[DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual StoreManager? RootManager { get; set; }
         [Required]
         [JsonIgnore]

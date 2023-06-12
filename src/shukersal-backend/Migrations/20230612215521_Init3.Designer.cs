@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230604224813_Init")]
-    partial class Init
+    [Migration("20230612215521_Init3")]
+    partial class Init3
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -321,6 +321,15 @@ namespace shukersal_backend.Migrations
                         .IsUnique();
 
                     b.ToTable("Members");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            PasswordHash = "AAzHbMVAV3Vq6/b3VidK+WNYvuHyguwm5rS1jjyaNIlL2bhGaceCUImyeavLoNNLpQ==",
+                            Role = "Administrator",
+                            Username = "Admin"
+                        });
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Notification", b =>
@@ -539,6 +548,13 @@ namespace shukersal_backend.Migrations
                         .IsUnique();
 
                     b.ToTable("ShoppingCarts");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1L,
+                            MemberId = 1L
+                        });
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.ShoppingItem", b =>
@@ -598,8 +614,6 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("AppliedPurchaseRuleId");
 
-                    b.HasIndex("RootManagerId");
-
                     b.ToTable("Stores");
                 });
 
@@ -626,7 +640,8 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("ParentManagerId");
 
-                    b.HasIndex("StoreId");
+                    b.HasIndex("StoreId")
+                        .IsUnique();
 
                     b.ToTable("StoreManagers");
                 });
@@ -795,7 +810,7 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.Store", "Store")
                         .WithMany("Products")
                         .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -863,17 +878,9 @@ namespace shukersal_backend.Migrations
                         .WithMany()
                         .HasForeignKey("AppliedPurchaseRuleId");
 
-                    b.HasOne("shukersal_backend.Models.StoreManager", "RootManager")
-                        .WithMany()
-                        .HasForeignKey("RootManagerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("AppliedDiscountRule");
 
                     b.Navigation("AppliedPurchaseRule");
-
-                    b.Navigation("RootManager");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StoreManager", b =>
@@ -889,9 +896,9 @@ namespace shukersal_backend.Migrations
                         .HasForeignKey("ParentManagerId");
 
                     b.HasOne("shukersal_backend.Models.Store", "Store")
-                        .WithMany()
-                        .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .WithOne("RootManager")
+                        .HasForeignKey("shukersal_backend.Models.StoreManager", "StoreId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Member");
@@ -969,6 +976,8 @@ namespace shukersal_backend.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("PurchaseRules");
+
+                    b.Navigation("RootManager");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StoreManager", b =>

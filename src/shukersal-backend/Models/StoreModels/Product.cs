@@ -11,14 +11,11 @@ namespace shukersal_backend.Models
         public double Price { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsListed { get; set; } // Indicates if the product is available for normal Transaction
-
         public int UnitsInStock { get; set; }
-
         public virtual Category? Category { get; set; }
-
-        [ForeignKey("Store")]
         public long StoreId { get; set; }
         [JsonIgnore]
+        [ForeignKey("StoreId")]
         public Store? Store { get; set; }
     }
 }

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using NuGet.Protocol;
 using shukersal_backend.Models;
-using System.Configuration;
 using System.Text;
 
 
@@ -51,6 +50,20 @@ builder.Services.AddControllers();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
     opt.UseSqlServer(connectionString));
+
+try
+{
+    using (SqlConnection connection = new SqlConnection(connectionString))
+    {
+        connection.Open();
+        Console.WriteLine("Connected successfully!");
+        connection.Close();
+    }
+}
+catch (SqlException ex)
+{
+    Console.WriteLine("Connection failed. Error: " + ex.Message);
+}
 
 // Add database migrations
 builder.Services.AddDbContext<MarketDbContext>(opt =>

@@ -16,6 +16,7 @@ namespace shukersal_backend.Models
 
         [JsonIgnore]
         [ForeignKey("StoreId")]
+        [DeleteBehavior(DeleteBehavior.Cascade)]
         [Required]
         public virtual Store Store { get; set; }
 
@@ -24,6 +25,7 @@ namespace shukersal_backend.Models
 
         [JsonIgnore]
         [Required]
+        [DeleteBehavior(DeleteBehavior.Cascade)]
         [ForeignKey("MemberId")]
         public virtual Member Member { get; set; }
 
