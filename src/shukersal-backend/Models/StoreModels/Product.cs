@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
@@ -16,6 +17,8 @@ namespace shukersal_backend.Models
         public long StoreId { get; set; }
         [JsonIgnore]
         [ForeignKey("StoreId")]
+        [InverseProperty("Products")]
+        [DeleteBehavior(DeleteBehavior.Cascade)]
         public Store? Store { get; set; }
     }
 }

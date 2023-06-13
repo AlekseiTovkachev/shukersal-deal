@@ -232,7 +232,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
             }
 
-            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == appointerId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.MemberId == appointerId);
             var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
@@ -12,10 +13,10 @@ namespace shukersal_backend.Models
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public long RootManagerId { get; set; }
+        public long? RootManagerId { get; set; }
         [JsonIgnore]
         [ForeignKey("RootManagerId")]
-        //[DeleteBehavior(DeleteBehavior.NoAction)]
+        [DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual StoreManager? RootManager { get; set; }
         [Required]
         [JsonIgnore]

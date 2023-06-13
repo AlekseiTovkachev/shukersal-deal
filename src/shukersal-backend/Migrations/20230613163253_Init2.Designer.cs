@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230612175257_Init")]
-    partial class Init
+    [Migration("20230613163253_Init2")]
+    partial class Init2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -326,7 +326,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AITM9AYqXZBM6qt6Qxv3CIZw4qrako0WVMKzYhUg4Rc476kyfKII0RXvfJ2aoYdPig==",
+                            PasswordHash = "APIceOKvq87xe/6usa19hQmnuJNj8z4vhsbu2a9Z/A7cgW5rz9xuIObGorrJ71vNrQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -614,6 +614,8 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("AppliedPurchaseRuleId");
 
+                    b.HasIndex("RootManagerId");
+
                     b.ToTable("Stores");
                 });
 
@@ -640,8 +642,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("ParentManagerId");
 
-                    b.HasIndex("StoreId")
-                        .IsUnique();
+                    b.HasIndex("StoreId");
 
                     b.ToTable("StoreManagers");
                 });
@@ -810,7 +811,7 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.Store", "Store")
                         .WithMany("Products")
                         .HasForeignKey("StoreId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -854,7 +855,7 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("shukersal_backend.Models.ShoppingBasket", "ShoppingBasket")
@@ -878,9 +879,17 @@ namespace shukersal_backend.Migrations
                         .WithMany()
                         .HasForeignKey("AppliedPurchaseRuleId");
 
+                    b.HasOne("shukersal_backend.Models.StoreManager", "RootManager")
+                        .WithMany()
+                        .HasForeignKey("RootManagerId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("AppliedDiscountRule");
 
                     b.Navigation("AppliedPurchaseRule");
+
+                    b.Navigation("RootManager");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StoreManager", b =>
@@ -896,9 +905,9 @@ namespace shukersal_backend.Migrations
                         .HasForeignKey("ParentManagerId");
 
                     b.HasOne("shukersal_backend.Models.Store", "Store")
-                        .WithOne("RootManager")
-                        .HasForeignKey("shukersal_backend.Models.StoreManager", "StoreId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .WithMany()
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Member");
@@ -976,8 +985,6 @@ namespace shukersal_backend.Migrations
                     b.Navigation("Products");
 
                     b.Navigation("PurchaseRules");
-
-                    b.Navigation("RootManager");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StoreManager", b =>

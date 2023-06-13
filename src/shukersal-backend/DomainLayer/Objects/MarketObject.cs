@@ -64,32 +64,32 @@ namespace shukersal_backend.DomainLayer.Objects
                         PurchaseRules = new List<PurchaseRule>()
                     };
 
+                    _context.Stores.Add(store);
+                    await _context.SaveChangesAsync(); // Save changes to generate the store ID
+
                     var storeManager = new StoreManager
                     {
                         MemberId = member.Id,
                         StoreId = store.Id,
+                        Store = store,
                         StorePermissions = new List<StorePermission>()
                     };
+                    _context.StoreManagers.Add(storeManager);
+                    await _context.SaveChangesAsync(); // Save changes to generate the manager ID
 
                     var permission = new StorePermission
                     {
                         StoreManager = storeManager,
+                        StoreManagerId = storeManager.Id,
                         PermissionType = PermissionType.Manager_permission
                     };
 
                     storeManager.StorePermissions.Add(permission);
 
                     store.RootManager = storeManager;
-
-                    _context.Stores.Add(store);
-                    _context.StoreManagers.Add(storeManager);
-                    _context.StorePermissions.Add(permission);
-
-                    await _context.SaveChangesAsync(); // Save changes to generate the store and storeManager IDs
-
                     store.RootManagerId = storeManager.Id;
 
-                    await _context.SaveChangesAsync(); // Update the RootManagerId and save changes
+                    await _context.SaveChangesAsync(); // Save changes to update the RootManagerId
 
                     transaction.Commit(); // Commit the transaction
 
@@ -103,47 +103,6 @@ namespace shukersal_backend.DomainLayer.Objects
             }
 
             return Response<Store>.Error(HttpStatusCode.BadRequest, "database transaction error");
-
-
-
-            //var store = new Store
-            //{
-            //    Name = storeData.Name,
-            //    Description = storeData.Description,
-            //    Products = new List<Product>(),
-            //    DiscountRules = new List<DiscountRule>(),
-            //    PurchaseRules = new List<PurchaseRule>()
-            //};
-
-            //_context.Stores.Add(store);
-
-            //var storeManager = new StoreManager
-            //{
-            //    MemberId = member.Id,
-            //    //Member = member,
-            //    StoreId = store.Id,
-            //    Store = store,
-            //    StorePermissions = new List<StorePermission>()
-            //};
-
-            //_context.StoreManagers.Add(storeManager);
-
-            //var permission = new StorePermission
-            //{
-            //    StoreManager = storeManager,
-            //    StoreManagerId = storeManager.Id,
-            //    PermissionType = PermissionType.Manager_permission
-            //};
-
-            //storeManager.StorePermissions.Add(permission);
-            //_context.StorePermissions.Add(permission);
-
-            //store.RootManager = storeManager;
-            //store.RootManagerId = storeManager.Id;
-
-            //await _context.SaveChangesAsync();
-
-            //return Response<Store>.Success(HttpStatusCode.Created, store);
         }
 
         public async Task<Response<bool>> UpdateStore(long id, StorePatch patch, Member member)

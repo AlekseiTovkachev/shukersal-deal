@@ -1,16 +1,11 @@
 ﻿using HotelBackend.Util;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol.Plugins;
 using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
 using shukersal_backend.Utility;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -20,7 +15,8 @@ namespace shukersal_backend.DomainLayer.Objects
     public class MemberObject
     {
         private MarketDbContext _context;
-        public MemberObject(MarketDbContext context) {
+        public MemberObject(MarketDbContext context)
+        {
             _context = context;
         }
 
@@ -75,8 +71,11 @@ namespace shukersal_backend.DomainLayer.Objects
             // Add the shopping cart and member to the database
             _context.ShoppingCarts.Add(shoppingCart);
             _context.Members.Add(member);
-            if (_context.SaveChangesAsync().IsFaulted)
-                return Response<Member>.Error(HttpStatusCode.OK, "");
+            await _context.SaveChangesAsync();
+            if (member.Id == 0)
+            {
+                return Response<Member>.Error(HttpStatusCode.OK, "Error in database insert");
+            }
             return Response<Member>.Success(HttpStatusCode.Created, member);
         }
 
@@ -190,7 +189,7 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
             }
-            return Response<Member>.Success(HttpStatusCode.OK,member);
+            return Response<Member>.Success(HttpStatusCode.OK, member);
         }
     }
 }

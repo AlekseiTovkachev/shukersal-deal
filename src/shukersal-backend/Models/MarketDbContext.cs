@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace shukersal_backend.Models
 {
@@ -93,51 +92,50 @@ namespace shukersal_backend.Models
             //{
             //    foreignKey.DeleteBehavior = DeleteBehavior.NoAction;
             //}
+            //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            //{
+            //    var primaryKey = entityType.FindPrimaryKey();
+            //    if (primaryKey != null)
+            //    {
+            //        foreach (var property in primaryKey.Properties)
+            //        {
+            //            // Set ValueGeneratedOnAdd for the primary key property of each entity
+            //            property.ValueGenerated = ValueGenerated.OnAdd;
+            //        }
+            //    }
+            //}
 
-            foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            {
-                var primaryKey = entityType.FindPrimaryKey();
-                if (primaryKey != null)
-                {
-                    foreach (var property in primaryKey.Properties)
-                    {
-                        // Set ValueGeneratedOnAdd for the primary key property of each entity
-                        property.ValueGenerated = ValueGenerated.OnAdd;
-                    }
-                }
-            }
+            //modelBuilder.Entity<Product>()
+            //    .HasOne(p => p.Store)
+            //    .WithMany()
+            //    .HasForeignKey(p => p.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<Product>()
-                .HasOne(p => p.Store)
-                .WithMany()
-                .HasForeignKey(p => p.StoreId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<StoreManager>()
+            //    .HasOne(s => s.Store)
+            //    .WithMany()
+            //    .HasForeignKey(p => p.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<StoreManager>()
-                .HasOne(s => s.Store)
-                .WithMany()
-                .HasForeignKey(p => p.StoreId)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.Products)
+            //    .WithOne(p => p.Store)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Store>()
-                .HasMany(s => s.Products)
-                .WithOne(p => p.Store)
-                .OnDelete(DeleteBehavior.NoAction);
+            //modelBuilder.Entity<Store>()
+            //    .HasOne(s => s.RootManager)
+            //    .WithOne(p => p.Store)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Store>()
-                .HasOne(s => s.RootManager)
-                .WithOne(p => p.Store)
-                .OnDelete(DeleteBehavior.NoAction);
+            //modelBuilder.Entity<Member>()
+            //    .HasOne(m => m.ShoppingCart)
+            //    .WithOne(s => s.Member)
+            //    .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder.Entity<Member>()
-                .HasOne(m => m.ShoppingCart)
-                .WithOne(s => s.Member)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<ShoppingCart>()
-                .HasOne(m => m.Member)
-                .WithOne(s => s.ShoppingCart)
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<ShoppingCart>()
+            //    .HasOne(m => m.Member)
+            //    .WithOne(s => s.ShoppingCart)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
 
             var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };

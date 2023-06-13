@@ -47,7 +47,7 @@ builder.Services.AddControllers();
 // Old db
 //builder.Services.AddDbContext<MarketDbContext>(opt =>
 //    opt.UseInMemoryDatabase("MarketDbContext"));
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DockerConnection");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 

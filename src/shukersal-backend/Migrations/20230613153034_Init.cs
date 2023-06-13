@@ -382,6 +382,52 @@ namespace shukersal_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "StoreManagers",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StoreId = table.Column<long>(type: "bigint", nullable: false),
+                    MemberId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentManagerId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StoreManagers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StoreManagers_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_StoreManagers_StoreManagers_ParentManagerId",
+                        column: x => x.ParentManagerId,
+                        principalTable: "StoreManagers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StorePermissions",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    PermissionType = table.Column<int>(type: "int", nullable: false),
+                    StoreManagerId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StorePermissions", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_StorePermissions_StoreManagers_StoreManagerId",
+                        column: x => x.StoreManagerId,
+                        principalTable: "StoreManagers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Stores",
                 columns: table => new
                 {
@@ -406,57 +452,11 @@ namespace shukersal_backend.Migrations
                         column: x => x.AppliedPurchaseRuleId,
                         principalTable: "PurchaseRules",
                         principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StoreManagers",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StoreId = table.Column<long>(type: "bigint", nullable: false),
-                    MemberId = table.Column<long>(type: "bigint", nullable: false),
-                    ParentManagerId = table.Column<long>(type: "bigint", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StoreManagers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StoreManagers_Members_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "Members",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_StoreManagers_StoreManagers_ParentManagerId",
-                        column: x => x.ParentManagerId,
+                        name: "FK_Stores_StoreManagers_RootManagerId",
+                        column: x => x.RootManagerId,
                         principalTable: "StoreManagers",
                         principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_StoreManagers_Stores_StoreId",
-                        column: x => x.StoreId,
-                        principalTable: "Stores",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
-                name: "StorePermissions",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PermissionType = table.Column<int>(type: "int", nullable: false),
-                    StoreManagerId = table.Column<long>(type: "bigint", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_StorePermissions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_StorePermissions_StoreManagers_StoreManagerId",
-                        column: x => x.StoreManagerId,
-                        principalTable: "StoreManagers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
@@ -489,7 +489,7 @@ namespace shukersal_backend.Migrations
             migrationBuilder.InsertData(
                 table: "Members",
                 columns: new[] { "Id", "PasswordHash", "Role", "Username" },
-                values: new object[] { 1L, "AITM9AYqXZBM6qt6Qxv3CIZw4qrako0WVMKzYhUg4Rc476kyfKII0RXvfJ2aoYdPig==", "Administrator", "Admin" });
+                values: new object[] { 1L, "AN/Z43c7smrB86EnswEy3TeRplStPYB7hc0ZOUUIXF4piqxT/hYkJyWA7JO329h6qg==", "Administrator", "Admin" });
 
             migrationBuilder.InsertData(
                 table: "ShoppingCarts",
@@ -601,8 +601,7 @@ namespace shukersal_backend.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_StoreManagers_StoreId",
                 table: "StoreManagers",
-                column: "StoreId",
-                unique: true);
+                column: "StoreId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StorePermissions_StoreManagerId",
@@ -618,6 +617,11 @@ namespace shukersal_backend.Migrations
                 name: "IX_Stores_AppliedPurchaseRuleId",
                 table: "Stores",
                 column: "AppliedPurchaseRuleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Stores_RootManagerId",
+                table: "Stores",
+                column: "RootManagerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TransactionItems_TransactionId",
@@ -652,7 +656,8 @@ namespace shukersal_backend.Migrations
                 table: "Products",
                 column: "StoreId",
                 principalTable: "Stores",
-                principalColumn: "Id");
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
                 name: "FK_PurchaseRules_Stores_StoreId",
@@ -660,11 +665,23 @@ namespace shukersal_backend.Migrations
                 column: "StoreId",
                 principalTable: "Stores",
                 principalColumn: "Id");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_StoreManagers_Stores_StoreId",
+                table: "StoreManagers",
+                column: "StoreId",
+                principalTable: "Stores",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_StoreManagers_Members_MemberId",
+                table: "StoreManagers");
+
             migrationBuilder.DropForeignKey(
                 name: "FK_DiscountRules_DiscountRuleBooleans_discountRuleBooleanId",
                 table: "DiscountRules");
@@ -676,6 +693,10 @@ namespace shukersal_backend.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_PurchaseRules_Stores_StoreId",
                 table: "PurchaseRules");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_StoreManagers_Stores_StoreId",
+                table: "StoreManagers");
 
             migrationBuilder.DropTable(
                 name: "AuctionBids");
@@ -714,9 +735,6 @@ namespace shukersal_backend.Migrations
                 name: "ShoppingBaskets");
 
             migrationBuilder.DropTable(
-                name: "StoreManagers");
-
-            migrationBuilder.DropTable(
                 name: "Transactions");
 
             migrationBuilder.DropTable(
@@ -742,6 +760,9 @@ namespace shukersal_backend.Migrations
 
             migrationBuilder.DropTable(
                 name: "PurchaseRules");
+
+            migrationBuilder.DropTable(
+                name: "StoreManagers");
         }
     }
 }
