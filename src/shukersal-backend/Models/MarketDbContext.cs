@@ -137,6 +137,16 @@ namespace shukersal_backend.Models
             //    .WithOne(s => s.ShoppingCart)
             //    .OnDelete(DeleteBehavior.Cascade);
 
+            //modelBuilder.Entity<PurchaseRule>()
+            //    .HasOne<Store>()
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<DiscountRule>()
+            //    .HasOne<Store>()
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade);
+
 
             var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
 

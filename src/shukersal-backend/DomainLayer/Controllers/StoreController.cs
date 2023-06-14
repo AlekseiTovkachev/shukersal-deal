@@ -1,9 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
-using shukersal_backend.DomainLayer.Objects;
+﻿using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
-using System.Collections.Generic;
 using System.Net;
 
 namespace shukersal_backend.DomainLayer.Controllers
@@ -22,6 +20,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             _managerObject = new StoreManagerObject(context);
             _storeObject = new StoreObject(context, _marketObject, _managerObject);
             _purchaseRuleObject = new PurchaseRuleObject(context);
+            _discountObject = new DiscountObject(context);
         }
 
         //Constructor for tests
@@ -206,7 +205,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _discountObject.GetAppliedDiscount(storeId);
         }
 
-        public async Task<Response<DiscountRule>> SelectDiscount(long storeId ,long discountId, Member member)
+        public async Task<Response<DiscountRule>> SelectDiscount(long storeId, long discountId, Member member)
         {
             bool hasPermission = await _managerObject
                  .CheckPermission(storeId, member.Id, PermissionType.Manage_discounts_permission);

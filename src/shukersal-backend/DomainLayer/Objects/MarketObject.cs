@@ -41,6 +41,7 @@ namespace shukersal_backend.DomainLayer.Objects
             var store = await _context.Stores
                 //.Include(s => s.Products)
                 .Include(s => s.DiscountRules)
+                .Include(s => s.PurchaseRules)
                 .FirstOrDefaultAsync(s => s.Id == id);
             if (store == null)
             {
