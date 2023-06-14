@@ -68,3 +68,14 @@ I highly suggest you check out [this guide](https://learn.microsoft.com/en-us/ef
   ```ps
   dotnet ef migrations remove
   ```
+#### Working with sql server inside Docker:
+   run `docker-compose up -d`
+
+#### Connecting through SSMS:
+   server name: localhost, 1433
+   SQL Server Authentication
+   login: sa
+   password: YourStrong@Passw0rd
+
+If the app is working in Docker too - update one of the connection strings in appsettings.json so that ```Server= <your machine ip>``` (you can run `ipconfig` in terminal)
+If running in https set the connection string in `Program.cs` to `DockerConnection2`
