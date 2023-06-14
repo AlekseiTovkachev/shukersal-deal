@@ -32,7 +32,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         }
 
-        public async Task<Response<ShoppingCart>> GetShoppingCartById(long cartId)
+        public async Task<Response<ShoppingCart>> GetShoppingCartById(long cartId, long loggedInMemberId)
         {
             var shoppingCart = await _context.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
@@ -42,13 +42,14 @@ namespace shukersal_backend.DomainLayer.Controllers
             {
                 return Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
             }
+            else if (shoppingCart.MemberId != loggedInMemberId) { return Response<ShoppingCart>.Error(HttpStatusCode.Unauthorized, "Not the cart owner"); }
             return Response<ShoppingCart>.Success(HttpStatusCode.OK, shoppingCart);
         }
 
-        public async Task<Response<ShoppingItem>> AddItemToCart(long cartId,ShoppingItemPost shoppingItemPost)
+        public async Task<Response<ShoppingItem>> AddItemToCart(long cartId,ShoppingItemPost shoppingItemPost, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId);
-            if (resp.Result != null)
+            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
                 var ToAdditem = await cart.AddShoppingItem(shoppingItemPost);
@@ -58,13 +59,13 @@ namespace shukersal_backend.DomainLayer.Controllers
                 }
                 return ToAdditem;
             }
-            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
+            return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
 
-        public async Task<Response<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId)
+        public async Task<Response<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId);
-            if (resp.Result != null)
+            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
                 var ToAdditem = await cart.RemoveShoppingItem(shoppingItemId);
@@ -74,26 +75,20 @@ namespace shukersal_backend.DomainLayer.Controllers
                 }
                 return ToAdditem;
             }
-            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
+            return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
 
-        public async Task<Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item)
+        public async Task<Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item,long loggedInMemberId)
         {
-            var Cartresp = await GetShoppingCartById(cartId);
-            if (Cartresp.Result != null)
+            var Cartresp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (Cartresp.Result != null && Cartresp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, Cartresp.Result);
                 var ToAdditem = await cart.EditItemQuantity(item.StoreId,item.ProductId,item.Quantity);
                 return ToAdditem;
-                /*
-                if (ToAdditem!=null && ToAdditem.Result != null)
-                {
-                    return Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
-                }
-                //if(ToAdditem.IsSuccess)
-                */
+    
             }
-            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
+            return Response<ShoppingItem>.Error(Cartresp.StatusCode, Cartresp.ErrorMessage);
 
         }
     }
