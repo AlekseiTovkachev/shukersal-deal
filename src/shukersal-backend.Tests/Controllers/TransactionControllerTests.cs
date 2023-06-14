@@ -203,7 +203,7 @@ namespace shukersal_backend.Tests.Controllers
             shoppingItems = new List<ShoppingItem> {
                 new ShoppingItem {
                 ShoppingBasketId =   shoppingBaskets[0].Id,
-                    ShoppingBasket =   shoppingBaskets[0],
+                    //ShoppingBasket =   shoppingBaskets[0],
                 ProductId = 1,
                 Product =   products[0],
                 Quantity = 2
@@ -211,7 +211,7 @@ namespace shukersal_backend.Tests.Controllers
             },
                 new ShoppingItem {
                 ShoppingBasketId =   shoppingBaskets[0].Id,
-                    ShoppingBasket =   shoppingBaskets[0],
+             //       ShoppingBasket =   shoppingBaskets[0],
                 ProductId = 2,
                 Product =   products[0],
                 Quantity = 2
@@ -405,7 +405,7 @@ namespace shukersal_backend.Tests.Controllers
                 new ShoppingItem
                 {
                     ShoppingBasketId =1,
-                    ShoppingBasket =shoppingBaskets1.ElementAt(0),
+                   // ShoppingBasket =shoppingBaskets1.ElementAt(0),
                     ProductId = 1,
                     Product =products1.ElementAt(0),
                     Quantity = 1
@@ -532,7 +532,7 @@ namespace shukersal_backend.Tests.Controllers
                 new ShoppingItem
                 {
                     ShoppingBasketId =1,
-                    ShoppingBasket =shoppingBaskets1.ElementAt(0),
+                  //  ShoppingBasket =shoppingBaskets1.ElementAt(0),
                     ProductId = 1,
                     Product =products1.ElementAt(0),
                     Quantity = 1
@@ -660,7 +660,7 @@ namespace shukersal_backend.Tests.Controllers
                 new ShoppingItem
                 {
                     ShoppingBasketId =1,
-                    ShoppingBasket =shoppingBaskets1.ElementAt(0),
+                    //ShoppingBasket =shoppingBaskets1.ElementAt(0),
                     ProductId = 1,
                     Product =products1.ElementAt(0),
                     Quantity = 1

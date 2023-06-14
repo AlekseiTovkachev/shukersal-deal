@@ -9,8 +9,8 @@ namespace shukersal_backend.Models
         public long Id { get; set; }
 
         public long ShoppingBasketId { get; set; }
-        [JsonIgnore]
-        public ShoppingBasket ShoppingBasket { get; set; }
+       // [JsonIgnore]
+       // public ShoppingBasket ShoppingBasket { get; set; }
 
         public long ProductId { get; set; }
         [JsonIgnore]

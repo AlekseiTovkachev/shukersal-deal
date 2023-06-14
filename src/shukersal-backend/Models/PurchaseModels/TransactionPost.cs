@@ -6,19 +6,15 @@ using System.ComponentModel.DataAnnotations;
 namespace shukersal_backend.Models
 {
     public class TransactionPost
-    {
-        [Required]
-        [JsonIgnore]
+    {  
         public long MemberId { get; set; }
         [Required]
         public DateTime TransactionDate { get; set; }
 
         [Required]
-        [JsonIgnore]
         public PaymentDetails BillingDetails { get; set; }
 
         [Required]
-        [JsonIgnore]
         public DeliveryDetails DeliveryDetails { get; set; }
 
 

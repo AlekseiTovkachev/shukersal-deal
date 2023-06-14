@@ -14,6 +14,6 @@ public class ShoppingBasket
     //  [JsonIgnore]
     // public Store Store { get; set; }
 
-    [JsonIgnore]
+  
     public ICollection<ShoppingItem> ShoppingItems { get; set; }
 }

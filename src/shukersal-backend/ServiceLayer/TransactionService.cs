@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Utility;
 using System.Net;
 
 namespace shukersal_backend.ServiceLayer
@@ -13,11 +14,14 @@ namespace shukersal_backend.ServiceLayer
     {
         private readonly TransactionController TransactionController;
         private readonly ILogger<ControllerBase> logger;
+        private readonly MarketDbContext context;
 
         public TransactionService(MarketDbContext context, ILogger<ControllerBase> logger)
         {
             TransactionController = new TransactionController(context);
             this.logger = logger;
+            this.context = context;
+            
         }
 
         // GET: api/Transactions
@@ -25,6 +29,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
             logger.LogInformation("GetTransactions method called.");
+            var currentMember= ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if ( currentMember== null)
+            {
+                return Unauthorized();
+            }
             var response = await TransactionController.GetTransactions();
             if (!response.IsSuccess)
             {
@@ -38,6 +47,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
             logger.LogInformation("GetTransaction method called with id = {TransactionId}", TransactionId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             var response = await TransactionController.GetTransaction(TransactionId);
             if (!response.IsSuccess)
             {
@@ -75,6 +89,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<IActionResult> DeleteTransaction(long TransactionId)
         {
             logger.LogInformation("DeleteTransaction method called with id = {TransactionId}", TransactionId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             var response = await TransactionController.DeleteTransaction(TransactionId);
             if (!response.IsSuccess)
             {
@@ -89,6 +108,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<IActionResult> UpdateTransaction(long Transactionid, TransactionPost post)
         {
             logger.LogInformation("UpdateTransaction method called with id = {Transactionid}", Transactionid);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.UpdateTransaction(Transactionid, post);
@@ -110,6 +134,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<Transaction>> BrowseTransactionHistory(long memberId)
         {
             logger.LogInformation("BrowseTransactionHistory method called with memberId = {memberId}", memberId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.BrowseShopTransactionHistory(memberId);
@@ -131,6 +160,11 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<Transaction>> BrowseShopTransactionHistory(long storeId)
         {
             logger.LogInformation("BrowseTransactionHistory method called with storeId = {storeId}", storeId);
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.BrowseShopTransactionHistory(storeId);
