@@ -145,7 +145,6 @@ namespace shukersal_backend.Tests.Controllers
                     TotalPrice = 130,
                     BillingDetails=billingDetails.ElementAt(0),
                     DeliveryDetails=deliveryDetails.ElementAt(0),
-                    TransactionItems=transactionItems,
                 },
                 new TransactionPost
             {
@@ -154,7 +153,6 @@ namespace shukersal_backend.Tests.Controllers
                 TotalPrice = 130,
                 BillingDetails=billingDetails.ElementAt(1),
                 DeliveryDetails=deliveryDetails.ElementAt(1),
-                TransactionItems=transactionItems,
 
             }
 
@@ -294,7 +292,7 @@ namespace shukersal_backend.Tests.Controllers
             _context.Setup(x => x.Transactions).ReturnsDbSet(transactions);
             _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems);
 
-            var response = await _TransactionController.BrowseShopTransactionHistory(1);
+            var response = await _TransactionController.BrowseShopTransactionHistory(1,1);
 
             //Assert.Equal("", response.ErrorMessage);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -302,7 +300,7 @@ namespace shukersal_backend.Tests.Controllers
             Assert.Equal(3, response.Result.Count());
 
 
-            var response2 = await _TransactionController.BrowseShopTransactionHistory(2);
+            var response2 = await _TransactionController.BrowseShopTransactionHistory(2,1);
             //Assert.Equal("", response2.ErrorMessage);
             Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
             Assert.NotNull(response2.Result);
@@ -436,7 +434,6 @@ namespace shukersal_backend.Tests.Controllers
                 TotalPrice = 130,
                 BillingDetails = billingDetails.ElementAt(0),
                 DeliveryDetails = deliveryDetails.ElementAt(0),
-                TransactionItems=transactionItems1,
             };
 
             _context.Setup(x => x.Members).ReturnsDbSet(members);
@@ -563,7 +560,6 @@ namespace shukersal_backend.Tests.Controllers
                 TotalPrice = 130,
                 BillingDetails = billingDetails.ElementAt(0),
                 DeliveryDetails = deliveryDetails.ElementAt(0),
-                TransactionItems = transactionItems1,
             };
 
             _context.Setup(x => x.Members).ReturnsDbSet(members);
@@ -691,7 +687,6 @@ namespace shukersal_backend.Tests.Controllers
                 TotalPrice = 130,
                 BillingDetails = billingDetails.ElementAt(0),
                 DeliveryDetails = deliveryDetails.ElementAt(0),
-                TransactionItems = transactionItems1,
             };
 
             _context.Setup(x => x.Members).ReturnsDbSet(members);

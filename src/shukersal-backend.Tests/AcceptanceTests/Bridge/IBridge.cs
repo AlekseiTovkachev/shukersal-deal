@@ -8,6 +8,7 @@ using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
 using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
+using shukersal_backend.Models.ShoppingCartModels;
 
 namespace shukersal_backend.Tests.AcceptanceTests
 {
@@ -32,8 +33,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
         Task<ActionResult<IEnumerable<Category>>> GetCategories();
         //Shopping Cart
         Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId);
-        Task<ActionResult<ShoppingItem>> AddItemToCart(long id, [FromBody] ShoppingItem item);
-        Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long id, ShoppingItem itemId);
+        Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItemPost shoppingItemPost);
+        Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId);
+        Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId);
+        Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item);
         //Transaction
         Task<ActionResult<IEnumerable<Transaction>>> GetTransactions();
         Task<ActionResult<Transaction>> GetTransaction(long TransactionId);

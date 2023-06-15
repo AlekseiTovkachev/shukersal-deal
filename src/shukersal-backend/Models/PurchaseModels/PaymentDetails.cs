@@ -6,29 +6,28 @@ namespace shukersal_backend.Models.PurchaseModels
     public class PaymentDetails
     {
         [Required]
-        [JsonIgnore]
+
         public string HolderFirstName { get; set; }
 
         [Required]
-        [JsonIgnore]
+
         public string HolderLastName { get; set; }
 
         [Required]
-        [JsonIgnore]
+
         [StringLength(9, MinimumLength = 9)]
         public string HolderID { get; set; }
 
         [Required]
-        [JsonIgnore]
+
         [StringLength(19, MinimumLength = 16)]
         public string CardNumber { get; set; }
 
-        [Required]
-        [JsonIgnore]  //only month & year need to be presented 
+        [Required]  //only month & year need to be presented 
         public DateOnly ExpirationDate { get; set; }
 
         [Required]
-        [JsonIgnore]
+
         [StringLength(3, MinimumLength = 3)]
         public string CVC { get; set; }
 

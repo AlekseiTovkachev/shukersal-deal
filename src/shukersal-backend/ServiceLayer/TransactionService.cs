@@ -43,7 +43,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // GET: api/Transactions/5
-        [HttpGet("{Transactionid}")]
+        [HttpGet("{TransactionId}")]
         public async Task<ActionResult<Transaction>> GetTransaction(long TransactionId)
         {
             logger.LogInformation("GetTransaction method called with id = {TransactionId}", TransactionId);
@@ -76,7 +76,7 @@ namespace shukersal_backend.ServiceLayer
                     return BadRequest(response.ErrorMessage);
                 }
                 var Transaction = response.Result;
-                return CreatedAtAction(nameof(GetTransaction), new { id = Transaction.Id }, Transaction);
+                return CreatedAtAction(nameof(GetTransaction), new { TransactionId = Transaction.Id }, Transaction);
             }
             else
             {
@@ -135,13 +135,13 @@ namespace shukersal_backend.ServiceLayer
         {
             logger.LogInformation("BrowseTransactionHistory method called with memberId = {memberId}", memberId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
-            if (currentMember == null)
+            if (currentMember == null || currentMember.Id!=memberId)
             {
                 return Unauthorized();
             }
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.BrowseShopTransactionHistory(memberId);
+                var response = await TransactionController.BrowseTransactionHistory(memberId);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
@@ -167,12 +167,16 @@ namespace shukersal_backend.ServiceLayer
             }
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.BrowseShopTransactionHistory(storeId);
+                var response = await TransactionController.BrowseShopTransactionHistory(storeId,currentMember.Id);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)
                     {
                         return NotFound(ModelState);
+                    }
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        return Unauthorized();
                     }
                 }
                 return Ok(response.Result);

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.ServiceLayer;
 
@@ -10,7 +12,7 @@ namespace shukersal_backend.Tests.Controllers
 {
     public class ShoppingCartsControllerTests
     {
-        private ShoppingCartService _controller;
+        private ShoppingCartController _controller;
         private Mock<MarketDbContext> _context;
 
         public ShoppingCartsControllerTests()
@@ -19,41 +21,38 @@ namespace shukersal_backend.Tests.Controllers
             _context = new Mock<MarketDbContext>();
 
             // Create the controller with the mocked DbContext
-            _controller = new ShoppingCartService(_context.Object, new Mock<ILogger<ShoppingCartService>>().Object);
+            _controller = new ShoppingCartController(_context.Object);
         }
 
 
-        //[Fact]
+        [Fact]
         public async Task GetShoppingCartByUserId_ReturnsNotFound_ForNonexistentMemberId()
         {
             // Arrange
             long nonExistentMemberId = 999;
-            _context.Setup(db => db.ShoppingCarts)
-                .ReturnsDbSet(new List<ShoppingCart>());
-
-            // Act
             var result = await _controller.GetShoppingCartByUserId(nonExistentMemberId);
-
-            // Assert
-            Assert.IsType<NotFoundResult>(result.Result);
+            Assert.False(result.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         }
 
         //[Fact]
         public async Task GetShoppingCartByUserId_ReturnsShoppingCart_ForExistingMemberId()
         {
             // Arrange
-            long existingMemberId = 1;
+            long existingMemberId = 3;
             var shoppingCart = new ShoppingCart { MemberId = existingMemberId };
             _context.Setup(db => db.ShoppingCarts)
                 .ReturnsDbSet(new List<ShoppingCart> { shoppingCart });
 
             // Act
             var result = await _controller.GetShoppingCartByUserId(existingMemberId);
+            var carts=_context.Object.ShoppingCarts.Where(c=>c.MemberId == existingMemberId).ToList();
+            Assert.Single(carts);
+            Assert.True(result.IsSuccess);
+            Assert.NotNull(result.Result);
+            Assert.Equal(result.Result.MemberId, existingMemberId);
+            Assert.Empty(result.Result.ShoppingBaskets);
 
-            // Assert
-            Assert.IsType<OkObjectResult>(result.Result);
-            var okResult = result.Result as OkObjectResult;
-            Assert.Equal(shoppingCart, okResult.Value);
         }
 
      /*   //[Fact]

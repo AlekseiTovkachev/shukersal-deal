@@ -20,7 +20,6 @@ namespace shukersal_backend.DomainLayer.Objects
         //public List<ShoppingBasketObject> ShoppingBasketObjects;
         public List<ShoppingBasketObject> ShoppingBaskets;
 
-
         public ShoppingCartObject(MarketDbContext context, long Id, long MemberId, List<ShoppingBasket> baskets)
         {   Context = context;
             this.Id=Id;
@@ -29,6 +28,8 @@ namespace shukersal_backend.DomainLayer.Objects
             ShoppingBaskets = new List<ShoppingBasketObject>();
             baskets.ForEach(basket => ShoppingBaskets.Add(new ShoppingBasketObject(context, basket)));
         }
+
+        
 
         public async Task<Response<ShoppingBasket>> GetBasketByStoreId(long storeId)
         {

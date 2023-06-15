@@ -17,16 +17,5 @@
 
         public TransactionItem() { }
 
-        public TransactionItem(long transactionId, ShoppingItem item) {
-            TransactionId = transactionId;
-            ProductId = item.ProductId;
-            StoreId = item.Product.StoreId;
-            ProductName = item.Product.Name;
-            ProductDescription = item.Product.Description;
-            Quantity = item.Quantity;
-            FullPrice = item.Product.Price;
-            FinalPrice = item.Product.Price;
-        }
-        
     }
 }
