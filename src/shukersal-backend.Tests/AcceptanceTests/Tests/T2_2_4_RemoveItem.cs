@@ -1,6 +1,8 @@
 ﻿using shukersal_backend.Models;
+using shukersal_backend.Models.ShoppingCartModels;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,34 +18,38 @@ namespace shukersal_backend.Tests.AcceptanceTests
             bridge.Login(new LoginPost { Username = "testUsername", Password = "testPassword" });
         }
         [Fact]
-        public void RemoveItemPositive()
+        public async void RemoveItemPositive()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            var si = new ShoppingItem { Id = 100, Product = product, Quantity = 1 };
-            bridge.AddItemToCart(1, si).Wait();
-            var res = bridge.RemoveItemFromCart(1, si);
-            res.Wait();
+            var store = await bridge.GetStoreProducts(1);
+            Assert.NotNull(store.Value);
+            var product=store.Value.Products.ElementAt(1);
+            var si = new ShoppingItemPost {ProductId = product.Id,StoreId=store.Value.Id, Quantity = 1 };
+            var item = await bridge.AddItemToCart(1, si);
+            Assert.NotNull(item.Value);
+            var res = await bridge.RemoveItemFromCart(1, item.Value.Id);
             Assert.True(res.Result is IActionResult);
         }
         [Fact]
-        public void RemoveItemDoesntExist()
+        public async void RemoveItemDoesntExist()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            var res = bridge.RemoveItemFromCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 });
-            res.Wait();
+            var res = await bridge.RemoveItemFromCart(1, -1);
             Assert.False(res.Result is IActionResult);
         }
         [Fact]
-        public void RemoveItemDoubleRequest()
+        public async  void RemoveItemDoubleRequest()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            var si = new ShoppingItem { Id = 100, Product = product, Quantity = 1 };
-            bridge.AddItemToCart(1, si).Wait();
-            var res1 = bridge.RemoveItemFromCart(1, si);
-            var res2 = bridge.RemoveItemFromCart(1, si);
-            res1.Wait();
-            res2.Wait();
-            Assert.True(res1.Result is IActionResult ^ res2.Result is IActionResult);
+            var store = await bridge.GetStoreProducts(1);
+            Assert.NotNull(store.Value);
+            var product = store.Value.Products.ElementAt(1);
+            
+            var si = new ShoppingItemPost {ProductId = product.Id,StoreId=store.Value.Id, Quantity = 1 };
+            var item= await bridge.AddItemToCart(1, si);
+            Assert.NotNull(item.Value);
+            var res1 = await bridge.RemoveItemFromCart(1, item.Value.Id);
+            var res2 = await bridge.RemoveItemFromCart(1, item.Value.Id);
+            Assert.True(res1.Result is IActionResult);
+            Assert.False(res2.Result is IActionResult);
+
         }
     }
 }

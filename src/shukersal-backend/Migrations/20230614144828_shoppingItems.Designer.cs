@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using shukersal_backend.Models;
 
@@ -11,9 +12,11 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230614144828_shoppingItems")]
+    partial class shoppingItems
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,6 +241,7 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("discountOnString")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("discountRuleBooleanId")
@@ -272,6 +276,7 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("conditionString")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("discountRuleBooleanType")
@@ -321,7 +326,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "ACh/lRDJIhvYetpxSKty4xdICosUENRhK38iSBledxSoGKJewAzDmcyjeLDkgGNA7w==",
+                            PasswordHash = "AFH3abgkBwz/pBf8fHfjk2FjmEdIGPRRMBEkFHJ000DqoXmb2OLlPQym9P5tnwv0hQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -445,6 +450,7 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("conditionString")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("maxHour")
@@ -597,7 +603,7 @@ namespace shukersal_backend.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("RootManagerId")
                         .HasColumnType("bigint");
@@ -607,9 +613,6 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("AppliedDiscountRuleId");
 
                     b.HasIndex("AppliedPurchaseRuleId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("RootManagerId");
 
@@ -672,9 +675,6 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<bool>("IsMember")
-                        .HasColumnType("bit");
 
                     b.Property<long>("MemberId")
                         .HasColumnType("bigint");
@@ -899,8 +899,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasOne("shukersal_backend.Models.StoreManager", "ParentManager")
                         .WithMany("ChildManagers")
-                        .HasForeignKey("ParentManagerId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("ParentManagerId");
 
                     b.HasOne("shukersal_backend.Models.Store", "Store")
                         .WithMany()

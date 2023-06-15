@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
+using shukersal_backend.Models.ShoppingCartModels;
 using shukersal_backend.Utility;
 
 namespace shukersal_backend.ServiceLayer
@@ -12,15 +13,14 @@ namespace shukersal_backend.ServiceLayer
     [EnableCors("AllowOrigin")]
     public class ShoppingCartService : ControllerBase
     {
-        //private readonly MarketDbContext _context;
+        private readonly MarketDbContext _context;
         private readonly ShoppingCartController _shoppingCartController;
-        private readonly Member? currentMember;
         private readonly ILogger<ControllerBase> logger;
 
         public ShoppingCartService(MarketDbContext context, ILogger<ControllerBase> logger)
         {
+            _context = context;
             _shoppingCartController = new ShoppingCartController(context);
-            currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
             this.logger = logger;
 
         }
@@ -29,12 +29,12 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByUserId(long memberId)
         {
             logger.LogInformation("GetShoppingCartByUserId Called with {memberId}", memberId);
-            if (currentMember == null) { Unauthorized(); }
-
+            var currentMember= ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null || currentMember.Id!=memberId) {return Unauthorized(); }
             var response = await _shoppingCartController.GetShoppingCartByUserId(memberId);
             if (response.Result == null)
             {
-                return NotFound();
+                return BadRequest(response.ErrorMessage);
             }
             return Ok(response.Result);
         }
@@ -44,26 +44,28 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId)
         {
             logger.LogInformation("GetShoppingCartByCartId Called with {cartId}", cartId);
-            if (currentMember == null) { Unauthorized(); }
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null) { return Unauthorized(); }
 
-            var response = await _shoppingCartController.GetShoppingCartById(cartId);
-            if (response.Result == null)
+            var response = await _shoppingCartController.GetShoppingCartById(cartId,currentMember.Id);
+            if (response.Result == null || !response.IsSuccess)
             {
-                return NotFound();
+                return BadRequest(response.ErrorMessage);
             }
             return Ok(response.Result);
         }
 
+
         // POST: api/ShoppingCarts/5/items
         [HttpPost("{cartId}/items")]
-        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItem item)
+        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId,ShoppingItemPost shoppingItemPost)
         {
-            logger.LogInformation("AddItemToCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
-            if (currentMember == null)
-            {
-                return Unauthorized();
-            }
-            var itemResp = await _shoppingCartController.AddItemToCart(cartId, item);
+            logger.LogInformation("AddItemToCart Called with cart id:{cartId}, product id:{ProductId}, store id:{StoreId}, quantity:{Quantity}", cartId, shoppingItemPost.ProductId,shoppingItemPost.StoreId, shoppingItemPost.Quantity);
+           
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null) { return Unauthorized();}
+           
+            var itemResp = await _shoppingCartController.AddItemToCart(cartId,shoppingItemPost,currentMember.Id);
             if (itemResp.Result != null && itemResp.IsSuccess)
             {
                 return itemResp.Result;
@@ -71,15 +73,13 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest(itemResp.ErrorMessage);
         }
 
-        [HttpDelete("{cartid}/items")]
-        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item)
+        [HttpDelete("{cartId}/items")]
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId,long shoppingItemId)
         {
-            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
-            if (currentMember == null)
-            {
-                return Unauthorized();
-            }
-            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId, item);
+            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}", cartId, shoppingItemId);
+             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+             if (currentMember == null){return Unauthorized();}
+            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId, shoppingItemId,currentMember.Id);
             if (itemResp.Result != null && itemResp.IsSuccess)
             {
                 return itemResp.Result;
@@ -88,19 +88,20 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpPut("{cartId}/items")]
-        public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItem item)
+        public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId,ShoppingItemPost item)
         {
-            logger.LogInformation("PutStoreManager Called with cart id:{cartId}, item id:{Id}, product id:{ProductId}, quantity:{Quantity}", cartId, item.Id, item.ProductId, item.Quantity);
-            var response = await _shoppingCartController.EditItemQuantity(cartId, item);
-            if (!response.IsSuccess)
+            logger.LogInformation("PutStoreManager Called with cart id:{cartId}, product id:{ProductId}, quantity:{Quantity}", cartId, item.ProductId, item.Quantity);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null){return Unauthorized();}
+            var response = await _shoppingCartController.EditItemQuantity(cartId, item,currentMember.Id);
+
+            if (response.Result != null && response.IsSuccess)
             {
-                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    return BadRequest();
-                }
-                return NotFound();
+                return response.Result;
             }
-            return Ok(response.Result);
+            return BadRequest(response.ErrorMessage);
         }
+
     }
+
 }

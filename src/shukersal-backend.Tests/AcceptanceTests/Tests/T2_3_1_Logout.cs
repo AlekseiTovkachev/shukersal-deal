@@ -1,4 +1,5 @@
 ﻿using shukersal_backend.Models;
+using shukersal_backend.Models.ShoppingCartModels;
 using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.AcceptanceTests
@@ -10,22 +11,18 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
 
         [Fact]
-        public async void Logout_MemberWithItemsInCart()
+        public  void Logout_MemberWithItemsInCart()
         {
-            var respReg = bridge.Register(new RegisterPost { Username = "testUsername1", Password = "testPassword1" });
-            var resLogin = bridge.Login(new LoginPost { Username = "testUsername1", Password = "testPassword1" });
-            var storeResp = bridge.CreateStore(new StorePost { Name = "mystore", Description = "mystoredesc", /*RootManagerMemberId = resLogin.Result.Value.Member.Id */});
-            var product = await bridge.AddProduct(storeResp.Result.Value.Id, new ProductPost
-            { Name = "myproduct1", Description = "myproduct1Desc", Price = 10, UnitsInStock = 3, IsListed = true, CategoryId = 1 });
-            var addItemResp = bridge.AddItemToCart(resLogin.Result.Value.Member.ShoppingCart.Id, new ShoppingItem { Product = product as Product, Quantity = 1 });
-            var logoutResp = bridge.Logout(resLogin.Result.Value.Member.Id);
+            var addItemResp =bridge.AddItemToCart(1, new ShoppingItemPost { ProductId=1,StoreId=1, Quantity = 1 });
+            var logoutResp = bridge.Logout(1);
             var resLogin2 = bridge.Login(new LoginPost { Username = "testUsername1", Password = "testPassword1" });
-            var getCartResp = bridge.GetShoppingCartByUserId(resLogin.Result.Value.Member.Id);
+            var getCartResp = bridge.GetShoppingCartByUserId(1);
             var cart = getCartResp.Result.Value;
             Assert.NotNull(cart);
             Assert.Single(cart.ShoppingBaskets);
             Assert.Single(cart.ShoppingBaskets.ElementAt(0).ShoppingItems);
-            Assert.Equal(addItemResp.Result.Value.ProductId, cart.ShoppingBaskets.ElementAt(0).ShoppingItems.ElementAt(0).Product.Id);
+            Assert.NotNull(addItemResp.Result.Value);
+            Assert.Equal(addItemResp.Result.Value.ProductId, cart.ShoppingBaskets.ElementAt(0).ShoppingItems.ElementAt(0).ProductId);
             Assert.Equal(addItemResp.Result.Value.Quantity, cart.ShoppingBaskets.ElementAt(0).ShoppingItems.ElementAt(0).Quantity);
 
 

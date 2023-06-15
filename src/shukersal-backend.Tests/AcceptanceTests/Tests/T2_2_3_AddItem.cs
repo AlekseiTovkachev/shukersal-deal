@@ -1,4 +1,5 @@
 ﻿using shukersal_backend.Models;
+using shukersal_backend.Models.ShoppingCartModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,35 +17,59 @@ namespace shukersal_backend.Tests.AcceptanceTests
             bridge.Login(new LoginPost { Username = "testUsername", Password = "testPassword" });
         }
         [Fact]
-        public void AddItemPositive()
+        public async void AddItemPositive()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(1);
-            var res = bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1});
-            res.Wait();
-            Assert.True(res.Result is IActionResult);
+            var productresp = await bridge.GetStoreProducts(1);
+            Assert.NotNull(productresp.Value);
+            var product = productresp.Value.Products.ElementAt(0);
+            var res = await bridge.AddItemToCart(1, new ShoppingItemPost {ProductId = product.Id,StoreId=product.StoreId, Quantity = 1});
+           
+            Assert.NotNull(res.Value);
+            Assert.Equal(product.Id,res.Value.Id);
+            
         }
         [Fact]
-        public void AddItemQuantity()
+        public async void EditItemQuantity()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(0);
-            var res = bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 2 });
-            res.Wait();
-            Assert.False(res.Result is IActionResult);
+            var productresp = await bridge.GetStoreProducts(1);
+            Assert.NotNull(productresp.Value);
+            var product = productresp.Value.Products.ElementAt(0);
+            var res = bridge.AddItemToCart(1, new ShoppingItemPost { ProductId = product.Id, StoreId = product.StoreId, Quantity = 2 });
+            var res2=await  bridge.EditItemQuantity(1, new ShoppingItemPost { ProductId = product.Id, StoreId = product.StoreId, Quantity = 3 });
+            Assert.NotNull(res2.Value);
+            Assert.Equal(product.Id, res2.Value.Id);
+            Assert.Equal(2, res2.Value.Quantity);
+
+            var cart= await bridge.GetShoppingCartByCartId(1);
+            Assert.NotNull(cart.Value);
+            var basket = cart.Value.ShoppingBaskets.Where(b => b.StoreId == product.StoreId);
+            Assert.Single(basket);
+            Assert.Single(basket.ElementAt(0).ShoppingItems);
+            Assert.Equal(product.Id, basket.ElementAt(0).ShoppingItems.ElementAt(0).ProductId);
+            Assert.Equal(3, basket.ElementAt(0).ShoppingItems.ElementAt(0).Quantity);
+
+
+
+
         }
         [Fact]
-        public void AddItemDoubleRequest()
+        public async void AddItemDoubleRequest()
         {
-            var product = bridge.GetStoreProducts(1).Result.Value.Products.ElementAt(0);
-            var res1 = bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = product, Quantity = 1 });
-            var res2 = bridge.AddItemToCart(1, new ShoppingItem { Id = 200, Product = product, Quantity = 1 });
-            res1.Wait();
-            res2.Wait();
-            Assert.True(res1.Result is IActionResult ^ res2.Result is IActionResult);
+            var store = await bridge.GetStoreProducts(1);
+            Assert.NotNull(store.Value);
+            var product=store.Value.Products.First();
+            Assert.NotNull(product);
+            var res1 =await bridge.AddItemToCart(1, new ShoppingItemPost { ProductId = product.Id, Quantity = 1 });
+            var res2 =await bridge.AddItemToCart(1, new ShoppingItemPost { ProductId = product.Id, Quantity = 1 });
+
+            Assert.NotNull(res1.Value);
+            Assert.Null(res2.Value);
+
         }
         [Fact]
         public void AddWrongItem()
         {
-            var res = bridge.AddItemToCart(1, new ShoppingItem { Id = 100, Product = new Product { Id = -1 }, Quantity = 1 });
+            var res = bridge.AddItemToCart(1, new ShoppingItemPost { ProductId=-1, Quantity = 1 });
             res.Wait();
             Assert.False(res.Result is IActionResult);
         }
