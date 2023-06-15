@@ -86,7 +86,7 @@ namespace shukersal_backend.Models
             //    .HasForeignKey(x => x.ParentManagerId)
             //    .OnDelete(DeleteBehavior.NoAction);
 
-            base.OnModelCreating(modelBuilder);
+
 
             //foreach (var foreignKey in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
             //{
@@ -147,6 +147,8 @@ namespace shukersal_backend.Models
             //    .WithMany()
             //    .OnDelete(DeleteBehavior.Cascade);
 
+
+            base.OnModelCreating(modelBuilder);
 
             var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
 

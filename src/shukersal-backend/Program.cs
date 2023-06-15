@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using System.Text;
 
@@ -135,7 +136,12 @@ using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>(
 {
     var dbContext = serviceScope.ServiceProvider.GetService<MarketDbContext>();
     dbContext?.Database.Migrate();
+    if (dbContext != null)
+        await BootFileRunner.Run(dbContext);
+
 }
+
+
 
 app.MapControllers();
 app.Run();

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using shukersal_backend.Models;
 
@@ -11,9 +12,11 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230615184115_Init10")]
+    partial class Init10
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,7 +324,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AEHE87GGp4BrukGD/K9cgE5IDyUeUjh8TFZh/Law/h4905m+NJctozhtkXXkRipS5Q==",
+                            PasswordHash = "APCgxLDNHp9M8YocPhHKAvn2FoRuvH0VUBp+ghMj8NQjfpwZfnC6MOW85Be4Ya2bPQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });

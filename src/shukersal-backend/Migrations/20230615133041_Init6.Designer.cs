@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using shukersal_backend.Models;
 
@@ -11,9 +12,11 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230615133041_Init6")]
+    partial class Init6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,7 +324,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AEHE87GGp4BrukGD/K9cgE5IDyUeUjh8TFZh/Law/h4905m+NJctozhtkXXkRipS5Q==",
+                            PasswordHash = "AEqpxmnx7v6OA5EwhohQepjH7jvcJxcigUKxLl0Xt1pEbkoCyxDMlrY4MaMUR2MQGw==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -597,7 +600,7 @@ namespace shukersal_backend.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long?>("RootManagerId")
                         .HasColumnType("bigint");
@@ -607,9 +610,6 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("AppliedDiscountRuleId");
 
                     b.HasIndex("AppliedPurchaseRuleId");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("RootManagerId");
 
@@ -898,8 +898,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasOne("shukersal_backend.Models.StoreManager", "ParentManager")
                         .WithMany("ChildManagers")
-                        .HasForeignKey("ParentManagerId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("ParentManagerId");
 
                     b.HasOne("shukersal_backend.Models.Store", "Store")
                         .WithMany()

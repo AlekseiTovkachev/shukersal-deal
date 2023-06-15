@@ -43,6 +43,11 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _marketObject.GetStore(storeId);
         }
 
+        public async Task<Response<Store>> GetStore(string name)
+        {
+            return await _marketObject.GetStore(name);
+        }
+
         public async Task<Response<Store>> CreateStore(StorePost storeData, Member member)
         {
             return await _marketObject.CreateStore(storeData, member);

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace shukersal_backend.Models
 {
+    [Index(nameof(Name), IsUnique = true)]
     public class Store
     {
         [Key]
