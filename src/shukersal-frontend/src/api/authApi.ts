@@ -18,7 +18,7 @@ export type TokenResponseBody = {
   token: string;
 };
 
-const serviceName = "authservice";
+const serviceName = "auth";
 
 export const authApi = {
   login: (

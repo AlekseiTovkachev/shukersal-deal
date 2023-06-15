@@ -33,7 +33,7 @@ export const OpenNewStoreDialog = NiceModal.create(() => {
 
   const handleSubmit = useCallback(async () => {
     const isSuccess = await sellerData.createStore(form.getValues());
-    sellerData.refreshStores();
+    sellerData.refreshMyStores();
     if (isSuccess) {
       handleClose();
     }

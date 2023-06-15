@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 
-import { Store } from '../types/appTypes';
+import { Product, Store } from '../types/appTypes';
 import { ApiError, ApiListData } from '../types/apiTypes';
-import { StorePatchFormFields, StorePostFormFields } from '../types/formTypes';
-import { storesApi } from '../api/storesApi';
+import { ProductPostFormFields, StorePatchFormFields, StorePostFormFields } from '../types/formTypes';
+import { storeProductsApi, storesApi } from '../api/storesApi';
 
 const sliceName = 'store';
 
@@ -87,6 +87,18 @@ export const deleteStore = createAsyncThunk<
     }
 );
 
+export const createProduct = createAsyncThunk<
+    Product,
+    {storeId: number, product: ProductPostFormFields},
+    { rejectValue: ApiError }
+    >(
+`${sliceName}/createProduct`,
+async (payload, thunkAPI) => {
+    return storeProductsApi.create(payload.storeId, payload.product)
+        .then((res) => thunkAPI.fulfillWithValue(res as Product))
+        .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
+    }
+);
 
 // \---------------------------------------- THUNKS ----------------------------------------/
 
@@ -108,7 +120,9 @@ export const storeReducer = createSlice({
     name: sliceName,
     initialState: initialState,
     reducers: {
-
+        resetCurrentStore: (state) => {
+            state.currentStore = undefined;
+        }
     },
     extraReducers: builder => {
         builder
@@ -181,9 +195,23 @@ export const storeReducer = createSlice({
                 state.isLoading = false;
                 state.error = action.payload ?? { message: 'Error. ' };
             })
+
+            // createProduct
+            .addCase(createProduct.pending, (state, action) => {
+                state.isLoading = true;
+                state.error = undefined;
+            })
+            .addCase(createProduct.fulfilled, (state, action) => {
+                state.isLoading = false;
+                //state.currentStore = payload;
+            })
+            .addCase(createProduct.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload ?? { message: 'Error. ' };
+            })
     }
 })
 
-// export const { } = storeReducer.actions
+export const { resetCurrentStore } = storeReducer.actions
 
 export default storeReducer.reducer

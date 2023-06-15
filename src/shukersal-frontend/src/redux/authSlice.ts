@@ -77,7 +77,7 @@ interface AuthState {
 
 const localStorageData = (() => {
     try {
-        return JSON.parse(window.localStorage.getItem(localStorageValues.auth.currentMemberData.name) ?? '')
+        return JSON.parse(window.localStorage.getItem(localStorageValues.auth.currentMemberData.name) ?? 'null')
     } catch (err) {
         console.error("Can't parse data: ", err);
         return undefined;
