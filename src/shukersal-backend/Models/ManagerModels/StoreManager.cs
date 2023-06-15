@@ -34,12 +34,15 @@ namespace shukersal_backend.Models
         [JsonIgnore]
         [ForeignKey("ParentManagerId")]
         [InverseProperty("ChildManagers")]
+        [DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual StoreManager? ParentManager { get; set; }
 
         public virtual ICollection<StorePermission>? StorePermissions { get; set; }
 
-        [JsonIgnore]
+        //[JsonIgnore]
+
         [InverseProperty("ParentManager")]
+        [DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual ICollection<StoreManager> ChildManagers { get; set; }
 
         //public StoreManager() { }

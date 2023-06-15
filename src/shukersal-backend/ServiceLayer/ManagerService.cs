@@ -61,7 +61,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpGet("stores/{storeId}/managers")]
-        public async Task<ActionResult<StoreManagerTreeNode>> GetStoreManagersByStoreId(long storeId)
+        public async Task<ActionResult<StoreManager>> GetStoreManagersByStoreId(long storeId)
         {
             logger.LogInformation("GetStoreManagersByStoreId with id = {storeId} method called", storeId);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);

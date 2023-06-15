@@ -50,6 +50,24 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Store>.Success(HttpStatusCode.OK, store);
         }
 
+        public async Task<Response<Store>> GetStore(string name)
+        {
+            if (_context.Stores == null)
+            {
+                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+            }
+            var store = await _context.Stores
+                //.Include(s => s.Products)
+                .Include(s => s.DiscountRules)
+                .Include(s => s.PurchaseRules)
+                .FirstOrDefaultAsync(s => s.Name == name);
+            if (store == null)
+            {
+                return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
+            }
+            return Response<Store>.Success(HttpStatusCode.OK, store);
+        }
+
         public async Task<Response<Store>> CreateStore(StorePost storeData, Member member)
         {
             using (var transaction = _context.Database.BeginTransaction())
