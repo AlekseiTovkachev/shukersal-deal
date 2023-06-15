@@ -19,3 +19,14 @@ export interface StorePatchFormFields {
     name?: string,
     description?: string
 }
+
+export interface ProductPostFormFields {
+    name: string;
+    description: string;
+    price: number;
+    unitsInStock: number;
+    imageUrl?: string | null;
+    isListed: boolean;
+    categoryId: number;
+  }
+  

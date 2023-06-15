@@ -8,7 +8,7 @@ import { createStore, getAllStore, getMyStores } from "../../redux/storeSlice";
 import { useAuth } from "../useAuth";
 
 
-export const useSeller = (isUsingStores = false) => {
+export const useSeller = (isUsingStores = true) => {
   const dispatch = useAppDispatch();
   
   const authData = useAuth();
@@ -41,7 +41,7 @@ export const useSeller = (isUsingStores = false) => {
 
   useEffect(() => {
     getMyStoresCallback();
-  }, [getMyStoresCallback]);
+  }, []);
 
   return {
     // sellerIds: [SELLER_ID_1],

@@ -1,7 +1,7 @@
 import { ApiResponse, ApiResponseListData } from "../types/apiTypes";
 import { Product, Store } from "../types/appTypes";
 import { apiClient } from "./apiClient";
-import { apiErrorHandlerWrapper } from "./util";
+import { apiErrorHandlerWrapper } from './util';
 
 export interface StorePostData {
   name: string;
@@ -13,15 +13,15 @@ export interface StorePatchData {
   description?: string;
 }
 
-const storeServiceName = "storeservice";
-const sellerServiceName = "sellerservice";
+const storeServiceName = "stores";
+const sellerServiceName = "storemanagers";
 
 export const storesApi = {
   getAll: (): Promise<ApiResponseListData<Store>> =>
     apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/`)),
 
   getMyStores: (memberId: number): Promise<ApiResponseListData<Store>> =>
-    apiErrorHandlerWrapper(apiClient.get(`${sellerServiceName}/stores/${memberId}`)),
+    apiErrorHandlerWrapper(apiClient.get(`${sellerServiceName}/member/${memberId}/stores/`)),
 
   get: (storeId: number): Promise<ApiResponse<Store>> =>
     apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/${storeId}/`)),
@@ -44,12 +44,12 @@ export const storesApi = {
 export const storeProductsApi = {
   getAll: (storeId: number): Promise<ApiResponseListData<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.post(`${storeServiceName}/stores/${storeId}/products/`)
+      apiClient.get(`${storeServiceName}/${storeId}/products/`)
     ),
 
   get: (storeId: number, productId: number): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.get(`${storeServiceName}/stores/${storeId}/products/${productId}/`)
+      apiClient.get(`${storeServiceName}/${storeId}/products/${productId}/`)
     ),
 
   create: (
@@ -57,7 +57,7 @@ export const storeProductsApi = {
     postData: StorePostData
   ): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
-      apiClient.post(`${storeServiceName}/stores/${storeId}/products/`, postData)
+      apiClient.post(`${storeServiceName}/${storeId}/products/`, postData)
     ),
 
   patch: (
@@ -67,7 +67,7 @@ export const storeProductsApi = {
   ): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
       apiClient.patch(
-        `${storeServiceName}/stores/${storeId}/products/${productId}/`,
+        `${storeServiceName}/${storeId}/products/${productId}/`,
         newData
       )
     ),
@@ -78,7 +78,7 @@ export const storeProductsApi = {
   ): Promise<ApiResponse<undefined>> =>
     apiErrorHandlerWrapper(
       apiClient.delete(
-        `${storeServiceName}/stores/${storeId}/products/${productId}/`
+        `${storeServiceName}/${storeId}/products/${productId}/`
       )
     ),
 };
