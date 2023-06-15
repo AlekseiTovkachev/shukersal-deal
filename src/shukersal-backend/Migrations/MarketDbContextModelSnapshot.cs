@@ -596,7 +596,7 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
-                        .IsRequired()
+                       // .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<long?>("RootManagerId")

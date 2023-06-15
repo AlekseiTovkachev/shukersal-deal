@@ -68,6 +68,12 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<Transaction>> PurchaseAShoppingCart(TransactionPost TransactionPost)
         {
             logger.LogInformation("PurchaseAShoppingCart method called");
+            var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
+            if (TransactionPost.IsMember && currentMember.Id != TransactionPost.MemberId)
+            {
+                return Unauthorized();
+            }
+
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.PurchaseAShoppingCart(TransactionPost);
