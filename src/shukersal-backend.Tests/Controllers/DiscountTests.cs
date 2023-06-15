@@ -1,13 +1,6 @@
-﻿using Microsoft.VisualStudio.TestPlatform.Utilities;
-using shukersal_backend.DomainLayer.Controllers;
-using shukersal_backend.DomainLayer.Objects;
+﻿using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace shukersal_backend.Tests.Controllers
@@ -47,7 +40,7 @@ namespace shukersal_backend.Tests.Controllers
             _prObject = new PurchaseRuleObject(_context.Object);
             items = new List<TransactionItem> { };
 
-            
+
 
         }
 
@@ -353,13 +346,13 @@ namespace shukersal_backend.Tests.Controllers
         {
             await _object.CreateDiscount(new DiscountRulePost
             {
-                Id = 13,
+                //Id = 13,
                 discountType = DiscountType.ADDITIONAL
             },
             store);
             await _object.CreateChildDiscount(13, new DiscountRulePost
             {
-                Id = 14,
+                //Id = 14,
                 discountType = DiscountType.CONDITIONAL,
                 discountOn = DiscountOn.STORE,
                 Discount = 10
@@ -368,17 +361,17 @@ namespace shukersal_backend.Tests.Controllers
             Assert.Equal(10, (await _object.GetAppliedDiscount(store.Id)).Result.Components.FirstOrDefault().Discount);
             await _object.CreateDiscountRuleBoolean(new DiscountRuleBooleanPost
             {
-                Id = 15,
+                //Id = 15,
                 discountRuleBooleanType = DiscountRuleBooleanType.AND
             }, (await _object.GetAppliedDiscount(store.Id)).Result.Components.FirstOrDefault());
             await _object.CreateChildDiscountRuleBoolean(15,
                 new DiscountRuleBooleanPost
                 {
-                Id = 16,
-                discountRuleBooleanType = DiscountRuleBooleanType.PRODUCT_AT_LEAST,
-                conditionString = "",
-                conditionLimit = 5
-            });  
+                    //Id = 16,
+                    discountRuleBooleanType = DiscountRuleBooleanType.PRODUCT_AT_LEAST,
+                    conditionString = "",
+                    conditionLimit = 5
+                });
             Assert.Equal(5, (await _object.GetDiscounts(store.Id)).Result.FirstOrDefault().Components.FirstOrDefault().discountRuleBoolean.Components.FirstOrDefault().conditionLimit);
         }
 
@@ -426,7 +419,7 @@ namespace shukersal_backend.Tests.Controllers
                 )
             );
 
-            
+
 
             Assert.True(_prObject.Evaluate(
                 new PurchaseRule
@@ -502,13 +495,13 @@ namespace shukersal_backend.Tests.Controllers
         {
             await _prObject.CreatePurchaseRule(new PurchaseRulePost
             {
-                Id = 1,
+                //Id = 1,
                 purchaseRuleType = PurchaseRuleType.AND
             },
             store);
             await _prObject.CreateChildPurchaseRule(1, new PurchaseRulePost
             {
-                Id = 2,
+                //Id = 2,
                 purchaseRuleType = PurchaseRuleType.PRODUCT_LIMIT,
                 conditionString = "",
                 conditionLimit = 5
@@ -617,7 +610,7 @@ namespace shukersal_backend.Tests.Controllers
                             }
                         },
                     }
-                    
+
 
                 },
                 new List<TransactionItem> {
@@ -645,7 +638,7 @@ namespace shukersal_backend.Tests.Controllers
                     }
                 }
                 )
-            ) ;
+            );
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Net;
 using shukersal_backend.Models;
-using shukersal_backend.Utility;
 using shukersal_backend.Models.StoreModels;
+using shukersal_backend.Utility;
+using System.Net;
 
 namespace shukersal_backend.DomainLayer.Objects
 {
@@ -21,7 +21,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 componenets = new List<PurchaseRule>();
             var pr = new PurchaseRule
             {
-                Id = post.Id,
+                //Id = post.Id,
                 purchaseRuleType = post.purchaseRuleType,
                 Components = componenets,
                 conditionString = post.conditionString,
@@ -45,7 +45,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     componenets = new List<PurchaseRule>();
                 var component = new PurchaseRule
                 {
-                    Id = post.Id,
+                    //Id = post.Id,
                     purchaseRuleType = post.purchaseRuleType,
                     Components = componenets,
                     conditionString = post.conditionString,
@@ -67,7 +67,10 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
-            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            var store = await _context.Stores.Where(s => s.Id == storeId)
+                .Include(s => s.PurchaseRules)
+                    .ThenInclude(pr => pr.Components)
+                .FirstOrDefaultAsync();
             if (store != null)
                 return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, store.PurchaseRules);
             return Response<ICollection<PurchaseRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
@@ -75,8 +78,11 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<PurchaseRule>> GetAppliedPurchaseRule(long storeId)
         {
-            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
-            if (store != null)
+            var store = await _context.Stores.Where(s => s.Id == storeId)
+                .Include(s => s.AppliedPurchaseRule)
+                    .ThenInclude(pr => pr.Components)
+                .FirstOrDefaultAsync();
+            if (store != null && store.AppliedPurchaseRule != null)
                 return Response<PurchaseRule>.Success(HttpStatusCode.OK, store.AppliedPurchaseRule);
             return Response<PurchaseRule>.Error(HttpStatusCode.NotFound, "store doesnt exist");
         }

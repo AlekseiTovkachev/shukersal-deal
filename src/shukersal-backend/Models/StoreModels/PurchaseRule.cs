@@ -22,7 +22,7 @@ namespace shukersal_backend.Models
         [Required]
         public PurchaseRuleType purchaseRuleType { get; set; }
         public virtual ICollection<PurchaseRule>? Components { get; set; }
-        public string conditionString { get; set; }
+        public string? conditionString { get; set; }
         public int conditionLimit { get; set; }
         [Range(0, 24)]
         public int minHour { get; set; }

@@ -30,7 +30,7 @@ namespace shukersal_backend.Models
         public virtual ICollection<DiscountRule>? Components { get; set; }
         public DiscountRuleBoolean? discountRuleBoolean { get; set; }
         public DiscountOn discountOn { get; set; }
-        public string discountOnString { get; set; }
+        public string? discountOnString { get; set; }
 
     }
 }
