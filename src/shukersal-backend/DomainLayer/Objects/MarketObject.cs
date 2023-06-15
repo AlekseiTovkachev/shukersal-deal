@@ -258,7 +258,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Success(HttpStatusCode.BadRequest, false);
             }
             var pr = new PurchaseRuleObject(_context);
-            if (!pr.Evaluate(shop.Result.AppliedPurchaseRule, TransactionItems))
+            if (!pr.Evaluate((await pr.GetAppliedPurchaseRule(storeId)).Result, TransactionItems))
             {
                 return Response<bool>.Success(HttpStatusCode.BadRequest, false);
             }

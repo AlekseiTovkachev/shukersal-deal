@@ -9,7 +9,7 @@ namespace shukersal_backend.Models
         [Required]
         public DiscountType discountType { get; set; }
         public double Discount { get; set; } // in percentage, 20 means x(1-(20/100)) calculation
-        public DiscountRuleBoolean? discountRuleBoolean { get; set; }
+        //public DiscountRuleBoolean? discountRuleBoolean { get; set; }
         public DiscountOn discountOn { get; set; }
         public string? discountOnString { get; set; }
         public long StoreId { get; set; }

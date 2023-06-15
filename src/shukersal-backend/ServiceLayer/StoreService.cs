@@ -276,7 +276,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpPost("discounts/boolean/new/{id}")]
-        public async Task<IActionResult> AddDiscountBoolean(long compositeId, DiscountRuleBooleanPost post)
+        public async Task<IActionResult> AddDiscountBoolean(long id, DiscountRuleBooleanPost post)
         {
             logger.LogInformation("DiscountRuleBooleanPost method called with for storeID: {storeId}", post.StoreId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
@@ -286,7 +286,7 @@ namespace shukersal_backend.ServiceLayer
             }
             if (ModelState.IsValid)
             {
-                var response = await storeController.CreateDiscountRuleBoolean(post, currentMember, compositeId);
+                var response = await storeController.CreateDiscountRuleBoolean(post, currentMember, id);
                 var res_disc = response.Result;
                 return Ok(res_disc);
             }
@@ -297,7 +297,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpPost("discounts/boolean/child/{id}")]
-        public async Task<IActionResult> AddChildDiscountBoolean(long compositeId, DiscountRuleBooleanPost post)
+        public async Task<IActionResult> AddChildDiscountBoolean(long id, DiscountRuleBooleanPost post)
         {
             logger.LogInformation("AddChildDiscountBoolean method called with for storeID: {storeId}", post.StoreId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
@@ -307,7 +307,7 @@ namespace shukersal_backend.ServiceLayer
             }
             if (ModelState.IsValid)
             {
-                var response = await storeController.CreateChildDiscountRuleBoolean(compositeId, post, currentMember);
+                var response = await storeController.CreateChildDiscountRuleBoolean(id, post, currentMember);
                 var res_disc = response.Result;
                 return Ok(res_disc);
             }
@@ -411,7 +411,7 @@ namespace shukersal_backend.ServiceLayer
         }
 
         [HttpPost("purchaserules/{id}")]
-        public async Task<IActionResult> AddChildPurchaseRule(long compositeId, PurchaseRulePost post)
+        public async Task<IActionResult> AddChildPurchaseRule(long id, PurchaseRulePost post)
         {
             logger.LogInformation("AddChildPurchaseRule method called with for compositeId: {compositeId}", post.StoreId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
@@ -421,7 +421,7 @@ namespace shukersal_backend.ServiceLayer
             }
             if (ModelState.IsValid)
             {
-                var response = await storeController.CreateChildPurchaseRule(compositeId, post, currentMember);
+                var response = await storeController.CreateChildPurchaseRule(id, post, currentMember);
                 var res_disc = response.Result;
                 return Ok(res_disc);
             }
