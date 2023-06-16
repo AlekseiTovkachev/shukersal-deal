@@ -1,4 +1,6 @@
 ﻿
+using System.Net;
+
 namespace shukersal_backend.ExternalServices.ExternalPaymentService
 {
     public class PaymentAdaptee
@@ -20,29 +22,26 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
             };
 
             var content = new FormUrlEncodedContent(postContent);
-
             try
             {
                 HttpResponseMessage response = await httpClient.PostAsync(url, content);
 
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode == HttpStatusCode.OK)
                 {
                     return "OK";
                 }
                 else
                 {
-                    // Handle specific error codes or error messages if required
                     return "Handshake failed";
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle general exception or log the error
-                return "Handshake failed: " + ex.Message;
+                return "Handshake failed";
             }
         }
 
-        public async Task<long> pay(string cardNumber, string month, string year, string holder, string ccv, string id)
+        public async Task<int> pay(string cardNumber, string month, string year, string holder, string ccv, string id)
         {
             var postContent = new Dictionary<string, string>
             {
@@ -65,19 +64,18 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
                     int transactionId;
-                    if (int.TryParse(responseBody, out transactionId))
+                    if (int.TryParse(responseBody, out transactionId) && transactionId!=-1)
                     {
                         return transactionId;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle general exception or log the error
                 return -1;
             }
 
-            return -1; // Handle invalid response or other specific cases
+            return -1; 
         }
 
         public async Task<long> cancel_pay(string transactionId)
@@ -96,16 +94,21 @@ namespace shukersal_backend.ExternalServices.ExternalPaymentService
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return 1;
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    int res;
+                    if (int.TryParse(responseBody, out res) && res == 1)
+                    {
+                        return res;
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle general exception or log the error
+
                 return -1;
             }
 
-            return -1; // Handle invalid response or other specific cases
+            return -1; 
         }
     }
 }

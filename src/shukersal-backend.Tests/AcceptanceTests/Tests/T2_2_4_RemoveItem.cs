@@ -30,23 +30,22 @@ namespace shukersal_backend.Tests.AcceptanceTests
             Assert.True(res.Result is IActionResult);
         }
         [Fact]
-        public async void RemoveItemDoesntExist()
+        public void RemoveItemDoesntExist()
         {
-            var res = await bridge.RemoveItemFromCart(1, -1);
+            var res =  bridge.RemoveItemFromCart(1, -1);
+            res.Wait();
             Assert.False(res.Result is IActionResult);
         }
         [Fact]
-        public async  void RemoveItemDoubleRequest()
+        public void RemoveItemDoubleRequest()
         {
-            var store = await bridge.GetStoreProducts(1);
-            Assert.NotNull(store.Value);
-            var product = store.Value.Products.ElementAt(1);
-            
-            var si = new ShoppingItemPost {ProductId = product.Id,StoreId=store.Value.Id, Quantity = 1 };
-            var item= await bridge.AddItemToCart(1, si);
-            Assert.NotNull(item.Value);
-            var res1 = await bridge.RemoveItemFromCart(1, item.Value.Id);
-            var res2 = await bridge.RemoveItemFromCart(1, item.Value.Id);
+            bridge.Login(new LoginPost { Username = "testUsername", Password = "testPassword" });
+            var si = new ShoppingItemPost {ProductId = 1,StoreId=1, Quantity = 1 };
+            var item=  bridge.AddItemToCart(1, si);
+            item.Wait();
+            Assert.True(item.Result is IActionResult);
+            var res1 =  bridge.RemoveItemFromCart(1, 1);
+            var res2 =  bridge.RemoveItemFromCart(1, 1);
             Assert.True(res1.Result is IActionResult);
             Assert.False(res2.Result is IActionResult);
 

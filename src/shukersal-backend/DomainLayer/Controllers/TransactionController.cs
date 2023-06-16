@@ -24,17 +24,37 @@ namespace shukersal_backend.DomainLayer.Controllers
         private readonly StoreObject _storeObject;
 
         private readonly MemberObject _memberObject;
+        private readonly StoreManagerObject _managerObject;
+        private ShoppingCartObject _shoppingCartObject;
 
 
         public TransactionController(MarketDbContext context)
         {
             _context = context;
             _marketObject = new MarketObject(context);
-            _storeObject = new StoreObject(context, _marketObject, new StoreManagerObject());
+            
             _memberObject= new MemberObject(context);
             _transactionObject = new TransactionObject(context,_marketObject);
+            _managerObject = new StoreManagerObject(_context);
+            _storeObject = new StoreObject(context, _marketObject, _managerObject);
+            _shoppingCartObject = null;
             _marketObject.SetDeliveryProvider("https://php-server-try.000webhostapp.com/");
             _marketObject.SetPaymentProvider("https://php-server-try.000webhostapp.com/");
+        }
+
+        //for testings
+        public TransactionController(MarketDbContext context, MarketObject marketObject,TransactionObject transactionObject, StoreManagerObject managerObject, MemberObject memberObject, StoreObject storeObject)
+        {
+            _context = context;
+            _marketObject = marketObject;
+            _memberObject = memberObject;
+            _transactionObject = transactionObject;
+            _managerObject = managerObject;
+            _storeObject = storeObject;
+            _marketObject.SetDeliveryProvider("https://php-server-try.000webhostapp.com/");
+            _marketObject.SetPaymentProvider("https://php-server-try.000webhostapp.com/");
+            _shoppingCartObject = null;
+
         }
 
         public void SetRealDeliveryAdapter(string url)
@@ -55,16 +75,26 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, Transactions);
         }
 
-        public async Task<Response<Transaction>> GetTransaction(long Transactionid)
+        public async Task<Response<Transaction>> GetTransaction(long Transactionid,long loggedInMemId)
         {
             var Transaction = await _context.Transactions
                 .Include(s => s.TransactionItems)
                 .FirstOrDefaultAsync(s => s.Id == Transactionid);
-
+            var member=await _memberObject.GetMember(loggedInMemId);
             if (Transaction == null)
             {
                 return Response<Transaction>.Error(HttpStatusCode.NotFound, "Not found");
             }
+
+            if(!member.IsSuccess || member.Result == null)
+            {
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Member not found");
+            }
+            if (Transaction.MemberId!= loggedInMemId && member.Result.Role!= "Administrator")
+            {
+                return Response<Transaction>.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+            }
+
             return Response<Transaction>.Success(HttpStatusCode.OK, Transaction);
         }
 
@@ -167,14 +197,14 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         public async Task<Response<Transaction>> CreateMemberTransaction(TransactionPost transactionPost)
         {
-            var memberRes= await _memberObject.GetMember(transactionPost.MemberId);
-            if( !memberRes.IsSuccess || memberRes.Result == null)
-            {
-                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Member was not found");
-            }
-            Member member = memberRes.Result;
+            var member = _context.Members.Where(m => m.Id == transactionPost.MemberId).FirstOrDefault();
 
-            var cartRes=await _marketObject.GetShoppingCartByUserId(member.Id);
+            if (member == null)
+            {
+                return Response<Transaction>.Error(HttpStatusCode.NotFound, "Couldn't find member");
+            }
+
+            var cartRes =await _marketObject.GetShoppingCartByUserId(member.Id);
             if (!cartRes.IsSuccess || cartRes.Result == null)
             {
                 return Response<Transaction>.Error(HttpStatusCode.NotFound, "Cart was not found");
@@ -182,7 +212,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             ShoppingCartObject cart = new ShoppingCartObject(_context, cartRes.Result);
             if (cart.ShoppingBaskets.IsNullOrEmpty())
             {
-                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty!");
             }
 
             var transaction = new Transaction
@@ -216,14 +246,11 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<Transaction>.Success(HttpStatusCode.Created, transaction);
         }
 
-
-
-
         public async Task<Response<Transaction>> CreateGuestTransaction(TransactionPost transactionPost)
         {
             if (transactionPost.TransactionItems.IsNullOrEmpty())
             {
-                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty.");
+                return Response<Transaction>.Error(HttpStatusCode.BadRequest, "Shopping cart is empty!!");
             }
 
             var transaction = new Transaction
@@ -282,15 +309,28 @@ namespace shukersal_backend.DomainLayer.Controllers
         } 
 
 
-        public async Task<Response<IEnumerable<Transaction>>> BrowseTransactionHistory(long memberId)
+        public async Task<Response<IEnumerable<Transaction>>> BrowseTransactionHistory(long memberId, long loggedInMemId)
         {
+
+            var member = await _memberObject.GetMember(loggedInMemId);
+
+            if (!member.IsSuccess || member.Result == null)
+            {
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.NotFound, "Member not found");
+            }
+            if (memberId != loggedInMemId && member.Result.Role != "Administrator")
+            {
+                return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.Unauthorized, "Unauthorized");
+            }
+
             var Transactions = await _context.Transactions
-              .Include(s => s.TransactionItems).Where(s => s.MemberId == memberId).ToListAsync();
+            .Include(s => s.TransactionItems).Where(s => s.MemberId == memberId).ToListAsync();
+
 
             return Response<IEnumerable<Transaction>>.Success(HttpStatusCode.OK, Transactions);
         }
 
-        public async Task<Response<IEnumerable<Transaction>>> BrowseShopTransactionHistory(long shopId, long memberId)
+        public async Task<Response<IEnumerable<Transaction>>> BrowseShopTransactionHistory(long shopId, long loggedInMemId)
         {
             var storeResp = await _marketObject.GetStore(shopId);
 
@@ -298,10 +338,10 @@ namespace shukersal_backend.DomainLayer.Controllers
                 return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.BadRequest,storeResp.ErrorMessage);
             }
 
-            var _managerObject = new StoreManagerObject(_context);
-            var hasPermission = await _managerObject.CheckPermission(shopId,memberId, PermissionType.Get_history_permission);
-
-            if (!hasPermission)
+            //var _managerObject = new StoreManagerObject(_context);
+            var hasPermission = await _managerObject.CheckPermission(shopId, loggedInMemId, PermissionType.Get_history_permission);
+            var member = (await _memberObject.GetMember(loggedInMemId)).Result;
+            if (!hasPermission && (member == null || member.Role != "Administrator"))
             {
                 return Response<IEnumerable<Transaction>>.Error(HttpStatusCode.Unauthorized, "Unauthorized");
             }
@@ -403,6 +443,8 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             return Response<Dictionary<long, List<TransactionItem>>>.Success(HttpStatusCode.BadRequest, TransactionBaskets);
         }
+
+      
         
 
     }
