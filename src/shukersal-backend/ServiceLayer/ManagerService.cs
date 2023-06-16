@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using HotelBackend.Util;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
+using System.Data;
 using System.Net;
 
 namespace shukersal_backend.ServiceLayer
@@ -29,6 +33,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/StoreManagers
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagers()
         {
             logger.LogInformation("GetStoreManagers method called");
@@ -40,7 +45,13 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<StoreManager>> GetStoreManager(long id)
         {
             logger.LogInformation("GetStoreManager with id = {id} method called", id);
-            var response = await _controller.GetStoreManager(id);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null)
+            {
+                return Unauthorized();
+            }
+
+            var response = await _controller.GetStoreManager(id, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -52,6 +63,12 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
         {
             logger.LogInformation("GetStoreManagersByMemberId with id = {memberId} method called", memberId);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null || currentMember.Id != memberId)
+            {
+                return Unauthorized();
+            }
+
             var response = await _controller.GetStoreManagersByMemberId(memberId);
             if (!response.IsSuccess)
             {
@@ -89,6 +106,12 @@ namespace shukersal_backend.ServiceLayer
         public async Task<ActionResult<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
         {
             logger.LogInformation("GetStoresByMemberId with id = {memberId} method called", memberId);
+            var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+            if (currentMember == null || memberId != currentMember.Id)
+            {
+                return Unauthorized();
+            }
+
             var response = await _controller.GetManagedStoresByMemberId(memberId);
             if (!response.IsSuccess)
             {
@@ -206,7 +229,7 @@ namespace shukersal_backend.ServiceLayer
             {
                 return Unauthorized();
             }
-            var response = await _controller.RemovePermissionFromManager(id, permission);
+            var response = await _controller.RemovePermissionFromManager(id, permission, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();

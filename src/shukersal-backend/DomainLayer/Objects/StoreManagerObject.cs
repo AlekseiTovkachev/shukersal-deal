@@ -61,7 +61,7 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<IEnumerable<StoreManager>>.Success(HttpStatusCode.OK, managers);
         }
 
-        public async Task<Response<StoreManager>> GetStoreManager(long id)
+        public async Task<Response<StoreManager>> GetStoreManager(long id, Member member)
         {
             //addition for testing
             var storeManager = await _context.StoreManagers
@@ -72,6 +72,16 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
             }
+            // The manager can get access to himself, other than him, only a manager with permission can see him
+            var storeManagerAsking = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(s => s.StoreId == storeManager.StoreId && s.MemberId == member.Id);
+            if (member.Id != storeManager.MemberId && (storeManagerAsking == null
+                                || !(await CheckPermission(storeManagerAsking.Id, PermissionType.Get_manager_info_permission))))
+            {
+                return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
+            }
+
 
             return Response<StoreManager>.Success(HttpStatusCode.OK, storeManager);
         }
@@ -106,7 +116,8 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             var root = storeManagers.Where(sm => sm.ParentManager == null).FirstOrDefault();
             //var tree = BuildStoreManagerTree(storeManagers);
-            if (root == null) Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
+            if (root == null)
+                return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
 
 
             return Response<StoreManager>.Success(HttpStatusCode.OK, root);
@@ -153,10 +164,10 @@ namespace shukersal_backend.DomainLayer.Objects
                 .Include(m => m.Store)
                 .ToListAsync();
 
-            if (storeManagers.Count == 0)
-            {
-                return Response<IEnumerable<Store>>.Error(HttpStatusCode.NotFound, "");
-            }
+            //if (storeManagers.Count == 0)
+            //{
+            //    //return Response<IEnumerable<Store>>.Error(HttpStatusCode.NotFound, "");
+            //}
 
             var managedStores = storeManagers.Select(sm => sm.Store);
 
@@ -475,11 +486,19 @@ namespace shukersal_backend.DomainLayer.Objects
         public async Task<Response<bool>> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
         {
 
-            var manager = await _context.StoreManagers.FindAsync(id);
+            var manager = await _context.StoreManagers
+                .Where(m => m.Id == id)
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync();
 
-            if (manager == null)
+            if (manager == null || manager.StorePermissions == null)
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "");
+            }
+
+            if (permission == PermissionType.Manager_permission)
+            {
+                return Response<bool>.Error(HttpStatusCode.Unauthorized, "");
             }
 
             var permissionToRemove = manager.StorePermissions.FirstOrDefault(p => p.PermissionType == permission);
