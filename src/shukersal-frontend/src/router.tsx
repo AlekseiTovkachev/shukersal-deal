@@ -16,6 +16,8 @@ import { ProductsPage } from './views/ProductsPage/ProductsPage';
 import { ProductPage } from './views/ProductPage/ProductPage';
 import { SellerStorePage } from './views/SellerPage/SellerStorePage';
 import { NotFoundPage } from './views/NotFoundPage/NotFoundPage';
+import { SellerStoreDiscountsPage } from './views/SellerPage/SellerStoreDiscountsPage/SellerStoreDiscountsPage';
+import { SellerStoreManagersPage } from './views/SellerPage/SellerStoreManagersPage/SellerStoreManagersPage';
 
 export const router = createBrowserRouter([
     {
@@ -70,7 +72,20 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: 'stores/:storeId',
-                        element: <SellerStorePage />
+                        children: [
+                            {
+                                path: '',
+                                element: <SellerStorePage />
+                            },
+                            {
+                                path: 'managers',
+                                element: <SellerStoreManagersPage />
+                            },
+                            {
+                                path: 'discounts',
+                                element: <SellerStoreDiscountsPage />
+                            }
+                        ]
                     }
                 ]
             },

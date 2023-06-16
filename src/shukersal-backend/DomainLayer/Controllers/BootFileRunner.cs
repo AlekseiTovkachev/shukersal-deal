@@ -65,17 +65,19 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         private static async Task<List<Store>> AddStores(StoreController controller, string jsonPath, List<Member> members)
         {
+            List<Store> stores = new List<Store>();
             jsonPath = Path.Combine(jsonPath, "stores_bootfile.json");
 
             string jsonStoresContent = File.ReadAllText(jsonPath);
 
             JArray jsonArray = JArray.Parse(jsonStoresContent);
-
+            if (jsonArray.Count == 0)
+                return stores;
             List<string>? memberUsernames = jsonArray[0].ToObject<List<string>>();
             JArray storePostsJsonArray = (JArray)jsonArray[1];
             List<StorePost>? storePosts = storePostsJsonArray.ToObject<List<StorePost>>();
 
-            List<Store> stores = new List<Store>();
+
 
             if (storePosts == null || memberUsernames == null)
             {
@@ -200,10 +202,10 @@ namespace shukersal_backend.DomainLayer.Controllers
                     CategoryId = productBoot.CategoryId,
                     IsListed = true
                 };
-                var res2 = await managerController.GetStoreManager((long)store.RootManagerId);
-                if (res2 == null) continue;
+                var manager = managers
+                    .Where(m => m.Id == store.RootManagerId)
+                    .FirstOrDefault();
 
-                var manager = res2.Result;
                 if (manager == null) continue;
 
                 var member = members.Where(m => m.Id == manager.MemberId).FirstOrDefault();

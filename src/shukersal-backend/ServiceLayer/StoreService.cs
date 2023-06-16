@@ -1,9 +1,13 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using HotelBackend.Util;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
+using System.Data;
 using System.Net;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -19,7 +23,7 @@ namespace shukersal_backend.ServiceLayer
         private readonly ILogger<ControllerBase> logger;
         private readonly MarketDbContext context;
 
-        public StoreService(MarketDbContext context, ILogger<ControllerBase> logger)
+        public StoreService(MarketDbContext context, ILogger<StoreService> logger)
         {
             storeController = new StoreController(context);
             this.context = context;
@@ -108,6 +112,7 @@ namespace shukersal_backend.ServiceLayer
 
         // DELETE: api/store/5
         [HttpDelete("stores/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<IActionResult> DeleteStore(long id)
         {
             logger.LogInformation("DeleteStore method called with ID: {id}", id);

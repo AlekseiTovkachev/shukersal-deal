@@ -29,4 +29,3 @@ export interface ProductPostFormFields {
     isListed: boolean;
     categoryId: number;
   }
-  

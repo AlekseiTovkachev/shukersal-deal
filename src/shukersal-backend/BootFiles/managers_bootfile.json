@@ -1,14 +1,14 @@
 [
-  {
-    "BossMemberName": "john123",
-    "NewManagerName": "jane456",
-    "StoreName": "Store1",
-    "Owner": true
-  },
-  {
-    "BossMemberName": "jane456",
-    "NewManagerName": "john123",
-    "StoreName": "Store2",
-    "Owner": true
-  }
+  //{
+  //  "BossMemberName": "john123",
+  //  "NewManagerName": "jane456",
+  //  "StoreName": "Store1",
+  //  "Owner": true
+  //},
+  //{
+  //  "BossMemberName": "jane456",
+  //  "NewManagerName": "john123",
+  //  "StoreName": "Store2",
+  //  "Owner": true
+  //}
 ]
