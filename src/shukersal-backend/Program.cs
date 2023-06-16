@@ -134,12 +134,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 
-app.UseCors(AllowOrigin);
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 // To automatically migrate the database
 using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
@@ -151,9 +146,16 @@ using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>(
 }
 
 
-//app.MapControllers();
+app.MapControllers();
 
 app.UseRouting();
+app.UseHttpsRedirection();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseCors(AllowOrigin);
 
 app.UseEndpoints(endpoints =>
 {
