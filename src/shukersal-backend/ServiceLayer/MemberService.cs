@@ -27,6 +27,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Members
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
             logger.LogInformation("GetMemebers Called");
@@ -41,6 +42,7 @@ namespace shukersal_backend.ServiceLayer
         // GET: api/Members/5
         [HttpGet("{id}")]
         //[Route("getMember")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<Models.Member>> GetMember(long id)
         {
             logger.LogInformation("LogInRequest Called With {id}", id);
@@ -56,6 +58,7 @@ namespace shukersal_backend.ServiceLayer
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 
         [HttpPost]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<MemberPost>> AddMember(MemberPost memberData)
         {
             if (ModelState.IsValid)
@@ -93,6 +96,7 @@ namespace shukersal_backend.ServiceLayer
 
         [HttpPost]
         [Route("admins/")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<MemberPost>> addAdmin(AdminPost adminData)
         {
             if (ModelState.IsValid)

@@ -1,17 +1,17 @@
 [
-  [ "john123", "jane456", "smith789" ],
-  [
-    {
-      "name": "Store1",
-      "description": "string"
-    },
-    {
-      "name": "Store2",
-      "description": "string"
-    },
-    {
-      "name": "Store3",
-      "description": "string"
-    }
-  ]
+  //[ "john123", "jane456", "smith789" ],
+  //[
+  //  {
+  //    "name": "Store1",
+  //    "description": "string"
+  //  },
+  //  {
+  //    "name": "Store2",
+  //    "description": "string"
+  //  },
+  //  {
+  //    "name": "Store3",
+  //    "description": "string"
+  //  }
+  //]
 ]

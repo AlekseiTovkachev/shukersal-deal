@@ -22,9 +22,9 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _managerObject.GetStoreManagers();
         }
 
-        public async Task<Response<StoreManager>> GetStoreManager(long id)
+        public async Task<Response<StoreManager>> GetStoreManager(long id, Member member)
         {
-            return await _managerObject.GetStoreManager(id);
+            return await _managerObject.GetStoreManager(id, member);
         }
         public async Task<Response<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long id)
         {
@@ -82,8 +82,12 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         public async Task<Response<bool>> AddPermissionToManager(long id, [FromBody] PermissionType permission, Member member)
         {
+            var storeManager = (await _managerObject.GetStoreManager(id, member)).Result;
+            if (storeManager == null)
+                return Response<bool>.Error(HttpStatusCode.NotFound, "a manager with this id doesn't exits");
             bool hasPermission = await _managerObject
-                .CheckPermission(id, PermissionType.Edit_manager_permissions_permission);
+                .CheckPermission(storeManager.StoreId, member.Id, PermissionType.Edit_manager_permissions_permission);
+            //.CheckPermission(id, PermissionType.Edit_manager_permissions_permission);
 
             if (!hasPermission)
             {
@@ -92,10 +96,14 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _managerObject.AddPermissionToManager(id, permission);
         }
 
-        public async Task<Response<bool>> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
+        public async Task<Response<bool>> RemovePermissionFromManager(long id, [FromBody] PermissionType permission, Member member)
         {
+            var storeManager = (await _managerObject.GetStoreManager(id, member)).Result;
+            if (storeManager == null)
+                return Response<bool>.Error(HttpStatusCode.NotFound, "a manager with this id doesn't exits");
             bool hasPermission = await _managerObject
-                .CheckPermission(id, PermissionType.Edit_manager_permissions_permission);
+                .CheckPermission(storeManager.StoreId, member.Id, PermissionType.Edit_manager_permissions_permission);
+            //.CheckPermission(id, PermissionType.Edit_manager_permissions_permission);
 
             if (!hasPermission)
             {

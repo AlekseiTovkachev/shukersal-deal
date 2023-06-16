@@ -154,7 +154,9 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<IEnumerable<Product>>> GetAllProducts()
         {
-            var products = await _context.Products.ToListAsync();
+            var products = await _context.Products
+                .Include(p => p.Category)
+                .ToListAsync();
             return Response<IEnumerable<Product>>.Success(HttpStatusCode.OK, products);
         }
 

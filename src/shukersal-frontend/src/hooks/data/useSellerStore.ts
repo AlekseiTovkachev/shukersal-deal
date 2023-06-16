@@ -4,7 +4,7 @@ import { demoProducts } from './DEMO_DATA_useProducts';
 import { useAppSelector } from '../useAppSelector';
 import { useAppDispatch } from '../useAppDispatch';
 import { ProductPostFormFields, StorePatchFormFields } from '../../types/formTypes';
-import { deleteStore, getStore, resetCurrentStore, updateStore, createProduct } from '../../redux/storeSlice';
+import { deleteStore, getStore, resetCurrentStore, updateStore, createProduct, editProduct } from '../../redux/storeSlice';
 import { storeProductsApi } from '../../api/storesApi';
 import { Product } from '../../types/appTypes';
 import { ApiError, ApiListData } from '../../types/apiTypes';
@@ -19,6 +19,14 @@ export const useSellerStore = (storeId: number) => {
 
     const addProductCallback = useCallback(async (formData: ProductPostFormFields) => {
         const response = await dispatch(createProduct({ storeId, product: formData }));
+        if (response.meta.requestStatus === 'fulfilled') {
+            return true;
+        }
+        return false;
+    }, [dispatch, storeId]);
+
+    const editProductCallback = useCallback(async (productId: number, formData: Partial<Product>) => {
+        const response = await dispatch(editProduct({ storeId, productId, product: formData }));
         if (response.meta.requestStatus === 'fulfilled') {
             return true;
         }
@@ -64,10 +72,10 @@ export const useSellerStore = (storeId: number) => {
         isLoading: isLoading,
         error: error,
         products: products,
-        managers: demoStores, // TODO: Implement
         
         getStoreProducts: () => getStoreProducts(storeId),
         addProduct: addProductCallback,
+        editProduct: editProductCallback,
         updateStore: updateStoreCallback,
         deleteStore: deleteStoreCallback
     };

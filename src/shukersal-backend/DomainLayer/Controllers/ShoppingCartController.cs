@@ -24,7 +24,7 @@ namespace shukersal_backend.DomainLayer.Controllers
                 .Include(s => s.ShoppingBaskets)
                 .ThenInclude(b => b.ShoppingItems)
                 .FirstOrDefaultAsync(c => c.MemberId == memberId);
-            if(shoppingCart == null)
+            if (shoppingCart == null)
             {
                 return Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "User's shopping cart not found.");
             }
@@ -46,9 +46,9 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<ShoppingCart>.Success(HttpStatusCode.OK, shoppingCart);
         }
 
-        public async Task<Response<ShoppingItem>> AddItemToCart(long cartId,ShoppingItemPost shoppingItemPost, long loggedInMemberId)
+        public async Task<Response<ShoppingItem>> AddItemToCart(long cartId, ShoppingItemPost shoppingItemPost, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            var resp = await GetShoppingCartById(cartId, loggedInMemberId);
             if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
@@ -64,7 +64,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         public async Task<Response<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            var resp = await GetShoppingCartById(cartId, loggedInMemberId);
             if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
@@ -78,15 +78,15 @@ namespace shukersal_backend.DomainLayer.Controllers
             return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
 
-        public async Task<Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item,long loggedInMemberId)
+        public async Task<Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item, long loggedInMemberId)
         {
-            var Cartresp = await GetShoppingCartById(cartId,loggedInMemberId);
+            var Cartresp = await GetShoppingCartById(cartId, loggedInMemberId);
             if (Cartresp.Result != null && Cartresp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, Cartresp.Result);
-                var ToAdditem = await cart.EditItemQuantity(item.StoreId,item.ProductId,item.Quantity);
+                var ToAdditem = await cart.EditItemQuantity(item.StoreId, item.ProductId, item.Quantity);
                 return ToAdditem;
-    
+
             }
             return Response<ShoppingItem>.Error(Cartresp.StatusCode, Cartresp.ErrorMessage);
 
