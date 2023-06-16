@@ -25,7 +25,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 Discount = post.Discount,
                 discountType = post.discountType,
                 Components = componenets,
-                discountRuleBoolean = post.discountRuleBoolean,
+                discountRuleBoolean = null,
                 discountOn = post.discountOn,
                 discountOnString = post.discountOnString
             };
@@ -55,7 +55,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     Discount = post.Discount,
                     discountType = post.discountType,
                     Components = componenets,
-                    discountRuleBoolean = post.discountRuleBoolean,
+                    discountRuleBoolean = null,
                     discountOn = post.discountOn,
                     discountOnString = post.discountOnString
                 };
@@ -83,6 +83,16 @@ namespace shukersal_backend.DomainLayer.Objects
             var dcnt = await _context.DiscountRules.Include(dr => dr.Components).ToListAsync();
             var store = await _context.Stores.Where(s => s.Id == storeId)
                 .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                 .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
                     .ThenInclude(dr => dr.Components)
                 .FirstOrDefaultAsync();
 
@@ -95,7 +105,17 @@ namespace shukersal_backend.DomainLayer.Objects
         public async Task<Response<DiscountRule>> GetAppliedDiscount(long storeId)
         {
             var store = await _context.Stores.Where(s => s.Id == storeId)
-                .Include(s => s.AppliedDiscountRule)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                 .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
                     .ThenInclude(dr => dr.Components)
                 .FirstOrDefaultAsync();
             if (store != null && store.AppliedDiscountRule != null)
