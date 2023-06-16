@@ -7,10 +7,12 @@ import {
   GridRowsProp,
   GridColDef,
   gridColumnGroupsLookupSelector,
+  GridCellParams,
 } from "@mui/x-data-grid";
 import {
   Button,
   Grid,
+  IconButton,
   Paper,
   Stack,
   useMediaQuery,
@@ -18,6 +20,7 @@ import {
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import PercentIcon from "@mui/icons-material/Percent";
@@ -32,6 +35,30 @@ import { AppAreYouSureDialog } from "../../components/AppAreYouSureDialog";
 import { NotFoundPage } from "../NotFoundPage/NotFoundPage";
 import { AddProductDialog } from "./AddProduct/AddProductDialog";
 import { APP_CATEGORIES } from "../../constants";
+import { storeProductsApi } from "../../api/storesApi";
+import { EditProductDialog } from './EditProduct/EditProductDialog';
+
+const handleEditProduct = async (params: GridCellParams) => {
+  const productId = params.row.id;
+  const storeId = params.row.storeId;
+
+  NiceModal.show(EditProductDialog, { initProduct: params.row, productId: productId, storeId: storeId }).then(() => {
+    window.location.reload();
+  });
+};
+
+const handleDeleteProduct = async (params: GridCellParams) => {
+  const productId = params.row.id;
+  const storeId = params.row.storeId;
+
+  NiceModal.show(AppAreYouSureDialog, {
+    bodyText: "This will delete the product permanently.",
+    onYes: async () => {
+      await storeProductsApi.delete(storeId, productId);
+      window.location.reload(); // why use react when you can make the project way faster and way worst (to match the level of the be)
+    },
+  });
+};
 
 const columns: GridColDef[] = [
   {
@@ -50,8 +77,33 @@ const columns: GridColDef[] = [
   //{ field: "description", headerName: "Description", width: 200},
   { field: "price", headerName: "Price", width: 50 },
   { field: "unitsInStock", headerName: "Stock", width: 50 },
-  { field: "imageUrl", headerName: "Image URL", width: 150 },
+  {
+    field: "imageUrl",
+    headerName: "Image URL",
+    flex: 1, // Stretch to fill available width
+  },
+  {
+    field: "EDIT_BUTTON",
+    headerName: "",
+    width: 50,
+    renderCell: (params) => (
+      <IconButton onClick={() => handleEditProduct(params)}>
+        <EditIcon />
+      </IconButton>
+    ),
+  },
+  {
+    field: "DELETE_BUTTON",
+    headerName: "",
+    width: 50,
+    renderCell: (params) => (
+      <IconButton onClick={() => handleDeleteProduct(params)}>
+        <DeleteIcon />
+      </IconButton>
+    ),
+  },
 ];
+
 
 export const SellerStorePage = () => {
   const theme = useTheme();

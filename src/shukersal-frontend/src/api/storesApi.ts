@@ -63,7 +63,7 @@ export const storeProductsApi = {
   patch: (
     storeId: number,
     productId: number,
-    newData: Partial<Store>
+    newData: Partial<StorePatchData>
   ): Promise<ApiResponse<Product>> =>
     apiErrorHandlerWrapper(
       apiClient.patch(

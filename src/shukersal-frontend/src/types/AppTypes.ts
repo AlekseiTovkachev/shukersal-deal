@@ -12,17 +12,17 @@ export interface Member {
 }
 
 export enum PermissionType {
-    ManagerPermission = 0,
-    ManageProductsPermission = 1,
-    ManageDiscountsPermission = 3,
-    AppointOwnerPermission = 4,
-    RemoveOwnerPermission = 5,
-    AppointManagerPermission = 6,
-    EditManagerPermissionsPermission = 7,
-    RemoveManagerPermission = 8,
-    GetManagerInfoPermission = 11,
-    ReplyPermission = 12,
-    GetHistoryPermission = 13
+    ManagerPermission = 0, // SPECIAL - for delete store (check if parent is null)
+    ManageProductsPermission = 1, // for products table
+    ManageDiscountsPermission = 3, // for discouts button
+    AppointOwnerPermission = 4, // 
+    RemoveOwnerPermission = 5, // IGNORE 
+    AppointManagerPermission = 6, // add manager
+    EditManagerPermissionsPermission = 7, // 
+    RemoveManagerPermission = 8, //
+    GetManagerInfoPermission = 11, // for 
+    ReplyPermission = 12, // IGNORE
+    GetHistoryPermission = 13 // transaction history /api/transactions/store/{storeId}
 }
 
 export interface Category {
