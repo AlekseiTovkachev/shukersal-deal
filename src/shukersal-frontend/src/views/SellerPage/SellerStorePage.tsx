@@ -20,7 +20,10 @@ import {
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-import CheckIcon from '@mui/icons-material/Check';
+import PercentIcon from "@mui/icons-material/Percent";
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+
+import CheckIcon from "@mui/icons-material/Check";
 
 import { FlexSpacer } from "../../components/FlexSpacer";
 import { useCallback } from "react";
@@ -31,13 +34,23 @@ import { AddProductDialog } from "./AddProduct/AddProductDialog";
 import { APP_CATEGORIES } from "../../constants";
 
 const columns: GridColDef[] = [
-  { field: "isListed", headerName: "Listed", width: 30, renderCell: (params) => params.value ? <CheckIcon /> : <></>},
+  {
+    field: "isListed",
+    headerName: "Listed",
+    width: 30,
+    renderCell: (params) => (params.value ? <CheckIcon /> : <></>),
+  },
   { field: "name", headerName: "Name", width: 100 },
-  { field: "categoryId", headerName: "Category", width: 100, valueGetter: (params) => APP_CATEGORIES[params.value]?.name ?? '',},
+  {
+    field: "categoryId",
+    headerName: "Category",
+    width: 100,
+    valueGetter: (params) => APP_CATEGORIES[params.value]?.name ?? "",
+  },
   //{ field: "description", headerName: "Description", width: 200},
   { field: "price", headerName: "Price", width: 50 },
   { field: "unitsInStock", headerName: "Stock", width: 50 },
-  { field: "imageUrl", headerName: "Image URL", width: 150 }
+  { field: "imageUrl", headerName: "Image URL", width: 150 },
 ];
 
 export const SellerStorePage = () => {
@@ -54,7 +67,9 @@ export const SellerStorePage = () => {
   const handleAddProduct = useCallback(() => {
     const fixedStoreId = Number(storeId);
     if (fixedStoreId) {
-      NiceModal.show(AddProductDialog, { storeId: fixedStoreId }).then(() => {sellerStoreData.getStoreProducts()});
+      NiceModal.show(AddProductDialog, { storeId: fixedStoreId }).then(() => {
+        sellerStoreData.getStoreProducts();
+      });
     }
   }, [sellerStoreData, storeId]);
 
@@ -105,6 +120,30 @@ export const SellerStorePage = () => {
         <Paper sx={{ height: 300, width: "100%" }}>
           <DataGrid rows={sellerStoreData.products} columns={columns} />
         </Paper>
+      </Grid>
+      <Grid xs={isMobile ? 12 : 6} item>
+        <Button
+          fullWidth
+          startIcon={<ManageAccountsIcon />}
+          variant="contained"
+          onClick={() => {
+            navigate("managers");
+          }}
+        >
+          Managers
+        </Button>
+      </Grid>
+      <Grid xs={isMobile ? 12 : 6} item>
+        <Button
+          fullWidth
+          startIcon={<PercentIcon />}
+          variant="contained"
+          onClick={() => {
+            navigate("discounts");
+          }}
+        >
+          Discounts
+        </Button>
       </Grid>
     </Grid>
   );
