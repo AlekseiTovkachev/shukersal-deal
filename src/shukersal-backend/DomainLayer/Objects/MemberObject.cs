@@ -86,7 +86,16 @@ namespace shukersal_backend.DomainLayer.Objects
             // Add the shopping cart and member to the database
             _context.ShoppingCarts.Add(shoppingCart);
             _context.Members.Add(member);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception here
+                return Response<Member>.Error(HttpStatusCode.OK, "user name already exists");
+            }
+
             if (member.Id == 0)
             {
                 return Response<Member>.Error(HttpStatusCode.OK, "Error in database insert");

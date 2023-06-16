@@ -100,6 +100,19 @@ async (payload, thunkAPI) => {
     }
 );
 
+export const editProduct = createAsyncThunk<
+    Product,
+    {storeId: number, productId: number, product: Partial<Product>},
+    { rejectValue: ApiError }
+    >(
+`${sliceName}/editProduct`,
+async (payload, thunkAPI) => {
+    return storeProductsApi.patch(payload.storeId, payload.productId, payload.product)
+        .then((res) => thunkAPI.fulfillWithValue(res as Product))
+        .catch((res) => thunkAPI.rejectWithValue(res as ApiError))
+    }
+);
+
 // \---------------------------------------- THUNKS ----------------------------------------/
 
 
@@ -206,6 +219,20 @@ export const storeReducer = createSlice({
                 //state.currentStore = payload;
             })
             .addCase(createProduct.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload ?? { message: 'Error. ' };
+            })
+
+            // editProduct
+            .addCase(editProduct.pending, (state, action) => {
+                state.isLoading = true;
+                state.error = undefined;
+            })
+            .addCase(editProduct.fulfilled, (state, action) => {
+                state.isLoading = false;
+                //state.currentStore = payload;
+            })
+            .addCase(editProduct.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload ?? { message: 'Error. ' };
             })

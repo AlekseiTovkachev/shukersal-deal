@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using shukersal_backend.Models;
 
@@ -11,9 +12,11 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230616163700_notification_update2.0")]
+    partial class notification_update20
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -321,7 +324,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AMowDf23CA7KezPmWckLGr+Po5BQJ6liL6edIYcM19TPpqR6nYASuWoAfjpgCQYvsw==",
+                            PasswordHash = "AMlpMoV1ZbtL+/rgxod+976KT3pcPeZbAEfD0in7xd9MTB3betR8tXqgb/AqenLjPw==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -345,12 +348,31 @@ namespace shukersal_backend.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("NotificationType")
-                        .HasColumnType("int");
+                    b.Property<long>("NotificationTypeId")
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("NotificationTypeId");
+
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
@@ -750,6 +772,17 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.DiscountRuleBoolean", null)
                         .WithMany("Components")
                         .HasForeignKey("DiscountRuleBooleanId");
+                });
+
+            modelBuilder.Entity("shukersal_backend.Models.Notification", b =>
+                {
+                    b.HasOne("shukersal_backend.Models.NotificationType", "NotificationType")
+                        .WithMany()
+                        .HasForeignKey("NotificationTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("NotificationType");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
