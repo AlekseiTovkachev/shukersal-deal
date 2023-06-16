@@ -1,16 +1,12 @@
 ﻿using HotelBackend.Util;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol.Plugins;
 using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
 using shukersal_backend.Utility;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Text;
@@ -20,7 +16,8 @@ namespace shukersal_backend.DomainLayer.Objects
     public class MemberObject
     {
         private MarketDbContext _context;
-        public MemberObject(MarketDbContext context) {
+        public MemberObject(MarketDbContext context)
+        {
             _context = context;
         }
 
@@ -51,7 +48,21 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<Member>.Success(HttpStatusCode.OK, member);
         }
 
+        public async Task<Response<Member>> GetMember(string username)
+        {
+            if (_context.Members == null)
+            {
+                return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
+            }
+            var member = await _context.Members.FirstOrDefaultAsync(m => m.Username == username);
 
+            if (member == null)
+            {
+                return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
+            }
+
+            return Response<Member>.Success(HttpStatusCode.OK, member);
+        }
 
         public async Task<Response<Member>> RegisterMember(RegisterPost registerData)
         {
@@ -75,8 +86,11 @@ namespace shukersal_backend.DomainLayer.Objects
             // Add the shopping cart and member to the database
             _context.ShoppingCarts.Add(shoppingCart);
             _context.Members.Add(member);
-            if (_context.SaveChangesAsync().IsFaulted)
-                return Response<Member>.Error(HttpStatusCode.OK, "");
+            await _context.SaveChangesAsync();
+            if (member.Id == 0)
+            {
+                return Response<Member>.Error(HttpStatusCode.OK, "Error in database insert");
+            }
             return Response<Member>.Success(HttpStatusCode.Created, member);
         }
 
@@ -125,30 +139,44 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<Member>> AddMember(MemberPost memberData)
         {
-            if (_context.Members == null)
+            try
             {
-                return Response<Member>.Error(HttpStatusCode.NotFound, "\"Entity set 'MemberContext.Members'  is null.\"");
+
+                var member = new Member
+                {
+                    Username = memberData.Username,
+                    PasswordHash = HashingUtilities.HashPassword(memberData.Password),
+                    Role = memberData.Role
+                };
+                // Create a new shopping cart and associate it with the new member
+                var shoppingCart = new ShoppingCart
+                {
+                    Member = member,
+                    ShoppingBaskets = new List<ShoppingBasket>()
+                };
+
+                // Add the shopping cart and member to the database
+                _context.ShoppingCarts.Add(shoppingCart);
+                _context.Members.Add(member);
+
+                await _context.SaveChangesAsync();
+                return Response<Member>.Success(HttpStatusCode.Created, member);
             }
-            var member = new Member
+            catch (DbUpdateException ex)
             {
-                Username = memberData.Username,
-                PasswordHash = HashingUtilities.HashPassword(memberData.Password),
-                Role = memberData.Role
-            };
-            // Create a new shopping cart and associate it with the new member
-            var shoppingCart = new ShoppingCart
-            {
-                Member = member,
-                ShoppingBaskets = new List<ShoppingBasket>()
-            };
+                if (ex.InnerException is SqlException sqlException && sqlException.Number == 2601)
+                {
+                    // Duplicate key violation
+                    return Response<Member>.Error(HttpStatusCode.Conflict, "Username already exists.");
+                }
 
-            // Add the shopping cart and member to the database
-            _context.ShoppingCarts.Add(shoppingCart);
-            _context.Members.Add(member);
+                // Other types of DbUpdateException
+                // Handle or log the exception as needed
+                Console.WriteLine($"DbUpdateException: {ex.Message}");
+                return Response<Member>.Error(HttpStatusCode.InternalServerError, "An error occurred while adding the member.");
+            }
 
-            await _context.SaveChangesAsync();
 
-            return Response<Member>.Success(HttpStatusCode.Created, member);
         }
 
 
@@ -188,11 +216,19 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Entity set 'Members' is null.");
             }
+
             var member = await _context.Members.FindAsync(id);
             if (member == null)
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Member is not found");
             }
+
+            var isManager = await _context.StoreManagers.CountAsync(m => m.MemberId == id);
+            if (isManager > 0)
+            {
+                return Response<bool>.Error(HttpStatusCode.InternalServerError, "Member a store manager");
+            }
+
             var shoppingCart = await _context.ShoppingCarts.FirstOrDefaultAsync(c => c.MemberId == id);
             if (shoppingCart != null)
             {
@@ -220,7 +256,7 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 return Response<Member>.Error(HttpStatusCode.NotFound, "Member was not found");
             }
-            return Response<Member>.Success(HttpStatusCode.OK,member);
+            return Response<Member>.Success(HttpStatusCode.OK, member);
         }
     }
 }

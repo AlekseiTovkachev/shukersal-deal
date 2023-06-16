@@ -1,7 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using shukersal_backend.Utility;
-using System.Collections;
-using System.Data;
 
 namespace shukersal_backend.Models
 {
@@ -73,16 +70,99 @@ namespace shukersal_backend.Models
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+
+            // Not In Use
+            //// We manually manage the deleting of the comments TODO: Manually delete comments
+            //modelBuilder.Entity<Comment>()
+            //    .HasOne(x => x.ParentComment)
+            //    .WithMany(x => x.ChildComments)
+            //    .HasForeignKey(x => x.ParentCommentId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //// We manually manage the deleting of the managers TODO: Manually delete managers
+            //modelBuilder.Entity<StoreManager>()
+            //    .HasOne(x => x.ParentManager)
+            //    .WithMany(x => x.ChildManagers)
+            //    .HasForeignKey(x => x.ParentManagerId)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+
+
+            //foreach (var foreignKey in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+            //{
+            //    foreignKey.DeleteBehavior = DeleteBehavior.NoAction;
+            //}
+            //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+            //{
+            //    var primaryKey = entityType.FindPrimaryKey();
+            //    if (primaryKey != null)
+            //    {
+            //        foreach (var property in primaryKey.Properties)
+            //        {
+            //            // Set ValueGeneratedOnAdd for the primary key property of each entity
+            //            property.ValueGenerated = ValueGenerated.OnAdd;
+            //        }
+            //    }
+            //}
+
+            //modelBuilder.Entity<Product>()
+            //    .HasOne(p => p.Store)
+            //    .WithMany()
+            //    .HasForeignKey(p => p.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<StoreManager>()
+            //    .HasOne(s => s.Store)
+            //    .WithMany()
+            //    .HasForeignKey(p => p.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.Products)
+            //    .WithOne(p => p.Store)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //modelBuilder.Entity<Store>()
+            //    .HasOne(s => s.RootManager)
+            //    .WithOne(p => p.Store)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //modelBuilder.Entity<Member>()
+            //    .HasOne(m => m.ShoppingCart)
+            //    .WithOne(s => s.Member)
+            //    .OnDelete(DeleteBehavior.NoAction);
+
+            //modelBuilder.Entity<ShoppingCart>()
+            //    .HasOne(m => m.Member)
+            //    .WithOne(s => s.ShoppingCart)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<PurchaseRule>()
+            //    .HasOne<Store>()
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<DiscountRule>()
+            //    .HasOne<Store>()
+            //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+
             base.OnModelCreating(modelBuilder);
 
-            // TODO: Move to mock data
+            var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
 
-            // Add admin
-            // TODO: Fix this (causes crash)
-            //var adminCart = new ShoppingCart { Id = 1, MemberId = 1, ShoppingBaskets = new List<ShoppingBasket>() };
-            //modelBuilder.Entity<Member>().HasData(
-            //    new Member { Username = "Admin", PasswordHash = HashingUtilities.HashPassword("password"), Role = "Admin", Id = 1, ShoppingCart = adminCart }
-            //    );
+            var admin = new Member
+            {
+                Username = "Admin",
+                PasswordHash = Utility.HashingUtilities.HashPassword("password"),
+                Role = "Administrator",
+                Id = 1,
+                //ShoppingCart = adminCart
+            };
+            //adminCart.Member = admin;
+            modelBuilder.Entity<Member>().HasData(admin);
+            modelBuilder.Entity<ShoppingCart>().HasData(adminCart);
 
             // Add categories to Categories table
             modelBuilder.Entity<Category>().HasData(
@@ -106,7 +186,7 @@ namespace shukersal_backend.Models
             new Category { Id = 18, Name = "Movies & TV Shows" },
             new Category { Id = 19, Name = "Arts & Crafts" },
             new Category { Id = 20, Name = "Travel & Luggage" }
-            );
+        );
         }
 
         public virtual void MarkAsModified(Store store)

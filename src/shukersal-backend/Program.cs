@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using System.Text;
 
@@ -43,8 +45,31 @@ builder.Services.Configure<RouteOptions>(options =>
 builder.Services.AddControllers();
 
 // Add DbContext
+// Old db
+//builder.Services.AddDbContext<MarketDbContext>(opt =>
+//    opt.UseInMemoryDatabase("MarketDbContext"));
+var connectionString = builder.Configuration.GetConnectionString("DockerConnection2");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
-    opt.UseInMemoryDatabase("MarketDbContext"));
+    opt.UseSqlServer(connectionString));
+
+try
+{
+    using (SqlConnection connection = new SqlConnection(connectionString))
+    {
+        connection.Open();
+        Console.WriteLine("Connected successfully!");
+        connection.Close();
+    }
+}
+catch (SqlException ex)
+{
+    Console.WriteLine("Connection failed. Error: " + ex.Message);
+}
+
+// Add database migrations
+builder.Services.AddDbContext<MarketDbContext>(opt =>
+    opt.UseSqlServer(connectionString).EnableSensitiveDataLogging());
+// --------------------------- DB -
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -106,5 +131,19 @@ app.UseCors(AllowOrigin);
 app.UseAuthentication();
 app.UseAuthorization();
 
+// To automatically migrate the database
+using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+{
+    var dbContext = serviceScope.ServiceProvider.GetService<MarketDbContext>();
+    dbContext?.Database.Migrate();
+    if (dbContext != null)
+        await BootFileRunner.Run(dbContext);
+
+}
+
+
+
 app.MapControllers();
 app.Run();
+
+

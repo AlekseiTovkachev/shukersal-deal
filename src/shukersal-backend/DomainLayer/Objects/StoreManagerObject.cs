@@ -91,59 +91,60 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<IEnumerable<StoreManager>>.Success(HttpStatusCode.OK, storeManagers);
         }
 
-        public async Task<Response<StoreManagerTreeNode>> GetStoreManagersByStoreId(long storeId)
+        public async Task<Response<StoreManager>> GetStoreManagersByStoreId(long storeId)
         {
             var storeManagers = await _context.StoreManagers
                 .Include(m => m.StorePermissions)
-                //(m => m.ParentManager)
+                .Include(m => m.ParentManager)
+                .Include(m => m.ChildManagers)
                 .Where(s => s.StoreId == storeId)
                 .ToListAsync();
 
             if (storeManagers.Count == 0)
             {
-                return Response<StoreManagerTreeNode>.Error(HttpStatusCode.NotFound, "");
+                return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
             }
+            var root = storeManagers.Where(sm => sm.ParentManager == null).FirstOrDefault();
+            //var tree = BuildStoreManagerTree(storeManagers);
+            if (root == null) Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
 
-            var tree = BuildStoreManagerTree(storeManagers);
 
-
-
-            //return Response<IEnumerable<StoreManager>>.Success(HttpStatusCode.OK, storeManagers);
-            return Response<StoreManagerTreeNode>.Success(HttpStatusCode.OK, tree);
+            return Response<StoreManager>.Success(HttpStatusCode.OK, root);
+            //return Response<StoreManagerTreeNode>.Success(HttpStatusCode.OK, tree);
         }
 
-        private StoreManagerTreeNode BuildStoreManagerTree(List<StoreManager> storeManagers)
-        {
-            var managerDictionary = new Dictionary<long, StoreManagerTreeNode>();
+        //private StoreManagerTreeNode BuildStoreManagerTree(List<StoreManager> storeManagers)
+        //{
+        //    var managerDictionary = new Dictionary<long, StoreManagerTreeNode>();
 
-            foreach (var manager in storeManagers)
-            {
-                var node = new StoreManagerTreeNode
-                {
-                    StoreManager = manager,
-                    Subordinates = new List<StoreManagerTreeNode>()
-                    //Id = manager.Id,
-                    //StoreId = manager.StoreId,
-                    //MemberId = manager.MemberId,
-                    //ParentManagerId = manager.ParentManagerId
-                };
+        //    foreach (var manager in storeManagers)
+        //    {
+        //        var node = new StoreManagerTreeNode
+        //        {
+        //            StoreManager = manager,
+        //            Subordinates = new List<StoreManagerTreeNode>()
+        //            //Id = manager.Id,
+        //            //StoreId = manager.StoreId,
+        //            //MemberId = manager.MemberId,
+        //            //ParentManagerId = manager.ParentManagerId
+        //        };
 
-                managerDictionary[manager.Id] = node;
-            }
+        //        managerDictionary[manager.Id] = node;
+        //    }
 
-            foreach (var manager in storeManagers)
-            {
-                if (managerDictionary.TryGetValue(manager.Id, out var node) && node.StoreManager.ParentManagerId != 0 &&
-                    managerDictionary.TryGetValue(node.StoreManager.ParentManagerId, out var parentManager))
-                {
-                    parentManager.Subordinates = parentManager.Subordinates ?? new List<StoreManagerTreeNode>();
-                    parentManager.Subordinates.Add(node);
-                }
-            }
+        //    foreach (var manager in storeManagers)
+        //    {
+        //        if (managerDictionary.TryGetValue(manager.Id, out var node) && node.StoreManager.ParentManagerId != null && node.StoreManager.ParentManagerId != 0 &&
+        //            managerDictionary.TryGetValue((long)node.StoreManager.ParentManagerId, out var parentManager)) // This is ok since we check before that the parent id is not null
+        //        {
+        //            parentManager.Subordinates = parentManager.Subordinates ?? new List<StoreManagerTreeNode>();
+        //            parentManager.Subordinates.Add(node);
+        //        }
+        //    }
 
 
-            return managerDictionary.Values.FirstOrDefault(manager => manager.StoreManager.ParentManagerId == 0);
-        }
+        //    return managerDictionary.Values.FirstOrDefault(manager => manager.StoreManager.ParentManagerId == 0);
+        //}
 
         public async Task<Response<IEnumerable<Store>>> GetManagedStoresByMemberId(long memberId)
         {
@@ -232,7 +233,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
             }
 
-            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == appointerId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.MemberId == appointerId);
             var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
@@ -290,25 +291,156 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
 
+        //public async Task<Response<bool>> DeleteStoreManager(long id, Member boss)
+        //{
+        //    var storeManager = await _context.StoreManagers
+        //                    .Where(s => s.Id == id)
+        //                    .Include(m => m.ChildManagers)
+        //                    .FirstOrDefaultAsync();
 
+        //    if (storeManager == null)
+        //        return Response<bool>.Error(HttpStatusCode.NotFound, "");
+
+        //    var bossManager = _context.StoreManagers.FirstOrDefault(m => m.MemberId == boss.Id && m.StoreId == storeManager.StoreId);
+        //    if (bossManager == null)
+        //        return Response<bool>.Error(HttpStatusCode.NotFound, "");
+
+        //    if (storeManager.ParentManagerId != bossManager.Id)
+        //        return Response<bool>.Error(HttpStatusCode.Unauthorized, "the manager is not the boss");
+
+        //    _context.StoreManagers.Remove(storeManager);
+        //    await _context.SaveChangesAsync();
+        //    return Response<bool>.Success(HttpStatusCode.OK, true);
+        //}
         public async Task<Response<bool>> DeleteStoreManager(long id, Member boss)
         {
-            var storeManager = await _context.StoreManagers.FindAsync(id);
-            var bossManager = _context.StoreManagers.FirstOrDefault(m => m.MemberId == boss.Id);
-            if (storeManager == null || bossManager == null)
-            {
+            //using (var transaction = _context.Database.BeginTransaction())
+            //{
+            var manager = await _context.StoreManagers
+                           .Where(s => s.Id == id)
+                           .Include(m => m.ChildManagers)
+                           .FirstOrDefaultAsync();
+            if (manager == null)
                 return Response<bool>.Error(HttpStatusCode.NotFound, "");
-            }
-            if (storeManager.ParentManagerId != bossManager.Id)
-            {
+            var boss_entity = await _context.StoreManagers.FirstOrDefaultAsync(m => m.Id == manager.ParentManagerId);
+            if (boss_entity == null)
+                return Response<bool>.Error(HttpStatusCode.NotFound, "");
+            if (boss_entity.MemberId != boss.Id)
                 return Response<bool>.Error(HttpStatusCode.Unauthorized, "the manager is not the boss");
-            }
 
-            _context.StoreManagers.Remove(storeManager);
+            foreach (var child in manager.ChildManagers)
+            {
+                var res = await RecursiveDelete(child.Id);
+                if (!res)
+                {
+                    //transaction.Rollback();
+                    return Response<bool>.Error(HttpStatusCode.InternalServerError, "");
+                }
+            }
+            _context.StoreManagers.Remove(manager);
             await _context.SaveChangesAsync();
+            //}
 
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
+
+        private async Task<bool> RecursiveDelete(long managerId)
+        {
+            var manager = await _context.StoreManagers
+                .Where(s => s.Id == managerId)
+                .Include(m => m.ChildManagers)
+                .FirstOrDefaultAsync();
+            if (manager == null)
+                return false;
+            foreach (var child in manager.ChildManagers)
+            {
+                var res = await RecursiveDelete(child.Id);
+                if (!res)
+                {
+                    return false;
+                }
+            }
+            _context.StoreManagers.Remove(manager);
+            return true;
+        }
+
+        //public async Task<Response<bool>> DeleteStoreManager(long id, Member boss)
+        //{
+        //    using (var transaction = _context.Database.BeginTransaction())
+        //    {
+        //        try
+        //        {
+        //            var storeManager = await _context.StoreManagers
+        //                            .Where(s => s.Id == id)
+        //                            .Include(m => m.ChildManagers)
+        //                            .FirstOrDefaultAsync();
+        //            if (storeManager == null)
+        //            {
+        //                return Response<bool>.Error(HttpStatusCode.NotFound, "");
+        //            }
+        //            //var storeManager = await _context.StoreManagers.FindAsync(id);
+        //            var bossManager = _context.StoreManagers.FirstOrDefault(m => m.MemberId == boss.Id && m.StoreId == storeManager.StoreId);
+        //            if (bossManager == null)
+        //            {
+        //                return Response<bool>.Error(HttpStatusCode.NotFound, "");
+        //            }
+        //            if (storeManager.ParentManagerId != bossManager.Id)
+        //            {
+        //                return Response<bool>.Error(HttpStatusCode.Unauthorized, "the manager is not the boss");
+        //            }
+        //            foreach (var child in storeManager.ChildManagers)
+        //            {
+        //                var res = await RecursiveDelete(child.Id);
+        //                if (!res)
+        //                {
+        //                    transaction.Rollback(); // Rollback the transaction if an exception occurs
+        //                                            // Handle the exception here
+        //                    Response<bool>.Error(HttpStatusCode.InternalServerError, "");
+        //                }
+        //                child.ParentManager = null;
+        //                child.ParentManagerId = null;
+        //            }
+        //            storeManager.ChildManagers.Clear();
+        //            _context.StoreManagers.Remove(storeManager);
+        //            bossManager.ChildManagers.Remove(storeManager);
+        //            await _context.SaveChangesAsync();
+
+        //            return Response<bool>.Success(HttpStatusCode.OK, true);
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            transaction.Rollback(); // Rollback the transaction if an exception occurs
+        //                                    // Handle the exception here
+        //        }
+        //    }
+
+        //    return Response<bool>.Error(HttpStatusCode.InternalServerError, "");
+        //}
+
+        //private async Task<bool> RecursiveDelete(long managerId)
+        //{
+        //    var storeManager = await _context.StoreManagers
+        //        .Where(s => s.Id == managerId)
+        //        .Include(m => m.ChildManagers)
+        //        .FirstOrDefaultAsync();
+        //    if (storeManager == null)
+        //        return false;
+        //    foreach (var child in storeManager.ChildManagers)
+        //    {
+        //        var res = await RecursiveDelete(child.Id);
+        //        if (!res)
+        //            return false;
+        //        child.ParentManager = null;
+        //        child.ParentManagerId = null;
+        //    }
+        //    storeManager.ChildManagers.Clear();
+        //    _context.StoreManagers.Remove(storeManager);
+        //    await _context.SaveChangesAsync();
+
+        //    return true;
+        //}
+
+
 
         private bool StoreManagerExists(long id)
         {

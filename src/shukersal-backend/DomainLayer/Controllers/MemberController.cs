@@ -1,21 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using shukersal_backend.Models;
-using shukersal_backend.Utility;
-using System.Net;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using HotelBackend.Util;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
-using Microsoft.AspNetCore.Http;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Objects;
+using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
+using shukersal_backend.Utility;
 
 namespace shukersal_backend.DomainLayer.Controllers
 {
@@ -24,7 +14,8 @@ namespace shukersal_backend.DomainLayer.Controllers
     {
 
         private MemberObject _memberObject;
-        public MemberController(MarketDbContext context) : base(context) { 
+        public MemberController(MarketDbContext context) : base(context)
+        {
             _memberObject = new MemberObject(context);
         }
 
@@ -39,7 +30,10 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _memberObject.GetMember(id);
         }
 
-
+        public async Task<Response<Member>> GetMember(string username)
+        {
+            return await _memberObject.GetMember(username);
+        }
 
         public async Task<Response<Member>> AddMember(MemberPost memberData)
         {
@@ -68,7 +62,7 @@ namespace shukersal_backend.DomainLayer.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<Response<bool>> DeleteMember(long id)
         {
-           return await _memberObject.DeleteMember(id);
+            return await _memberObject.DeleteMember(id);
         }
 
 

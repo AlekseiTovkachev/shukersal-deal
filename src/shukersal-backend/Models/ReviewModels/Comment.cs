@@ -2,15 +2,16 @@
 {
     public class Comment
     {
+        // Commented due to problems in database migration
         public long Id { get; set; }
-        public long ReviewId { get; set; }
-        public Review Review { get; set; }
-        public long? ParentCommentId { get; set; }
-        public Comment ParentComment { get; set; }
-        public long MemberId { get; set; }
-        public Member Member { get; set; }
-        public string Body { get; set; }
-        public DateTime Date { get; set; }
-        public ICollection<Comment> ChildComments { get; set; }
+        //public long ReviewId { get; set; }
+        //public Review Review { get; set; }
+        //public long? ParentCommentId { get; set; }
+        //public Comment ParentComment { get; set; }
+        //public long MemberId { get; set; }
+        //public Member Member { get; set; }
+        //public string Body { get; set; }
+        //public DateTime Date { get; set; }
+        //public ICollection<Comment> ChildComments { get; set; }
     }
 }

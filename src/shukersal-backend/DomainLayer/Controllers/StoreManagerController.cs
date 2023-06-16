@@ -31,14 +31,14 @@ namespace shukersal_backend.DomainLayer.Controllers
             return await _managerObject.GetStoreManagersByMemberId(id);
         }
 
-        public async Task<Response<StoreManagerTreeNode>> GetStoreManagersByStoreId(long storeId, Member member)
+        public async Task<Response<StoreManager>> GetStoreManagersByStoreId(long storeId, Member member)
         {
             bool hasPermission = await _managerObject
                 .CheckPermission(storeId, member.Id, PermissionType.Get_manager_info_permission);
 
             if (!hasPermission)
             {
-                return Response<StoreManagerTreeNode>.Error(HttpStatusCode.Unauthorized, "");
+                return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
             }
             return await _managerObject.GetStoreManagersByStoreId(storeId);
         }

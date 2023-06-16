@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System.Net;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
+using System.Net;
 
 
 namespace shukersal_backend.DomainLayer.Objects
@@ -21,23 +21,29 @@ namespace shukersal_backend.DomainLayer.Objects
                 componenets = new List<DiscountRule>();
             var dr = new DiscountRule
             {
-                Id = post.Id,
+                //Id = post.Id,
                 Discount = post.Discount,
                 discountType = post.discountType,
                 Components = componenets,
-                discountRuleBoolean = post.discountRuleBoolean,
+                discountRuleBoolean = null,
                 discountOn = post.discountOn,
                 discountOnString = post.discountOnString
             };
-            _context.DiscountRules.Add(dr);
+
             s.DiscountRules.Add(dr);
+            _context.DiscountRules.Add(dr);
+
             await _context.SaveChangesAsync();
 
             return Response<bool>.Success(HttpStatusCode.OK, true);
         }
         public async Task<Response<bool>> CreateChildDiscount(long compositeId, DiscountRulePost post)
         {
-            var composite = await _context.DiscountRules.FirstOrDefaultAsync(dr => dr.Id == compositeId);
+            var composite = await _context.DiscountRules
+                .Where(dr => dr.Id == compositeId)
+                .Include(dr => dr.Components)
+                .FirstOrDefaultAsync();
+            //var composite = await _context.DiscountRules.FirstOrDefaultAsync(dr => dr.Id == compositeId);
             if (composite != null && (composite.discountType == DiscountType.ADDITIONAL || composite.discountType == DiscountType.MAX))
             {
                 ICollection<DiscountRule>? componenets = null;
@@ -45,11 +51,11 @@ namespace shukersal_backend.DomainLayer.Objects
                     componenets = new List<DiscountRule>();
                 var component = new DiscountRule
                 {
-                    Id = post.Id,
+                    //Id = post.Id,
                     Discount = post.Discount,
                     discountType = post.discountType,
                     Components = componenets,
-                    discountRuleBoolean = post.discountRuleBoolean,
+                    discountRuleBoolean = null,
                     discountOn = post.discountOn,
                     discountOnString = post.discountOnString
                 };
@@ -62,28 +68,57 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public async Task<double> CalculateDiscount(DiscountRule discountRule, ICollection<TransactionItem> transactionItems)
         {
-            var res = DiscountComponent.Build( discountRule, _context).Calculate(transactionItems);
+            var res = DiscountComponent.Build(discountRule, _context).Calculate(transactionItems);
             foreach (var r in res)
                 r.transcationItem.FinalPrice = r.transcationItem.FullPrice - r.discount;
             await _context.SaveChangesAsync();
             return res.Select(r => r.transcationItem.FinalPrice).Sum();
 
         }
-        
 
-        
+
+
         public async Task<Response<ICollection<DiscountRule>>> GetDiscounts(long storeId)
         {
-            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
+            var dcnt = await _context.DiscountRules.Include(dr => dr.Components).ToListAsync();
+            var store = await _context.Stores.Where(s => s.Id == storeId)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                 .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .FirstOrDefaultAsync();
+
             if (store != null)
                 return Response<ICollection<DiscountRule>>.Success(HttpStatusCode.OK, store.DiscountRules);
+
             return Response<ICollection<DiscountRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
         }
 
         public async Task<Response<DiscountRule>> GetAppliedDiscount(long storeId)
         {
-            var store = _context.Stores.Where(s => s.Id == storeId).FirstOrDefault();
-            if (store != null)
+            var store = await _context.Stores.Where(s => s.Id == storeId)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                 .Include(s => s.DiscountRules)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.Components)
+                    .ThenInclude(dr => dr.discountRuleBoolean)
+                    .ThenInclude(dr => dr.Components)
+                .FirstOrDefaultAsync();
+            if (store != null && store.AppliedDiscountRule != null)
                 return Response<DiscountRule>.Success(HttpStatusCode.OK, store.AppliedDiscountRule);
             return Response<DiscountRule>.Error(HttpStatusCode.NotFound, "store doesnt exist");
         }
@@ -92,7 +127,7 @@ namespace shukersal_backend.DomainLayer.Objects
         {
             var r = s.DiscountRules.Where(dr => dr.Id == DiscountRuleId);
             if (r == null || r.Count() == 0)
-                return Response<DiscountRule>.Error(HttpStatusCode.NotFound,"discount doesnt exist");
+                return Response<DiscountRule>.Error(HttpStatusCode.NotFound, "discount doesnt exist");
             s.AppliedDiscountRule = r.FirstOrDefault();
             await _context.SaveChangesAsync();
             return Response<DiscountRule>.Success(HttpStatusCode.OK, r.FirstOrDefault());
@@ -104,7 +139,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 componenets = new List<DiscountRuleBoolean>();
             var drb = new DiscountRuleBoolean
             {
-                Id = post.Id,
+                //Id = post.Id,
                 discountRuleBooleanType = post.discountRuleBooleanType,
                 Components = componenets,
                 conditionString = post.conditionString,
@@ -128,7 +163,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     componenets = new List<DiscountRuleBoolean>();
                 var component = new DiscountRuleBoolean
                 {
-                    Id = post.Id,
+                    //Id = post.Id,
                     discountRuleBooleanType = post.discountRuleBooleanType,
                     Components = componenets,
                     conditionString = post.conditionString,
@@ -143,7 +178,7 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return Response<bool>.Success(HttpStatusCode.NotFound, false);
         }
-        
+
     }
 
     public class TranscationCalculation

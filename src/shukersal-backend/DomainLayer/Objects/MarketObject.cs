@@ -41,7 +41,26 @@ namespace shukersal_backend.DomainLayer.Objects
             var store = await _context.Stores
                 //.Include(s => s.Products)
                 .Include(s => s.DiscountRules)
+                .Include(s => s.PurchaseRules)
                 .FirstOrDefaultAsync(s => s.Id == id);
+            if (store == null)
+            {
+                return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
+            }
+            return Response<Store>.Success(HttpStatusCode.OK, store);
+        }
+
+        public async Task<Response<Store>> GetStore(string name)
+        {
+            if (_context.Stores == null)
+            {
+                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+            }
+            var store = await _context.Stores
+                //.Include(s => s.Products)
+                .Include(s => s.DiscountRules)
+                .Include(s => s.PurchaseRules)
+                .FirstOrDefaultAsync(s => s.Name == name);
             if (store == null)
             {
                 return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
@@ -51,45 +70,58 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<Store>> CreateStore(StorePost storeData, Member member)
         {
-
-            var store = new Store
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                Name = storeData.Name,
-                Description = storeData.Description,
-                Products = new List<Product>(),
-                DiscountRules = new List<DiscountRule>(),
-                PurchaseRules = new List<PurchaseRule>()
-            };
+                try
+                {
+                    var store = new Store
+                    {
+                        Name = storeData.Name,
+                        Description = storeData.Description,
+                        Products = new List<Product>(),
+                        DiscountRules = new List<DiscountRule>(),
+                        PurchaseRules = new List<PurchaseRule>()
+                    };
 
-            _context.Stores.Add(store);
+                    _context.Stores.Add(store);
+                    await _context.SaveChangesAsync(); // Save changes to generate the store ID
 
-            var storeManager = new StoreManager
-            {
-                MemberId = member.Id,
-                //Member = member,
-                StoreId = store.Id,
-                Store = store,
-                StorePermissions = new List<StorePermission>()
-            };
+                    var storeManager = new StoreManager
+                    {
+                        MemberId = member.Id,
+                        StoreId = store.Id,
+                        Store = store,
+                        StorePermissions = new List<StorePermission>()
+                    };
+                    _context.StoreManagers.Add(storeManager);
+                    await _context.SaveChangesAsync(); // Save changes to generate the manager ID
 
-            _context.StoreManagers.Add(storeManager);
+                    var permission = new StorePermission
+                    {
+                        StoreManager = storeManager,
+                        StoreManagerId = storeManager.Id,
+                        PermissionType = PermissionType.Manager_permission
+                    };
 
-            var permission = new StorePermission
-            {
-                StoreManager = storeManager,
-                StoreManagerId = storeManager.Id,
-                PermissionType = PermissionType.Manager_permission
-            };
+                    storeManager.StorePermissions.Add(permission);
 
-            storeManager.StorePermissions.Add(permission);
-            _context.StorePermissions.Add(permission);
+                    store.RootManager = storeManager;
+                    store.RootManagerId = storeManager.Id;
 
-            store.RootManager = storeManager;
-            store.RootManagerId = storeManager.Id;
+                    await _context.SaveChangesAsync(); // Save changes to update the RootManagerId
 
-            await _context.SaveChangesAsync();
+                    transaction.Commit(); // Commit the transaction
 
-            return Response<Store>.Success(HttpStatusCode.Created, store);
+                    return Response<Store>.Success(HttpStatusCode.Created, store);
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback(); // Rollback the transaction if an exception occurs
+                                            // Handle the exception here
+                }
+            }
+
+            return Response<Store>.Error(HttpStatusCode.BadRequest, "database transaction error");
         }
 
         public async Task<Response<bool>> UpdateStore(long id, StorePatch patch, Member member)
@@ -244,7 +276,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Success(HttpStatusCode.BadRequest, false);
             }
             var pr = new PurchaseRuleObject(_context);
-            if (!pr.Evaluate(shop.Result.AppliedPurchaseRule, TransactionItems))
+            if (!pr.Evaluate((await pr.GetAppliedPurchaseRule(storeId)).Result, TransactionItems))
             {
                 return Response<bool>.Success(HttpStatusCode.BadRequest, false);
             }
@@ -263,7 +295,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<bool>.Error(HttpStatusCode.BadRequest, "Payment declined");
 
             }
-          
+
             //connction with external delivery service
             bool deliveryConfirmed = _deliveryProvider.ConfirmDelivery(deliveryDetails, transactionItems);
             if (!deliveryConfirmed)
@@ -301,17 +333,17 @@ namespace shukersal_backend.DomainLayer.Objects
                     foreach (KeyValuePair<long, int> itemQuantityPair in updated)
                     {
                         var productToRollBack = await _context.Products.FindAsync(itemQuantityPair.Key);
-                        if (productToRollBack != null) 
+                        if (productToRollBack != null)
                         {
                             productToRollBack.UnitsInStock = productToRollBack.UnitsInStock + itemQuantityPair.Value;
                             await _context.SaveChangesAsync();
                         }
-                        
+
                     }
                     return Response<bool>.Error(HttpStatusCode.BadRequest, "Product's qunatity is unavailable in store");
 
                 }
-                
+
             }
             return Response<bool>.Success(HttpStatusCode.NoContent, true);
         }

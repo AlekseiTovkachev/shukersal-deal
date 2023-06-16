@@ -1,9 +1,9 @@
-﻿using Azure;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
+using shukersal_backend.Models.ShoppingCartModels;
 using shukersal_backend.Utility;
 using System.Net;
 
@@ -18,7 +18,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             _marketObject = new MarketObject(context);
         }
 
-        public async Task<Utility.Response<ShoppingCart>> GetShoppingCartByUserId(long memberId)
+        public async Task<Response<ShoppingCart>> GetShoppingCartByUserId(long memberId)
         {
             var shoppingCart = await _context.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
@@ -26,13 +26,13 @@ namespace shukersal_backend.DomainLayer.Controllers
                 .FirstOrDefaultAsync(c => c.MemberId == memberId);
             if(shoppingCart == null)
             {
-                return Utility.Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "User's shopping cart not found.");
+                return Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "User's shopping cart not found.");
             }
-            return Utility.Response<ShoppingCart>.Success(HttpStatusCode.OK,shoppingCart);
+            return Response<ShoppingCart>.Success(HttpStatusCode.OK, shoppingCart);
 
         }
 
-        public async Task<Utility.Response<ShoppingCart>> GetShoppingCartById(long cartId)
+        public async Task<Response<ShoppingCart>> GetShoppingCartById(long cartId, long loggedInMemberId)
         {
             var shoppingCart = await _context.ShoppingCarts
                 .Include(s => s.ShoppingBaskets)
@@ -40,59 +40,56 @@ namespace shukersal_backend.DomainLayer.Controllers
                 .FirstOrDefaultAsync(c => c.Id == cartId);
             if (shoppingCart == null)
             {
-                return Utility.Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
+                return Response<ShoppingCart>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
             }
-            return Utility.Response<ShoppingCart>.Success(HttpStatusCode.OK, shoppingCart);
+            else if (shoppingCart.MemberId != loggedInMemberId) { return Response<ShoppingCart>.Error(HttpStatusCode.Unauthorized, "Not the cart owner"); }
+            return Response<ShoppingCart>.Success(HttpStatusCode.OK, shoppingCart);
         }
 
-        public async Task<Utility.Response<ShoppingItem>> AddItemToCart(long cartId, ShoppingItem item) {
-            var resp = await GetShoppingCartById(cartId);
-            if (resp.Result != null) 
-            {
-                ShoppingCartObject cart = new ShoppingCartObject (_context,resp.Result);
-                var ToAdditem =await cart.AddShoppingItem(item);
-                if (ToAdditem.Result != null)
-                {
-                    return Utility.Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
-                }
-                return ToAdditem;
-            }
-                return Utility.Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
-        }
-
-        public async Task<Utility.Response<ShoppingItem>> RemoveItemFromCart(long cartId, ShoppingItem item) 
+        public async Task<Response<ShoppingItem>> AddItemToCart(long cartId,ShoppingItemPost shoppingItemPost, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId);
-            if (resp.Result != null)
+            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
-                var ToAdditem =await cart.RemoveShoppingItem(item.Id);
+                var ToAdditem = await cart.AddShoppingItem(shoppingItemPost);
                 if (ToAdditem.Result != null)
                 {
-                    return Utility.Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
+                    return Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
                 }
                 return ToAdditem;
             }
-            return Utility.Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
-
+            return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
 
-        public async Task<Utility.Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItem item)
+        public async Task<Response<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId, long loggedInMemberId)
         {
-            var resp = await GetShoppingCartById(cartId);
-            if (resp.Result != null)
+            var resp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (resp.Result != null && resp.IsSuccess)
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
-                var ToAdditem = await cart.EditItemQuantity(item.Id, item.Quantity);
-                if (ToAdditem.Result != null)
+                var ToAdditem = await cart.RemoveShoppingItem(shoppingItemId);
+                if (ToAdditem.IsSuccess && ToAdditem.Result != null)
                 {
-                    return Utility.Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
+                    return Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
                 }
                 return ToAdditem;
             }
-            return Utility.Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Shopping cart not found.");
-
+            return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
 
+        public async Task<Response<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item,long loggedInMemberId)
+        {
+            var Cartresp = await GetShoppingCartById(cartId,loggedInMemberId);
+            if (Cartresp.Result != null && Cartresp.IsSuccess)
+            {
+                ShoppingCartObject cart = new ShoppingCartObject(_context, Cartresp.Result);
+                var ToAdditem = await cart.EditItemQuantity(item.StoreId,item.ProductId,item.Quantity);
+                return ToAdditem;
+    
+            }
+            return Response<ShoppingItem>.Error(Cartresp.StatusCode, Cartresp.ErrorMessage);
+
+        }
     }
 }

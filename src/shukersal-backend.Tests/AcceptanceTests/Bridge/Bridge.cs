@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using NuGet.Protocol;
+using shukersal_backend.Migrations;
 using shukersal_backend.Models;
 using shukersal_backend.Models.MemberModels;
+using shukersal_backend.Models.ShoppingCartModels;
 using shukersal_backend.ServiceLayer;
 using shukersal_backend.Utility;
 
@@ -106,13 +108,22 @@ namespace shukersal_backend.Tests.AcceptanceTests
         {
             return await shoppingCartService.GetShoppingCartByUserId(memberId);
         }
-        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long id, [FromBody] ShoppingItem item)
+        public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItemPost shoppingItemPost)
         {
-            return await shoppingCartService.AddItemToCart(id, item);
+            return await shoppingCartService.AddItemToCart(cartId, shoppingItemPost);
         }
-        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long id, ShoppingItem itemId)
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId)
         {
-            return await shoppingCartService.RemoveItemFromCart(id, itemId);
+            return await shoppingCartService.RemoveItemFromCart(cartId, shoppingItemId);
+        }
+
+        public async Task<ActionResult<ShoppingCart>> GetShoppingCartByCartId(long cartId)
+        {
+            return await shoppingCartService.GetShoppingCartByCartId(cartId);
+        }
+        public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item)
+        {
+            return await shoppingCartService.EditItemQuantity(cartId, item);
         }
         //Transaction
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()

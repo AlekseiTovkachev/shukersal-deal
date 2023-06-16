@@ -7,6 +7,7 @@ namespace shukersal_backend.Models
     [Index(nameof(Username), IsUnique = true)]
     public class Member
     {
+        [Key]
         public long Id { get; set; }
 
         public string Username { get; set; }

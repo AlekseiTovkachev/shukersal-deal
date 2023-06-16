@@ -4,6 +4,9 @@ using shukersal_backend.Utility;
 using System.Net;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
+using shukersal_backend.Models.ShoppingCartModels;
+using NuGet.ContentModel;
+using Microsoft.IdentityModel.Tokens;
 
 namespace shukersal_backend.DomainLayer.Objects
 {
@@ -12,12 +15,10 @@ namespace shukersal_backend.DomainLayer.Objects
         public MarketDbContext Context;
         //public ShoppingBasketObject basketObject;
 
-        
         public long Id;
         public long MemberId;
         //public List<ShoppingBasketObject> ShoppingBasketObjects;
         public List<ShoppingBasketObject> ShoppingBaskets;
-
 
         public ShoppingCartObject(MarketDbContext context, long Id, long MemberId, List<ShoppingBasket> baskets)
         {   Context = context;
@@ -28,60 +29,35 @@ namespace shukersal_backend.DomainLayer.Objects
             baskets.ForEach(basket => ShoppingBaskets.Add(new ShoppingBasketObject(context, basket)));
         }
 
-        public Response<ShoppingBasketObject> GetStoreBasket(long storeId)
+        
+
+        public async Task<Response<ShoppingBasket>> GetBasketByStoreId(long storeId)
         {
-            ShoppingBasketObject? ShoppingBasket= ShoppingBaskets.Find(basket=>basket.StoreId==storeId);
+            var ShoppingBasket = await Context.ShoppingBaskets.Where(b => b.ShoppingCartId == Id && b.StoreId==storeId).FirstOrDefaultAsync();
             if (ShoppingBasket == null)
             {
-                return Response<ShoppingBasketObject>.Error(HttpStatusCode.NotFound, "Store basket doesn't exist.");
+                return Response<ShoppingBasket>.Error(HttpStatusCode.NotFound, "Basket doesn't exist.");
             }
-            return Response<ShoppingBasketObject>.Success(HttpStatusCode.OK, ShoppingBasket);
+            return Response<ShoppingBasket>.Success(HttpStatusCode.OK, ShoppingBasket);
+
         }
 
-        public async Task<Response<ShoppingBasketObject>> GetBasket(long BasketId)
+        public async Task<Response<ShoppingBasket>> GetBasket(long BasketId)
         {
             var ShoppingBasket=await Context.ShoppingBaskets.Where(b=>b.Id==BasketId).FirstOrDefaultAsync();
             if (ShoppingBasket == null)
             {
-                return Response<ShoppingBasketObject>.Error(HttpStatusCode.NotFound, "Basket doesn't exist.");
+                return Response<ShoppingBasket>.Error(HttpStatusCode.NotFound, "Basket doesn't exist.");
             }
-            return Response<ShoppingBasketObject>.Success(HttpStatusCode.OK, new ShoppingBasketObject(Context,ShoppingBasket));
+            return Response<ShoppingBasket>.Success(HttpStatusCode.OK, ShoppingBasket);
         }
 
         public async Task<Response<ShoppingItem>> GetShoppingItem(long shoppingItemId)
         {
             foreach(ShoppingBasketObject basket in ShoppingBaskets)
             {
-                var item=await basket.GetItemFromBasket(shoppingItemId);
+                var item=await basket.GetShoppingItemFromBasket(shoppingItemId);
                 if (item.Result != null) { return item; }
-            }
-            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
-
-        }
-
-        public async Task<Response<ShoppingItem>> RemoveShoppingItem(long shoppingItemId)
-        {
-            foreach (ShoppingBasketObject basket in ShoppingBaskets)
-            {
-                var item =await basket.RemoveItemFromBasket(shoppingItemId);
-                if (item.Result != null) 
-                {
-                    return item;
-                }
-            }
-            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
-
-        }
-
-        public async Task<Response<ShoppingItem>> EditItemQuantity(long itemId, int quantity)
-        {
-            foreach (ShoppingBasketObject basket in ShoppingBaskets)
-            {
-                var item = await basket.EditItemQuantity(itemId,quantity);
-                if (item.Result != null)
-                {
-                    return item;
-                }
             }
             return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
 
@@ -98,18 +74,6 @@ namespace shukersal_backend.DomainLayer.Objects
 
         }
 
-        public async Task<Response<ShoppingItem>> AddShoppingItem(ShoppingItem shoppingItem)
-        {
-            var basket = await GetBasket(shoppingItem.ShoppingBasketId);
-            if (basket.Result != null)
-            {
-               return basket.Result.AddItemToBasket(shoppingItem).Result;
-            }
-            return Response<ShoppingItem>.Error(HttpStatusCode.BadRequest, "Basket does not exist");
-           
-        }
-
-
         public ShoppingCartObject(MarketDbContext context, ShoppingCart cart) 
         {
             Context = context;
@@ -120,19 +84,73 @@ namespace shukersal_backend.DomainLayer.Objects
 
         }
 
-
-        public async Task<Response<ShoppingItem>> EditItemQuantity(long itemId, long basketId, int quantity)
+        //new methods!
+        public async Task<Response<ShoppingItem>> RemoveShoppingItem(long shoppingItemId)
         {
-            var basket = await GetBasket(basketId);
-            if (basket.Result != null)
+            var itemToRemove=await GetShoppingItem(shoppingItemId);
+            if(itemToRemove==null || itemToRemove.Result==null)
             {
-                return await basket.Result.EditItemQuantity(itemId,quantity);
+                return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
+            }
+            var basket = ShoppingBaskets.Where(b => b.Id == itemToRemove.Result.ShoppingBasketId).FirstOrDefault();
+            if (basket == null)
+            {
+               return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Basket was not found.");
+            }
+
+            var respRemoval = await basket.RemoveItemFromBasket(shoppingItemId);
+            if (respRemoval.IsSuccess)
+            {
+                var basketToRemove = await GetBasket(itemToRemove.Result.ShoppingBasketId);
+                if(basketToRemove.IsSuccess && basketToRemove.Result!=null)
+                {
+                    Context.ShoppingBaskets.Remove(basketToRemove.Result);
+                    Context.SaveChanges();
+                    ShoppingBaskets.Remove(basket);
+                }
+                
+            }
+
+            return respRemoval;
+        }
+
+
+        public async Task<Response<ShoppingItem>> AddShoppingItem(ShoppingItemPost shoppingItemPost)
+        {
+            var basketResp = await GetBasketByStoreId(shoppingItemPost.StoreId);
+            ShoppingBasketObject basketObject;
+            if(basketResp != null && basketResp.Result!=null)
+            {
+                basketObject=new ShoppingBasketObject(Context,basketResp.Result);
+            }
+            else
+            {
+                var basket = new ShoppingBasket
+                {
+                    ShoppingCartId = Id,
+                    StoreId = shoppingItemPost.StoreId,
+                    ShoppingItems = new List<ShoppingItem>(),
+                };
+                Context.ShoppingBaskets.Add(basket);
+                Context.SaveChanges();
+                basketObject=new ShoppingBasketObject(Context,basket);
+            }
+            return basketObject.AddItemToBasket(shoppingItemPost).Result;
+        }
+
+        public async Task<Response<ShoppingItem>> EditItemQuantity(long StoreId, long ProductId, int Quantity)
+        {
+            var basketResp = await GetBasketByStoreId(StoreId);
+            if (basketResp != null && basketResp.Result != null)
+            {
+                var basketObj =ShoppingBaskets.Where(b => b.Id == basketResp.Result.Id).FirstOrDefault();
+                if (basketObj==null) { return Response<ShoppingItem>.Error(HttpStatusCode.BadRequest, "Basket does not exist"); }
+
+                return await basketObj.EditItemQuantity(ProductId, Quantity);
+
             }
             return Response<ShoppingItem>.Error(HttpStatusCode.BadRequest, "Basket does not exist");
 
         }
-
-
-
     }
 }
