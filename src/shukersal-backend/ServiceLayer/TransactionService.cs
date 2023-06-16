@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Cors;
+﻿using HotelBackend.Util;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
+using System.Data;
 using System.Net;
 
 namespace shukersal_backend.ServiceLayer
@@ -26,6 +30,7 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Transactions
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<IEnumerable<Transaction>>> GetTransactions()
         {
             logger.LogInformation("GetTransactions method called.");
@@ -52,7 +57,7 @@ namespace shukersal_backend.ServiceLayer
             {
                 return Unauthorized();
             }
-            var response = await TransactionController.GetTransaction(TransactionId);
+            var response = await TransactionController.GetTransaction(TransactionId,currentMember.Id);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -69,11 +74,16 @@ namespace shukersal_backend.ServiceLayer
         {
             logger.LogInformation("PurchaseAShoppingCart method called");
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
-            if (TransactionPost.IsMember && currentMember.Id != TransactionPost.MemberId)
-            {
-                return Unauthorized();
-            }
 
+            if(currentMember == null)
+            {
+                TransactionPost.IsMember = false;
+            }
+            else
+            {
+                TransactionPost.IsMember= true;
+                TransactionPost.MemberId=currentMember.Id;
+            }
             if (ModelState.IsValid)
             {
                 var response = await TransactionController.PurchaseAShoppingCart(TransactionPost);
@@ -141,13 +151,13 @@ namespace shukersal_backend.ServiceLayer
         {
             logger.LogInformation("BrowseTransactionHistory method called with memberId = {memberId}", memberId);
             var currentMember = ServiceUtilities.GetCurrentMember(context, HttpContext);
-            if (currentMember == null || currentMember.Id!=memberId)
+            if (currentMember == null)
             {
                 return Unauthorized();
             }
             if (ModelState.IsValid)
             {
-                var response = await TransactionController.BrowseTransactionHistory(memberId);
+                var response = await TransactionController.BrowseTransactionHistory(memberId,currentMember.Id);
                 if (!response.IsSuccess)
                 {
                     if (response.StatusCode == HttpStatusCode.NotFound)

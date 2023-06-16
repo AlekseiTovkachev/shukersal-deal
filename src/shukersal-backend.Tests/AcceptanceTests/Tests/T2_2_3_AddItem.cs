@@ -19,13 +19,11 @@ namespace shukersal_backend.Tests.AcceptanceTests
         [Fact]
         public async void AddItemPositive()
         {
-            var productresp = await bridge.GetStoreProducts(1);
-            Assert.NotNull(productresp.Value);
-            var product = productresp.Value.Products.ElementAt(0);
-            var res = await bridge.AddItemToCart(1, new ShoppingItemPost {ProductId = product.Id,StoreId=product.StoreId, Quantity = 1});
-           
-            Assert.NotNull(res.Value);
-            Assert.Equal(product.Id,res.Value.Id);
+
+            var res = bridge.AddItemToCart(1, new ShoppingItemPost {ProductId = 1,StoreId=1, Quantity = 1});
+            res.Wait();
+            Assert.NotNull(res.Result.Value);
+            Assert.Equal(1,res.Result.Value.Id);
             
         }
         [Fact]

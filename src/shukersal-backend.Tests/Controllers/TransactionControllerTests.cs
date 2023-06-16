@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Hosting;
 using shukersal_backend.DomainLayer.Controllers;
+using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
 using shukersal_backend.Models.PurchaseModels;
 using shukersal_backend.ServiceLayer;
@@ -24,6 +25,15 @@ namespace shukersal_backend.Tests.Controllers
         private readonly TransactionController _TransactionController;
         private readonly Mock<MarketDbContext> _context;
         private readonly ITestOutputHelper _output;
+
+        private readonly Mock<TransactionObject> _transactionObject;
+
+        private readonly Mock<MarketObject> _marketObject;
+        private readonly Mock<StoreObject> _storeObject;
+
+        private readonly Mock<MemberObject> _memberObject;
+        private readonly Mock<StoreManagerObject> _managerObject;
+
         private List<Transaction>? transactions;
         private List<Member>? members;
         private List<TransactionPost>? transactionPosts;
@@ -36,14 +46,24 @@ namespace shukersal_backend.Tests.Controllers
         private List<PaymentDetails>? billingDetails;
         private List<DeliveryDetails>? deliveryDetails;
         private List<PurchaseRule>? purchaseRules;
+        
+        
 
         public TransactionControllerTests(ITestOutputHelper output)
         {
+
             _context = new Mock<MarketDbContext>();
-            _output = output;
-            _TransactionController = new TransactionController(_context.Object);
+            _marketObject = new Mock<MarketObject>(_context.Object);
+            _transactionObject = new Mock<TransactionObject>(_context.Object,_marketObject.Object);
+            _memberObject = new Mock<MemberObject>(_context.Object);
+            _managerObject = new Mock<StoreManagerObject>(_context.Object);
+            _storeObject = new Mock<StoreObject>(_context.Object, _marketObject.Object, _managerObject.Object);
+            _TransactionController = new TransactionController(_context.Object,  _marketObject.Object,  _transactionObject.Object,  _managerObject.Object,  _memberObject.Object,  _storeObject.Object);
+            _managerObject.Setup(x => x.CheckPermission(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<PermissionType>()))
+                    .ReturnsAsync(true);
             _TransactionController.SetRealDeliveryAdapter("");
             _TransactionController.SetRealpaymentAdapter("");
+            _output = output;
             InitData();
         }
 
@@ -254,13 +274,13 @@ namespace shukersal_backend.Tests.Controllers
             _context.Setup(x => x.Transactions).ReturnsDbSet(transactions);
 
             //Existing Transaction
-            var response = await _TransactionController.GetTransaction(1);
+            var response = await _TransactionController.GetTransaction(1,1);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Result);
             Assert.Equal(1, response.Result.Id);
 
             //Non existing Transaction
-            var response2 = await _TransactionController.GetTransaction(5);
+            var response2 = await _TransactionController.GetTransaction(5,1);
             Assert.Equal(HttpStatusCode.NotFound, response2.StatusCode);
 
         }
@@ -272,13 +292,13 @@ namespace shukersal_backend.Tests.Controllers
             _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems);
 
             //A member with previous Transactions 
-            var response = await _TransactionController.BrowseTransactionHistory(1);
+            var response = await _TransactionController.BrowseTransactionHistory(1,1);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Result);
             Assert.Equal(2, response.Result.Count());
 
             //A member without previous Transactions 
-            var response2 = await _TransactionController.BrowseTransactionHistory(3);
+            var response2 = await _TransactionController.BrowseTransactionHistory(3,3);
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response2.Result);
             Assert.Empty(response2.Result);
@@ -288,423 +308,138 @@ namespace shukersal_backend.Tests.Controllers
         [Fact]
         public async Task BrowseShopTransactionHistory()
         {
-            _context.Setup(x => x.Stores).ReturnsDbSet(stores);
-            _context.Setup(x => x.Transactions).ReturnsDbSet(transactions);
-            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems);
+
+            var member1 = new List<Member>
+            {
+                new Member
+                {
+                    Id = 1,
+                    Username = "Test",
+                    PasswordHash = HashingUtilities.HashPassword("ppsskln"),
+                    Role = "member"
+                }
+            }.AsQueryable();
+
+
+            var stores1 = new List<Store> 
+            { 
+                new Store { Id = 1, Name = "Store 1", RootManagerId = 1, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() },
+                new Store { Id = 2, Name = "Store 1", RootManagerId = 1, Products = new List<Product>(), DiscountRules = new List<DiscountRule>() },
+
+            }.AsQueryable();
+
+            var storeManager = new List<StoreManager> {
+                new StoreManager
+                {
+                    MemberId = member1.ElementAt(0).Id,
+                    StoreId = stores1.ElementAt(0).Id,
+                    Store = stores1.ElementAt(0),
+                    StorePermissions = new List<StorePermission>()
+                },
+                new StoreManager
+                {
+                    MemberId = member1.ElementAt(0).Id,
+                    StoreId = stores1.ElementAt(1).Id,
+                    Store = stores1.ElementAt(1),
+                    StorePermissions = new List<StorePermission>()
+                },
+            }.AsQueryable();
+
+            var permission = new List<StorePermission>
+            {
+                new StorePermission
+                {
+                    StoreManager = storeManager.ElementAt(0),
+                    StoreManagerId = storeManager.ElementAt(0).Id,
+                    PermissionType = PermissionType.Manager_permission
+                },
+                new StorePermission
+                {
+                    StoreManager = storeManager.ElementAt(1),
+                    StoreManagerId = storeManager.ElementAt(1).Id,
+                    PermissionType = PermissionType.Manager_permission
+                }
+            }.AsQueryable();
+
+            var product1 = new List<Product>
+            {
+                new Product
+                {
+                    Id = 1,
+                    StoreId = stores1.ElementAt(0).Id,
+                    Name = "Old Name",
+                    Description = "Old Description",
+                    Price = 5,
+                    UnitsInStock = 10,
+                    ImageUrl = "http://old-image.com",
+                }
+
+            }.AsQueryable();
+
+            var transaction1 = new List<Transaction>
+            {
+                new Transaction
+                {
+                    Id=1,
+                    IsMember=true,
+                    MemberId=1,
+                    TotalPrice=5,
+                    TransactionItems= new List<TransactionItem>()
+                }
+                
+            }.AsQueryable();
+
+            var transactonItems1 = new List<TransactionItem>
+            {
+                new TransactionItem
+                {
+                    Id=1,
+                    TransactionId = 1,
+                    ProductId = 1,
+                    StoreId = 1,
+                    ProductName = product1.ElementAt(0).Name,
+                    ProductDescription = product1.ElementAt(0).Description,
+                    Quantity = 1,
+                    FullPrice = product1.ElementAt(0).Price,
+                    FinalPrice = product1.ElementAt(0).Price,
+                }
+
+            }.AsQueryable();
+
+            storeManager.ElementAt(0).StorePermissions.Add(permission.ElementAt(0));
+            storeManager.ElementAt(1).StorePermissions.Add(permission.ElementAt(1));
+            transaction1.ElementAt(0).TransactionItems.Add(transactonItems1.ElementAt(0));
+            
+            
+            _context.Setup(c => c.Members).ReturnsDbSet(member1);
+
+
+            _context.Setup(c => c.Stores).ReturnsDbSet(stores1);
+            _context.Setup(c => c.StoreManagers).ReturnsDbSet(storeManager);
+            _context.Setup(c => c.StorePermissions).ReturnsDbSet(permission);
+            _context.Setup(x => x.Transactions).ReturnsDbSet(transaction1);
+            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactonItems1);
 
             var response = await _TransactionController.BrowseShopTransactionHistory(1,1);
 
-            //Assert.Equal("", response.ErrorMessage);
+            
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.NotNull(response.Result);
-            Assert.Equal(3, response.Result.Count());
+            Assert.Equal(1,response.Result.Count());
+            Assert.Equal(1, response.Result.ElementAt(0).Id);
+            Assert.Equal(5, response.Result.ElementAt(0).TotalPrice);
+            Assert.Equal(1, response.Result.ElementAt(0).TransactionItems.Count());
+            Assert.Equal(1, response.Result.ElementAt(0).TransactionItems.ElementAt(0).Id);
+            Assert.Equal(1, response.Result.ElementAt(0).TransactionItems.ElementAt(0).Quantity);
 
 
             var response2 = await _TransactionController.BrowseShopTransactionHistory(2,1);
-            //Assert.Equal("", response2.ErrorMessage);
             Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
             Assert.NotNull(response2.Result);
             Assert.Empty(response2.Result);
 
         }
-
-        [Fact]
-        public async Task PurchaseAShoppingCart_Success()
-        {
-            _context.Setup(x => x.Members).ReturnsDbSet(members);
-            _context.Setup(x => x.Stores).ReturnsDbSet(stores);
-            _context.Setup(x => x.Products).ReturnsDbSet(products);
-            _context.Setup(x => x.ShoppingCarts).ReturnsDbSet(shoppingCarts);
-            _context.Setup(x => x.ShoppingBaskets).ReturnsDbSet(shoppingBaskets);
-            _context.Setup(x => x.ShoppingItems).ReturnsDbSet(shoppingItems);
-            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems);
-
-            var response1 = await _TransactionController.PurchaseAShoppingCart(transactionPosts.ElementAt(1));
-            Assert.Equal(HttpStatusCode.OK, response1.StatusCode);
-            Assert.IsType<Transaction>(response1.Result);
-            Assert.Equal(2, response1.Result.TransactionItems.Count);
-            Assert.Equal(60, response1.Result.TotalPrice);
-        }
-
-
-        [Fact]
-        public async Task PurchaseAShoppingCart_Fail_purchaseRules()
-        {
-            var purchaseRules1 = new List<PurchaseRule>()
-            {
-                new PurchaseRule
-                {
-                    Id = 1,
-                    purchaseRuleType = PurchaseRuleType.PRODUCT_AT_LEAST,
-                    conditionString = "",
-                    conditionLimit=2,
-                },
-            };
-
-            var stores1 = new List<Store>() 
-            {
-                new Store {
-                    Id = 1,
-                    Name = "Store 1",
-                    RootManagerId = 1,
-                    Products = new List<Product>()
-                    {
-                        new Product {
-                            Name = "product",
-                            Description = "Desc",
-                            Price = 10,
-                            ImageUrl = "www.bla.com",
-                            IsListed = true,
-                            UnitsInStock = 10,
-                            StoreId = 1
-                        },
-                    },
-                    DiscountRules = new List<DiscountRule>(){ },
-                    PurchaseRules=new List<PurchaseRule>(){purchaseRules1.ElementAt(0),},
-                    
-                }
-            };
-            
-            var products1 = new List<Product>() 
-            {
-                new Product 
-                {
-                    Id=1,
-                    Name = "product",
-                    Description = "Desc",
-                    Price = 10,
-                    ImageUrl = "www.bla.com",
-                    IsListed = true,
-                    UnitsInStock = 10,
-                    StoreId = 1 
-                },
-            };
-
-            var shoppingCarts1= new List<ShoppingCart>() 
-            {
-                new ShoppingCart
-                {
-                    Id=1,
-                    Member = members.ElementAt(0),
-                    ShoppingBaskets = new List<ShoppingBasket>(),
-                }
-            };
-            var shoppingBaskets1 = new List<ShoppingBasket>()
-            {
-                 new ShoppingBasket
-                 {
-                    Id=1,
-                    ShoppingCartId = shoppingCarts1.ElementAt(0).Id,
-                    ShoppingItems = new List<ShoppingItem>() 
-                 }
-            };
-            var shoppingItems1 = new List<ShoppingItem>()
-            {
-                new ShoppingItem
-                {
-                    ShoppingBasketId =1,
-                   // ShoppingBasket =shoppingBaskets1.ElementAt(0),
-                    ProductId = 1,
-                    Product =products1.ElementAt(0),
-                    Quantity = 1
-                },
-            };
-
-            shoppingBaskets1.ElementAt(0).ShoppingItems.Add(shoppingItems1.ElementAt(0));
-            shoppingCarts1.ElementAt(0).ShoppingBaskets.Add(shoppingBaskets1.ElementAt(0));
-            var transactionItems1 = new List<TransactionItem>()
-            {
-                new TransactionItem
-                {
-                    TransactionId = 1,
-                    ProductId = 1,
-                    StoreId = 1,
-                    ProductName = products1.ElementAt(0).Name,
-                    ProductDescription = products1.ElementAt(0).Description,
-                    Quantity = 1,
-                    FullPrice = products1.ElementAt(0).Price,
-                    FinalPrice = products1.ElementAt(0).Price,
-                },
-            };
-
-            var transactionPost = new TransactionPost() 
-            {
-                MemberId = 1,
-                TransactionDate = new DateTime(),
-                TotalPrice = 130,
-                BillingDetails = billingDetails.ElementAt(0),
-                DeliveryDetails = deliveryDetails.ElementAt(0),
-            };
-
-            _context.Setup(x => x.Members).ReturnsDbSet(members);
-            _context.Setup(x => x.PurchaseRules).ReturnsDbSet(purchaseRules1);
-            _context.Setup(x => x.Stores).ReturnsDbSet(stores1);
-            _context.Setup(x => x.Products).ReturnsDbSet(products1);
-            _context.Setup(x => x.ShoppingCarts).ReturnsDbSet(shoppingCarts1);
-            _context.Setup(x => x.ShoppingBaskets).ReturnsDbSet(shoppingBaskets1);
-            _context.Setup(x => x.ShoppingItems).ReturnsDbSet(shoppingItems1);
-            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems1);
-
-
-            var response1 = await _TransactionController.PurchaseAShoppingCart(transactionPost);
-            Assert.Equal(HttpStatusCode.BadRequest, response1.StatusCode);
-            Assert.Equal("Purchase rule vaiolation", response1.ErrorMessage);
-            
-        }
-
-      
-        [Fact]
-        public async Task PurchaseAShoppingCart_Fail_deliveryNotConfirmed()
-        {
-            var purchaseRules1 = new List<PurchaseRule>()
-            {
-                new PurchaseRule
-                {
-                    Id = 1,
-                    purchaseRuleType = PurchaseRuleType.PRODUCT_AT_LEAST,
-                    conditionString = "",
-                    conditionLimit=2,
-                },
-            };
-
-            var stores1 = new List<Store>()
-            {
-                new Store {
-                    Id = 1,
-                    Name = "Store 1",
-                    RootManagerId = 1,
-                    Products = new List<Product>()
-                    {
-                        new Product {
-                            Name = "product",
-                            Description = "Desc",
-                            Price = 10,
-                            ImageUrl = "www.bla.com",
-                            IsListed = true,
-                            UnitsInStock = 10,
-                            StoreId = 1
-                        },
-                    },
-                    DiscountRules = new List<DiscountRule>(){ },
-                    PurchaseRules=new List<PurchaseRule>(){purchaseRules1.ElementAt(0),},
-
-                }
-            };
-
-            var products1 = new List<Product>()
-            {
-                new Product
-                {
-                    Id=1,
-                    Name = "product",
-                    Description = "Desc",
-                    Price = 10,
-                    ImageUrl = "www.bla.com",
-                    IsListed = true,
-                    UnitsInStock = 10,
-                    StoreId = 1
-                },
-            };
-
-            var shoppingCarts1 = new List<ShoppingCart>()
-            {
-                new ShoppingCart
-                {
-                    Id=1,
-                    Member = members.ElementAt(0),
-                    ShoppingBaskets = new List<ShoppingBasket>(),
-                }
-            };
-            var shoppingBaskets1 = new List<ShoppingBasket>()
-            {
-                 new ShoppingBasket
-                 {
-                    Id=1,
-                    ShoppingCartId = shoppingCarts1.ElementAt(0).Id,
-                    ShoppingItems = new List<ShoppingItem>()
-                 }
-            };
-            var shoppingItems1 = new List<ShoppingItem>()
-            {
-                new ShoppingItem
-                {
-                    ShoppingBasketId =1,
-                  //  ShoppingBasket =shoppingBaskets1.ElementAt(0),
-                    ProductId = 1,
-                    Product =products1.ElementAt(0),
-                    Quantity = 1
-                },
-            };
-
-            shoppingBaskets1.ElementAt(0).ShoppingItems.Add(shoppingItems1.ElementAt(0));
-            shoppingCarts1.ElementAt(0).ShoppingBaskets.Add(shoppingBaskets1.ElementAt(0));
-            var transactionItems1 = new List<TransactionItem>()
-            {
-                new TransactionItem
-                {
-                    TransactionId = 1,
-                    ProductId = 1,
-                    StoreId = 1,
-                    ProductName = products1.ElementAt(0).Name,
-                    ProductDescription = products1.ElementAt(0).Description,
-                    Quantity = 1,
-                    FullPrice = products1.ElementAt(0).Price,
-                    FinalPrice = products1.ElementAt(0).Price,
-                },
-            };
-
-            var transactionPost = new TransactionPost()
-            {
-                MemberId = 1,
-                TransactionDate = new DateTime(),
-                TotalPrice = 130,
-                BillingDetails = billingDetails.ElementAt(0),
-                DeliveryDetails = deliveryDetails.ElementAt(0),
-            };
-
-            _context.Setup(x => x.Members).ReturnsDbSet(members);
-            _context.Setup(x => x.PurchaseRules).ReturnsDbSet(purchaseRules1);
-            _context.Setup(x => x.Stores).ReturnsDbSet(stores1);
-            _context.Setup(x => x.Products).ReturnsDbSet(products1);
-            _context.Setup(x => x.ShoppingCarts).ReturnsDbSet(shoppingCarts1);
-            _context.Setup(x => x.ShoppingBaskets).ReturnsDbSet(shoppingBaskets1);
-            _context.Setup(x => x.ShoppingItems).ReturnsDbSet(shoppingItems1);
-            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems1);
-
-            _TransactionController.getDeliveryProxy().SetProxyAnswer(false);
-            var response1 = await _TransactionController.PurchaseAShoppingCart(transactionPost);
-            Assert.Equal(HttpStatusCode.BadRequest, response1.StatusCode);
-            Assert.Equal("Delivery was not confirmed", response1.ErrorMessage);
-            Assert.Equal(10, _context.Object.Products.ElementAt(0).UnitsInStock);
-
-
-        }
-
-        [Fact]
-        public async Task PurchaseAShoppingCart_Fail_paymentNotConfirmed()
-        {
-            var purchaseRules1 = new List<PurchaseRule>()
-            {
-                new PurchaseRule
-                {
-                    Id = 1,
-                    purchaseRuleType = PurchaseRuleType.PRODUCT_AT_LEAST,
-                    conditionString = "",
-                    conditionLimit=2,
-                },
-            };
-
-            var stores1 = new List<Store>()
-            {
-                new Store {
-                    Id = 1,
-                    Name = "Store 1",
-                    RootManagerId = 1,
-                    Products = new List<Product>()
-                    {
-                        new Product {
-                            Name = "product",
-                            Description = "Desc",
-                            Price = 10,
-                            ImageUrl = "www.bla.com",
-                            IsListed = true,
-                            UnitsInStock = 10,
-                            StoreId = 1
-                        },
-                    },
-                    DiscountRules = new List<DiscountRule>(){ },
-                    PurchaseRules=new List<PurchaseRule>(){purchaseRules1.ElementAt(0),},
-
-                }
-            };
-
-            var products1 = new List<Product>()
-            {
-                new Product
-                {
-                    Id=1,
-                    Name = "product",
-                    Description = "Desc",
-                    Price = 10,
-                    ImageUrl = "www.bla.com",
-                    IsListed = true,
-                    UnitsInStock = 10,
-                    StoreId = 1
-                },
-            };
-
-            var shoppingCarts1 = new List<ShoppingCart>()
-            {
-                new ShoppingCart
-                {
-                    Id=1,
-                    Member = members.ElementAt(0),
-                    ShoppingBaskets = new List<ShoppingBasket>(),
-                }
-            };
-            var shoppingBaskets1 = new List<ShoppingBasket>()
-            {
-                 new ShoppingBasket
-                 {
-                    Id=1,
-                    ShoppingCartId = shoppingCarts1.ElementAt(0).Id,
-                    ShoppingItems = new List<ShoppingItem>()
-                 }
-            };
-            var shoppingItems1 = new List<ShoppingItem>()
-            {
-                new ShoppingItem
-                {
-                    ShoppingBasketId =1,
-                    //ShoppingBasket =shoppingBaskets1.ElementAt(0),
-                    ProductId = 1,
-                    Product =products1.ElementAt(0),
-                    Quantity = 1
-                },
-            };
-
-            shoppingBaskets1.ElementAt(0).ShoppingItems.Add(shoppingItems1.ElementAt(0));
-            shoppingCarts1.ElementAt(0).ShoppingBaskets.Add(shoppingBaskets1.ElementAt(0));
-            var transactionItems1 = new List<TransactionItem>()
-            {
-                new TransactionItem
-                {
-                    TransactionId = 1,
-                    ProductId = 1,
-                    StoreId = 1,
-                    ProductName = products1.ElementAt(0).Name,
-                    ProductDescription = products1.ElementAt(0).Description,
-                    Quantity = 1,
-                    FullPrice = products1.ElementAt(0).Price,
-                    FinalPrice = products1.ElementAt(0).Price,
-                },
-            };
-
-            var transactionPost = new TransactionPost()
-            {
-                MemberId = 1,
-                TransactionDate = new DateTime(),
-                TotalPrice = 130,
-                BillingDetails = billingDetails.ElementAt(0),
-                DeliveryDetails = deliveryDetails.ElementAt(0),
-            };
-
-            _context.Setup(x => x.Members).ReturnsDbSet(members);
-            _context.Setup(x => x.PurchaseRules).ReturnsDbSet(purchaseRules1);
-            _context.Setup(x => x.Stores).ReturnsDbSet(stores1);
-            _context.Setup(x => x.Products).ReturnsDbSet(products1);
-            _context.Setup(x => x.ShoppingCarts).ReturnsDbSet(shoppingCarts1);
-            _context.Setup(x => x.ShoppingBaskets).ReturnsDbSet(shoppingBaskets1);
-            _context.Setup(x => x.ShoppingItems).ReturnsDbSet(shoppingItems1);
-            _context.Setup(x => x.TransactionItems).ReturnsDbSet(transactionItems1);
-
-            _TransactionController.getPaymentProxy().SetProxyAnswer(false);
-            var response1 = await _TransactionController.PurchaseAShoppingCart(transactionPost);
-            Assert.Equal(HttpStatusCode.BadRequest, response1.StatusCode);
-            Assert.Equal("Payment was not confirmed", response1.ErrorMessage);
-            Assert.Equal(10, _context.Object.Products.ElementAt(0).UnitsInStock);
-
-        }
+    
     }
 
 }

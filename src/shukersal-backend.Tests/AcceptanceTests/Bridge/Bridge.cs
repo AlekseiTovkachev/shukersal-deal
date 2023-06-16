@@ -38,13 +38,13 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
             storeService = new StoreService(_context.Object, _logger.Object);
         }
-        //Member
+     /*   //Member
         public async Task<ActionResult<Member>> Logout(long id)
         {
 
             return await memberService.Logout(id);
         }
-
+     */
 
         public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
         {
