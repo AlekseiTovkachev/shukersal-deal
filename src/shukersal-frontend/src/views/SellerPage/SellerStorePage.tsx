@@ -69,10 +69,10 @@ const columns: GridColDef[] = [
   },
   { field: "name", headerName: "Name", width: 100 },
   {
-    field: "categoryId",
+    field: "category",
     headerName: "Category",
     width: 100,
-    valueGetter: (params) => APP_CATEGORIES[params.value]?.name ?? "",
+    valueGetter: (params) => params.value?.name ?? "",
   },
   //{ field: "description", headerName: "Description", width: 200},
   { field: "price", headerName: "Price", width: 50 },

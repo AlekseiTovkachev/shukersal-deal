@@ -72,7 +72,6 @@ export const useSellerStore = (storeId: number) => {
         isLoading: isLoading,
         error: error,
         products: products,
-        managers: demoStores, // TODO: Implement
         
         getStoreProducts: () => getStoreProducts(storeId),
         addProduct: addProductCallback,
