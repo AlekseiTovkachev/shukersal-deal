@@ -45,7 +45,6 @@ namespace shukersal_backend.Models
         #region Notification Models
         // *------------------------------------------------- Notification Models --------------------------------------------------*
         virtual public DbSet<Notification> Notifications { get; set; } = null!;
-        virtual public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
         #endregion
 
         #region Transaction Models
