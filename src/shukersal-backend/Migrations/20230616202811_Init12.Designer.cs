@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using shukersal_backend.Models;
 
@@ -11,9 +12,11 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    partial class MarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230616202811_Init12")]
+    partial class Init12
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +55,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("Auctions", (string)null);
+                    b.ToTable("Auctions");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.AuctionBid", b =>
@@ -81,7 +84,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("AuctionBids", (string)null);
+                    b.ToTable("AuctionBids");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Category", b =>
@@ -99,7 +102,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Categories", (string)null);
+                    b.ToTable("Categories");
 
                     b.HasData(
                         new
@@ -214,7 +217,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.DiscountRule", b =>
@@ -254,7 +257,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("discountRuleBooleanId");
 
-                    b.ToTable("DiscountRules", (string)null);
+                    b.ToTable("DiscountRules");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.DiscountRuleBoolean", b =>
@@ -287,7 +290,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("DiscountRuleBooleanId");
 
-                    b.ToTable("DiscountRuleBooleans", (string)null);
+                    b.ToTable("DiscountRuleBooleans");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Member", b =>
@@ -315,7 +318,7 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Members", (string)null);
+                    b.ToTable("Members");
 
                     b.HasData(
                         new
@@ -364,7 +367,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("NotificationTypeId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
@@ -381,7 +384,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
@@ -424,7 +427,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("Products", (string)null);
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.PurchaseRule", b =>
@@ -462,7 +465,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("PurchaseRules", (string)null);
+                    b.ToTable("PurchaseRules");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Raffle", b =>
@@ -475,7 +478,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Raffles", (string)null);
+                    b.ToTable("Raffles");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.RaffleBid", b =>
@@ -488,7 +491,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("RaffleBids", (string)null);
+                    b.ToTable("RaffleBids");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Review", b =>
@@ -501,7 +504,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.ShoppingBasket", b =>
@@ -522,7 +525,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("ShoppingCartId");
 
-                    b.ToTable("ShoppingBaskets", (string)null);
+                    b.ToTable("ShoppingBaskets");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.ShoppingCart", b =>
@@ -541,7 +544,7 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("MemberId")
                         .IsUnique();
 
-                    b.ToTable("ShoppingCarts", (string)null);
+                    b.ToTable("ShoppingCarts");
 
                     b.HasData(
                         new
@@ -574,7 +577,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("ShoppingBasketId");
 
-                    b.ToTable("ShoppingItems", (string)null);
+                    b.ToTable("ShoppingItems");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Store", b =>
@@ -613,7 +616,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("RootManagerId");
 
-                    b.ToTable("Stores", (string)null);
+                    b.ToTable("Stores");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StoreManager", b =>
@@ -644,7 +647,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.ToTable("StoreManagers", (string)null);
+                    b.ToTable("StoreManagers");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.StorePermission", b =>
@@ -665,7 +668,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("StoreManagerId");
 
-                    b.ToTable("StorePermissions", (string)null);
+                    b.ToTable("StorePermissions");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Transaction", b =>
@@ -690,7 +693,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Transactions", (string)null);
+                    b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.TransactionItem", b =>
@@ -729,7 +732,7 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("TransactionId");
 
-                    b.ToTable("TransactionItems", (string)null);
+                    b.ToTable("TransactionItems");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Auction", b =>

@@ -3,6 +3,7 @@ using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace shukersal_backend.DomainLayer.Objects
 {
@@ -37,7 +38,11 @@ namespace shukersal_backend.DomainLayer.Objects
         }
         public async Task<Response<bool>> CreateChildPurchaseRule(long compositeId, PurchaseRulePost post)
         {
-            var composite = await _context.PurchaseRules.FirstOrDefaultAsync(dr => dr.Id == compositeId);
+            var composite = await _context.PurchaseRules
+                .Where(dr => dr.Id == compositeId)
+                .Include(dr => dr.Components)
+                .FirstOrDefaultAsync();
+            //var composite = await _context.PurchaseRules.FirstOrDefaultAsync(dr => dr.Id == compositeId);
             if (composite != null && (composite.purchaseRuleType == PurchaseRuleType.OR || composite.purchaseRuleType == PurchaseRuleType.AND || composite.purchaseRuleType == PurchaseRuleType.CONDITION))
             {
                 ICollection<PurchaseRule>? componenets = null;
@@ -67,9 +72,12 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<ICollection<PurchaseRule>>> GetPurchaseRules(long storeId)
         {
+            var purchaseRules = await _context.PurchaseRules
+                .Include(pr => pr.Components)
+                .ToListAsync();
             var store = await _context.Stores.Where(s => s.Id == storeId)
                 .Include(s => s.PurchaseRules)
-                    .ThenInclude(pr => pr.Components)
+                //.ThenInclude(pr => pr.Components)
                 .FirstOrDefaultAsync();
             if (store != null)
                 return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, store.PurchaseRules);
@@ -78,9 +86,11 @@ namespace shukersal_backend.DomainLayer.Objects
 
         public async Task<Response<PurchaseRule>> GetAppliedPurchaseRule(long storeId)
         {
+            var purchaseRules = await _context.PurchaseRules
+                .Include(pr => pr.Components)
+                .ToListAsync();
             var store = await _context.Stores.Where(s => s.Id == storeId)
                 .Include(s => s.AppliedPurchaseRule)
-                    .ThenInclude(pr => pr.Components)
                 .FirstOrDefaultAsync();
             if (store != null && store.AppliedPurchaseRule != null)
                 return Response<PurchaseRule>.Success(HttpStatusCode.OK, store.AppliedPurchaseRule);

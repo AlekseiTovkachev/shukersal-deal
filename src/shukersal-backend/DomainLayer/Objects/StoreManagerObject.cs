@@ -207,7 +207,8 @@ namespace shukersal_backend.DomainLayer.Objects
                 Store = store,
                 ParentManager = boss,
                 ParentManagerId = boss.Id,
-                StorePermissions = new List<StorePermission>()
+                StorePermissions = new List<StorePermission>(),
+                Username = member.Username
             };
             storeManager.StorePermissions.Add(new StorePermission
             {
@@ -258,7 +259,8 @@ namespace shukersal_backend.DomainLayer.Objects
                 Store = store,
                 ParentManager = boss,
                 ParentManagerId = boss.Id,
-                StorePermissions = new List<StorePermission>()
+                StorePermissions = new List<StorePermission>(),
+                Username = member.Username
             };
             storeManager.StorePermissions.Add(new StorePermission
             {

@@ -146,6 +146,17 @@ namespace shukersal_backend.Models
             //    .HasOne<Store>()
             //    .WithMany()
             //    .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.DiscountRules)
+            //    .WithOne()
+            //    .HasForeignKey(dr => dr.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.PurchaseRules)
+            //    .WithOne()
+            //    .HasForeignKey(pr => pr.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
 
             base.OnModelCreating(modelBuilder);

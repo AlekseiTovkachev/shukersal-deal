@@ -91,7 +91,8 @@ namespace shukersal_backend.DomainLayer.Objects
                         MemberId = member.Id,
                         StoreId = store.Id,
                         Store = store,
-                        StorePermissions = new List<StorePermission>()
+                        StorePermissions = new List<StorePermission>(),
+                        Username = member.Username
                     };
                     _context.StoreManagers.Add(storeManager);
                     await _context.SaveChangesAsync(); // Save changes to generate the manager ID
