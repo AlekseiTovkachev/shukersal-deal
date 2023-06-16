@@ -48,7 +48,7 @@ builder.Services.AddControllers();
 // Old db
 //builder.Services.AddDbContext<MarketDbContext>(opt =>
 //    opt.UseInMemoryDatabase("MarketDbContext"));
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("DockerConnection2");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 
@@ -132,14 +132,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 // To automatically migrate the database
-using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+/*using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {
     var dbContext = serviceScope.ServiceProvider.GetService<MarketDbContext>();
     dbContext?.Database.Migrate();
     if (dbContext != null)
         await BootFileRunner.Run(dbContext);
 
-}
+}*/
 
 
 
