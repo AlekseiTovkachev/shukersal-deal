@@ -65,7 +65,7 @@ namespace shukersal_backend.ServiceLayer
                 var response = await memberController.RegisterMember(registerRequest);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
                 var member = response.Result;
                 return CreatedAtAction("GetMember", "MemberService", new { id = member.Id }, member);
