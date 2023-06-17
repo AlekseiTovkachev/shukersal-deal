@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { useEffect, useState } from "react";
 import { discountsApi } from "./discountsApi";
 import { ApiError, ApiListData } from "../../../../types/apiTypes";
@@ -16,31 +17,34 @@ interface DiscountsLogicProps {
     storeId: number;
 }
 
-var selected_id = -1
+let selected_id = -1
 
-var selected_type = 0
+//let selected_type = 0
 
 const TreeNode = ({ node }) => {
     const { id, discountType, discount, components, discountOn, discountOnString, discountRuleBoolean } = node;
     let display;
     let discountdisplay;
-    var backgroundcolor = '#FFFFFF'
+    let backgroundcolor = '#FFFFFF'
     const [selected, setSelected] = useState(false);
     const handleClick = () => {
 
         selected_id = id
         alert(selected_id)
-        var backgroundcolor = '#AACCFF'
+        backgroundcolor = '#AACCFF'
 
     };
 
     switch (discountOn) {
         case 0:
             discountdisplay = <span>{discount}% discount</span>
+            break;
         case 1:
             discountdisplay = <span>{discount}% discount on {discountOnString} category:</span>
+            break;
         case 2:
             discountdisplay = <span>{discount}% discount on {discountOnString} product:</span>
+            break;
         default:
             discountdisplay = <span>{discount}% discount</span>
     }
@@ -159,7 +163,7 @@ const TreeNodeB = ({ node }) => {
 };
 
 const InputSelector = ({ option }: string) => {
-    
+    return <></>
 };
 
 
@@ -199,7 +203,7 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
         return <AppLoader />;
 
 
-    let discount_options = <div><Listbox
+    const discount_options = <div><Listbox
         dataKey='id'
         textField='name'
         data={[
@@ -222,7 +226,7 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
         {value1 % 10 <= 1 ? <div>discount amount<input></input></div> : null}
     </div>;
 
-    let sub_discount_options = <div><Listbox
+    const sub_discount_options = <div><Listbox
         dataKey='id'
         textField='name'
         data={[
