@@ -1,4 +1,6 @@
-﻿namespace shukersal_backend.Models
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace shukersal_backend.Models
 {
 
 
@@ -13,6 +15,7 @@
     {
         public long Id { get; set; }
         public string Message { get; set; }
+        [ForeignKey("Member")]
         public long MemberId { get; set; }
         public NotificationType NotificationType { get; set; }
 

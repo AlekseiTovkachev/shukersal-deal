@@ -15,7 +15,7 @@ namespace shukersal_backend.Models
         [Range(0, int.MaxValue)]
         public int UnitsInStock { get; set; } = 0;
         [Url]
-        public string? ImageUrl { get; set; } = "https://ih1.redbubble.net/image.489179920.2085/ap,550x550,12x12,1,transparent,t.u2.png";
+        public string? ImageUrl { get; set; } = "https://cdn-icons-png.flaticon.com/512/9458/9458302.png";
         [Required]
         public bool IsListed { get; set; } // Indicates if the product is available for normal Transaction
 

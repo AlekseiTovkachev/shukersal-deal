@@ -39,29 +39,6 @@ namespace shukersal_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "DiscountRuleBooleans",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    discountRuleBooleanType = table.Column<int>(type: "int", nullable: false),
-                    conditionString = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    conditionLimit = table.Column<int>(type: "int", nullable: false),
-                    minHour = table.Column<int>(type: "int", nullable: false),
-                    maxHour = table.Column<int>(type: "int", nullable: false),
-                    DiscountRuleBooleanId = table.Column<long>(type: "bigint", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DiscountRuleBooleans", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DiscountRuleBooleans_DiscountRuleBooleans_DiscountRuleBooleanId",
-                        column: x => x.DiscountRuleBooleanId,
-                        principalTable: "DiscountRuleBooleans",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Members",
                 columns: table => new
                 {
@@ -77,16 +54,19 @@ namespace shukersal_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "NotificationTypes",
+                name: "Notifications",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    MemberId = table.Column<long>(type: "bigint", nullable: false),
+                    NotificationType = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationTypes", x => x.Id);
+                    table.PrimaryKey("PK_Notifications", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -131,6 +111,7 @@ namespace shukersal_backend.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    IsMember = table.Column<bool>(type: "bit", nullable: false),
                     MemberId = table.Column<long>(type: "bigint", nullable: false),
                     TransactionDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TotalPrice = table.Column<double>(type: "float", nullable: false)
@@ -155,37 +136,6 @@ namespace shukersal_backend.Migrations
                         name: "FK_ShoppingCarts_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Body = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    MemberId = table.Column<long>(type: "bigint", nullable: false),
-                    NotificationTypeId = table.Column<long>(type: "bigint", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReadAt = table.Column<DateTime>(type: "datetime2", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Members_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "Members",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Notifications_NotificationTypes_NotificationTypeId",
-                        column: x => x.NotificationTypeId,
-                        principalTable: "NotificationTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -277,6 +227,31 @@ namespace shukersal_backend.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "DiscountRuleBooleans",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    discountRuleBooleanType = table.Column<int>(type: "int", nullable: false),
+                    conditionString = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    conditionLimit = table.Column<int>(type: "int", nullable: false),
+                    minHour = table.Column<int>(type: "int", nullable: false),
+                    maxHour = table.Column<int>(type: "int", nullable: false),
+                    RootDiscountId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentBooleanId = table.Column<long>(type: "bigint", nullable: true),
+                    DiscountRuleBooleanId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DiscountRuleBooleans", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DiscountRuleBooleans_DiscountRuleBooleans_DiscountRuleBooleanId",
+                        column: x => x.DiscountRuleBooleanId,
+                        principalTable: "DiscountRuleBooleans",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "DiscountRules",
                 columns: table => new
                 {
@@ -284,20 +259,16 @@ namespace shukersal_backend.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     discountType = table.Column<int>(type: "int", nullable: false),
                     Discount = table.Column<double>(type: "float", nullable: false),
-                    discountRuleBooleanId = table.Column<long>(type: "bigint", nullable: true),
                     discountOn = table.Column<int>(type: "int", nullable: false),
-                    discountOnString = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    discountOnString = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    StoreId = table.Column<long>(type: "bigint", nullable: false),
+                    ParentId = table.Column<long>(type: "bigint", nullable: true),
                     DiscountRuleId = table.Column<long>(type: "bigint", nullable: true),
-                    StoreId = table.Column<long>(type: "bigint", nullable: true)
+                    StoreId1 = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DiscountRules", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DiscountRules_DiscountRuleBooleans_discountRuleBooleanId",
-                        column: x => x.discountRuleBooleanId,
-                        principalTable: "DiscountRuleBooleans",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_DiscountRules_DiscountRules_DiscountRuleId",
                         column: x => x.DiscountRuleId,
@@ -347,8 +318,7 @@ namespace shukersal_backend.Migrations
                         name: "FK_ShoppingItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_ShoppingItems_ShoppingBaskets_ShoppingBasketId",
                         column: x => x.ShoppingBasketId,
@@ -364,12 +334,13 @@ namespace shukersal_backend.Migrations
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     purchaseRuleType = table.Column<int>(type: "int", nullable: false),
-                    conditionString = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    conditionString = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     conditionLimit = table.Column<int>(type: "int", nullable: false),
                     minHour = table.Column<int>(type: "int", nullable: false),
                     maxHour = table.Column<int>(type: "int", nullable: false),
+                    StoreId = table.Column<long>(type: "bigint", nullable: false),
                     PurchaseRuleId = table.Column<long>(type: "bigint", nullable: true),
-                    StoreId = table.Column<long>(type: "bigint", nullable: true)
+                    StoreId1 = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -389,7 +360,8 @@ namespace shukersal_backend.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     StoreId = table.Column<long>(type: "bigint", nullable: false),
                     MemberId = table.Column<long>(type: "bigint", nullable: false),
-                    ParentManagerId = table.Column<long>(type: "bigint", nullable: true)
+                    ParentManagerId = table.Column<long>(type: "bigint", nullable: true),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -433,25 +405,13 @@ namespace shukersal_backend.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RootManagerId = table.Column<long>(type: "bigint", nullable: false),
-                    AppliedDiscountRuleId = table.Column<long>(type: "bigint", nullable: true),
-                    AppliedPurchaseRuleId = table.Column<long>(type: "bigint", nullable: true)
+                    RootManagerId = table.Column<long>(type: "bigint", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Stores", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Stores_DiscountRules_AppliedDiscountRuleId",
-                        column: x => x.AppliedDiscountRuleId,
-                        principalTable: "DiscountRules",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Stores_PurchaseRules_AppliedPurchaseRuleId",
-                        column: x => x.AppliedPurchaseRuleId,
-                        principalTable: "PurchaseRules",
-                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Stores_StoreManagers_RootManagerId",
                         column: x => x.RootManagerId,
@@ -489,7 +449,7 @@ namespace shukersal_backend.Migrations
             migrationBuilder.InsertData(
                 table: "Members",
                 columns: new[] { "Id", "PasswordHash", "Role", "Username" },
-                values: new object[] { 1L, "AN/Z43c7smrB86EnswEy3TeRplStPYB7hc0ZOUUIXF4piqxT/hYkJyWA7JO329h6qg==", "Administrator", "Admin" });
+                values: new object[] { 1L, "ALjIOJWU4k2kmI3uivNcvjT6wtcuqP4byPbq2kouWvl96dueb1/bgts4xr2R8PANSg==", "Administrator", "Admin" });
 
             migrationBuilder.InsertData(
                 table: "ShoppingCarts",
@@ -517,9 +477,15 @@ namespace shukersal_backend.Migrations
                 column: "DiscountRuleBooleanId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_DiscountRules_discountRuleBooleanId",
-                table: "DiscountRules",
-                column: "discountRuleBooleanId");
+                name: "IX_DiscountRuleBooleans_Id",
+                table: "DiscountRuleBooleans",
+                column: "Id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DiscountRuleBooleans_RootDiscountId",
+                table: "DiscountRuleBooleans",
+                column: "RootDiscountId",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_DiscountRules_DiscountRuleId",
@@ -532,20 +498,17 @@ namespace shukersal_backend.Migrations
                 column: "StoreId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_DiscountRules_StoreId1",
+                table: "DiscountRules",
+                column: "StoreId1",
+                unique: true,
+                filter: "[StoreId1] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Members_Username",
                 table: "Members",
                 column: "Username",
                 unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_MemberId",
-                table: "Notifications",
-                column: "MemberId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_NotificationTypeId",
-                table: "Notifications",
-                column: "NotificationTypeId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
@@ -566,6 +529,13 @@ namespace shukersal_backend.Migrations
                 name: "IX_PurchaseRules_StoreId",
                 table: "PurchaseRules",
                 column: "StoreId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PurchaseRules_StoreId1",
+                table: "PurchaseRules",
+                column: "StoreId1",
+                unique: true,
+                filter: "[StoreId1] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ShoppingBaskets_ShoppingCartId",
@@ -609,14 +579,10 @@ namespace shukersal_backend.Migrations
                 column: "StoreManagerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Stores_AppliedDiscountRuleId",
+                name: "IX_Stores_Name",
                 table: "Stores",
-                column: "AppliedDiscountRuleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Stores_AppliedPurchaseRuleId",
-                table: "Stores",
-                column: "AppliedPurchaseRuleId");
+                column: "Name",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Stores_RootManagerId",
@@ -645,9 +611,25 @@ namespace shukersal_backend.Migrations
                 onDelete: ReferentialAction.Cascade);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_DiscountRuleBooleans_DiscountRules_RootDiscountId",
+                table: "DiscountRuleBooleans",
+                column: "RootDiscountId",
+                principalTable: "DiscountRules",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_DiscountRules_Stores_StoreId",
                 table: "DiscountRules",
                 column: "StoreId",
+                principalTable: "Stores",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_DiscountRules_Stores_StoreId1",
+                table: "DiscountRules",
+                column: "StoreId1",
                 principalTable: "Stores",
                 principalColumn: "Id");
 
@@ -663,6 +645,14 @@ namespace shukersal_backend.Migrations
                 name: "FK_PurchaseRules_Stores_StoreId",
                 table: "PurchaseRules",
                 column: "StoreId",
+                principalTable: "Stores",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_PurchaseRules_Stores_StoreId1",
+                table: "PurchaseRules",
+                column: "StoreId1",
                 principalTable: "Stores",
                 principalColumn: "Id");
 
@@ -683,18 +673,6 @@ namespace shukersal_backend.Migrations
                 table: "StoreManagers");
 
             migrationBuilder.DropForeignKey(
-                name: "FK_DiscountRules_DiscountRuleBooleans_discountRuleBooleanId",
-                table: "DiscountRules");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_DiscountRules_Stores_StoreId",
-                table: "DiscountRules");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_PurchaseRules_Stores_StoreId",
-                table: "PurchaseRules");
-
-            migrationBuilder.DropForeignKey(
                 name: "FK_StoreManagers_Stores_StoreId",
                 table: "StoreManagers");
 
@@ -705,7 +683,13 @@ namespace shukersal_backend.Migrations
                 name: "Comments");
 
             migrationBuilder.DropTable(
+                name: "DiscountRuleBooleans");
+
+            migrationBuilder.DropTable(
                 name: "Notifications");
+
+            migrationBuilder.DropTable(
+                name: "PurchaseRules");
 
             migrationBuilder.DropTable(
                 name: "RaffleBids");
@@ -729,7 +713,7 @@ namespace shukersal_backend.Migrations
                 name: "Auctions");
 
             migrationBuilder.DropTable(
-                name: "NotificationTypes");
+                name: "DiscountRules");
 
             migrationBuilder.DropTable(
                 name: "ShoppingBaskets");
@@ -750,16 +734,7 @@ namespace shukersal_backend.Migrations
                 name: "Members");
 
             migrationBuilder.DropTable(
-                name: "DiscountRuleBooleans");
-
-            migrationBuilder.DropTable(
                 name: "Stores");
-
-            migrationBuilder.DropTable(
-                name: "DiscountRules");
-
-            migrationBuilder.DropTable(
-                name: "PurchaseRules");
 
             migrationBuilder.DropTable(
                 name: "StoreManagers");

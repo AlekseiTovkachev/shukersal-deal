@@ -22,7 +22,9 @@ namespace shukersal_backend.Models
         [JsonIgnore]
         public virtual ICollection<Product> Products { get; set; }
         [Required]
+        //[InverseProperty("StoreId")]
         public virtual ICollection<DiscountRule> DiscountRules { get; set; }
+        //[InverseProperty("StoreId")]
         public DiscountRule? AppliedDiscountRule { get; set; }
         [Required]
         public virtual ICollection<PurchaseRule> PurchaseRules { get; set; }
