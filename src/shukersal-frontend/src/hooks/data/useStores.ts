@@ -1,40 +1,40 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { Product } from "../../types/appTypes";
 import { storesApi } from "../../api/storesApi";
 import { ApiError, ApiListData } from "../../types/apiTypes";
+import { Store } from "../../types/appTypes";
 
-export const useProducts = () => {
+export const useStores = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [stores, setStores] = useState<Store[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const getProducts = useCallback(async () => {
+  const getStores = useCallback(async () => {
     setIsLoading(true);
     storesApi
-      .getAllMarketProducts()
+      .getAll()
       .then((res) => {
-        const _products = res as ApiListData<Product>;
+        const _stores = res as ApiListData<Store>;
         setIsLoading(false);
         setError(null);
-        setProducts(_products);
+        setStores(_stores);
       })
       .catch((res) => {
         const error = res as ApiError;
         setIsLoading(false);
         setError(error.message ?? "Error.");
-        setProducts([]);
+        setStores([]);
         console.error("Error while fetching managers: ", error);
       });
   }, []);
 
   useEffect(() => {
-    getProducts();
+    getStores();
   }, []);
 
   return {
     isLoading: isLoading,
-    products: products,
-    error: error
+    stores: stores,
+    error: error,
   };
 };

@@ -1,7 +1,7 @@
 import { ApiResponse, ApiResponseListData } from "../types/apiTypes";
-import { Product, Store } from "../types/appTypes";
+import { Product, Store, StoreManager } from "../types/appTypes";
 import { apiClient } from "./apiClient";
-import { apiErrorHandlerWrapper } from './util';
+import { apiErrorHandlerWrapper } from "./util";
 
 export interface StorePostData {
   name: string;
@@ -13,6 +13,14 @@ export interface StorePatchData {
   description?: string;
 }
 
+export interface StoreManagerPostData {
+  bossId: number;
+  memberId: number;
+  storeId: number;
+  owner: boolean;
+}
+
+const productServiceName = "products";
 const storeServiceName = "stores";
 const sellerServiceName = "storemanagers";
 
@@ -20,8 +28,13 @@ export const storesApi = {
   getAll: (): Promise<ApiResponseListData<Store>> =>
     apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/`)),
 
+  getAllMarketProducts: (): Promise<ApiResponseListData<Product>> =>
+    apiErrorHandlerWrapper(apiClient.get(`${productServiceName}/`)),
+
   getMyStores: (memberId: number): Promise<ApiResponseListData<Store>> =>
-    apiErrorHandlerWrapper(apiClient.get(`${sellerServiceName}/member/${memberId}/stores/`)),
+    apiErrorHandlerWrapper(
+      apiClient.get(`${sellerServiceName}/member/${memberId}/stores/`)
+    ),
 
   get: (storeId: number): Promise<ApiResponse<Store>> =>
     apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/${storeId}/`)),
@@ -77,8 +90,18 @@ export const storeProductsApi = {
     productId: number
   ): Promise<ApiResponse<undefined>> =>
     apiErrorHandlerWrapper(
-      apiClient.delete(
-        `${storeServiceName}/${storeId}/products/${productId}/`
-      )
+      apiClient.delete(`${storeServiceName}/${storeId}/products/${productId}/`)
     ),
+};
+
+export const storeManagersApi = {
+  getRoot: (storeId: number): Promise<ApiResponse<StoreManager>> =>
+    apiErrorHandlerWrapper(
+      apiClient.get(`${sellerServiceName}/stores/${storeId}/managers/`)
+    ),
+
+  create: (
+    postData: StoreManagerPostData
+  ): Promise<ApiResponse<StoreManager>> =>
+    apiErrorHandlerWrapper(apiClient.post(`${sellerServiceName}/`, postData)),
 };

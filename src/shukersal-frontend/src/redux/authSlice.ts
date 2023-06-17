@@ -5,6 +5,7 @@ import { authApi } from '../api/authApi';
 import { Member } from '../types/appTypes';
 import { ApiError } from '../types/apiTypes';
 import { LoginFormFields, RegisterFormFields } from '../types/formTypes';
+import { setLocalCart } from './util';
 
 const sliceName = 'auth';
 
@@ -120,6 +121,7 @@ export const authSlice = createSlice({
                 } else {
                     window.localStorage.removeItem(localStorageValues.auth.currentMemberData.name);
                 }
+                setLocalCart([]);
             })
             .addCase(login.rejected, (state, action) => {
                 state.isLoading = false;
@@ -135,7 +137,7 @@ export const authSlice = createSlice({
                 state.isLoading = false;
                 state.data = undefined;
                 window.localStorage.removeItem(localStorageValues.auth.currentMemberData.name);
-
+                setLocalCart([]);
             })
             .addCase(logout.rejected, (state, action) => {
                 state.isLoading = false;
