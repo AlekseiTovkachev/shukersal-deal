@@ -157,7 +157,7 @@ export const SellerStorePage = () => {
             Add Product
           </Button>
           <FlexSpacer />
-          <Button
+          {/* <Button
             fullWidth={isMobile}
             startIcon={<DeleteIcon />}
             variant="contained"
@@ -165,7 +165,7 @@ export const SellerStorePage = () => {
             onClick={handleDeleteStore}
           >
             Delete Store
-          </Button>
+          </Button> */}
         </Stack>
       </Grid>
       <Grid xs={12} item>

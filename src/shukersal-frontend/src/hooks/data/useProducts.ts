@@ -24,7 +24,7 @@ export const useProducts = () => {
         setIsLoading(false);
         setError(error.message ?? "Error.");
         setProducts([]);
-        console.error("Error while fetching managers: ", error);
+        console.error("Error while fetching products: ", error);
       });
   }, []);
 

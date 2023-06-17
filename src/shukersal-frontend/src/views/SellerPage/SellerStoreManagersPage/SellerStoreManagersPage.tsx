@@ -15,11 +15,16 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { useIsMobile } from "../../../hooks/mediaHooks";
 import { useAuth } from "../../../hooks/useAuth";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { StoreManager } from "../../../types/appTypes";
+import { AddManagerDialog } from "./AddManagerDialog";
+import NiceModal from "@ebay/nice-modal-react";
+import { getStore } from "../../../redux/storeSlice";
+import { useAppDispatch } from "../../../hooks/useAppDispatch";
 
 export const SellerStoreManagersPage = () => {
   const isMobile = useIsMobile();
+  const dispatch = useAppDispatch();
 
   const { storeId } = useParams();
   const fixedStoreId = Number(decodeURIComponent(storeId ?? "0"));
@@ -46,6 +51,18 @@ export const SellerStoreManagersPage = () => {
 
   const isLoading = sellerStoreData.isLoading || managersData.isLoading;
 
+  const handleAddManager = useCallback((asOwner: boolean) => {
+    if (loggedManagerId)
+      NiceModal.show(AddManagerDialog, {
+        storeId: fixedStoreId,
+        bossId: loggedManagerId,
+        asOwner: asOwner
+      }).then(() => {
+        window.location.reload(); // getto af
+        dispatch(getStore(fixedStoreId));
+      });
+  }, [loggedManagerId, fixedStoreId]);
+
   if (isLoading) {
     return <AppLoader />;
   }
@@ -66,6 +83,9 @@ export const SellerStoreManagersPage = () => {
       >
         <Grid item xs={isMobile ? 12 : 6}>
           <Button
+            onClick={() => {
+              handleAddManager(false);
+            }}
             fullWidth={isMobile}
             variant="contained"
             startIcon={<AccountCircleIcon />}
@@ -75,6 +95,9 @@ export const SellerStoreManagersPage = () => {
         </Grid>
         <Grid item xs={isMobile ? 12 : 6}>
           <Button
+            onClick={() => {
+              handleAddManager(true);
+            }}
             fullWidth={isMobile}
             variant="contained"
             startIcon={<AdminPanelSettingsIcon />}

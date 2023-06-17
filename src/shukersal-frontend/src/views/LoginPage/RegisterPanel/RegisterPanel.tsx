@@ -88,7 +88,7 @@ export const RegisterPanel = () => {
 
                         })}>
                             <Typography><Link color="secondary" href="/login">
-                                Login
+                                Register
                             </Link></Typography>
 
                             <Typography><Link color="secondary" href="/">

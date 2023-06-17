@@ -10,14 +10,33 @@ export const makeTree = (loggedManagerId: number, manager: StoreManager) => {
     loggedManagerId: loggedManagerId,
     nodeId: manager.id.toString(),
     manager: manager,
-    managerMemberName: manager.memberId.toString(), // TODO: Connect name when BE implements
   };
   if (manager.childManagers.length === 0) {
-    return <ManagerTreeItem {...treeItemProps} />;
+    return <ManagerTreeItem key={treeItemProps.nodeId} {...treeItemProps} />;
   }
   return (
-    <ManagerTreeItem {...treeItemProps}>
+    <ManagerTreeItem key={treeItemProps.nodeId} {...treeItemProps}>
       {manager.childManagers.map((m) => makeTree(loggedManagerId, m))}
     </ManagerTreeItem>
   );
 };
+
+export const getManagerMemberIds = (rootManager: StoreManager): Set<number> => {
+  const memberIds: Set<number> = new Set();
+
+  const traverseManager = (manager: StoreManager) => {
+    memberIds.add(manager.memberId);
+
+    for (const childManager of manager.childManagers) {
+      traverseManager(childManager);
+    }
+  };
+
+  traverseManager(rootManager);
+  return memberIds;
+};
+
+
+export const managerHasPermission = (manager: StoreManager, permissionType: PermissionType) => {
+  return manager.storePermissions.some(p => p.permissionType === permissionType)
+}
