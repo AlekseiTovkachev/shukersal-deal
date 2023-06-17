@@ -77,6 +77,18 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return itemToRemove;
         }
+
+        public async Task<Response<ShoppingItem>> RemoveItemFromBasketByProductId(long productId)
+        {
+            var itemToRemove = await GetShoppingItemFromBasketByProductId(productId);
+            if (itemToRemove.Result != null)
+            {
+                ShoppingItems.RemoveAll(i => i.ProductId == productId);
+                context.ShoppingItems.Remove(itemToRemove.Result);
+                await context.SaveChangesAsync();
+            }
+            return itemToRemove;
+        }
         /*
         public async Task<Response<ShoppingItem>> EditItemQuantity(long itemId,int quantity)
         {

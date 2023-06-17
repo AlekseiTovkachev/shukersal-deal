@@ -1,4 +1,7 @@
-﻿namespace shukersal_backend.ExternalServices.ExternalDeliveryService
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using System.Net;
+
+namespace shukersal_backend.ExternalServices.ExternalDeliveryService
 {
     public class DeliveryAdaptee
     {
@@ -19,25 +22,24 @@
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
-                if (response.IsSuccessStatusCode)
+                if (response.StatusCode==HttpStatusCode.OK)
                 {
                     return "OK";
                 }
                 else
                 {
-                    // Handle specific error codes or error messages if required
                     return "Handshake failed";
                 }
             }
             catch (Exception ex)
             {
-                // Handle general exception or log the error
-                return "Handshake failed: " + ex.Message;
+                return "Handshake failed";
             }
         }
 
@@ -54,28 +56,28 @@
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var responseBody = await response.Content.ReadAsStringAsync();
                     int transactionId;
-                    if (int.TryParse(responseBody, out transactionId))
+                    if (int.TryParse(responseBody, out transactionId) && transactionId!=-1)
                     {
                         return transactionId;
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                // Handle general exception or log the error
                 return -1;
             }
 
-            return -1; // Handle invalid response or other specific cases
+            return -1; 
         }
 
         public async Task<int> cancel_supply(string transactionId)
@@ -87,17 +89,23 @@
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return 1;
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    int res;
+                    if (int.TryParse(responseBody, out res) && res==1)
+                    {
+                        return res;
+                    }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Handle general exception or log the error
                 return -1;

@@ -45,7 +45,6 @@ namespace shukersal_backend.Models
         #region Notification Models
         // *------------------------------------------------- Notification Models --------------------------------------------------*
         virtual public DbSet<Notification> Notifications { get; set; } = null!;
-        virtual public DbSet<NotificationType> NotificationTypes { get; set; } = null!;
         #endregion
 
         #region Transaction Models
@@ -145,6 +144,17 @@ namespace shukersal_backend.Models
             //modelBuilder.Entity<DiscountRule>()
             //    .HasOne<Store>()
             //    .WithMany()
+            //    .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.DiscountRules)
+            //    .WithOne()
+            //    .HasForeignKey(dr => dr.StoreId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<Store>()
+            //    .HasMany(s => s.PurchaseRules)
+            //    .WithOne()
+            //    .HasForeignKey(pr => pr.StoreId)
             //    .OnDelete(DeleteBehavior.Cascade);
 
 

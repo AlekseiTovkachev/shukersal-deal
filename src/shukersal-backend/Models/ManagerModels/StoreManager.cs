@@ -45,6 +45,7 @@ namespace shukersal_backend.Models
         [DeleteBehavior(DeleteBehavior.NoAction)]
         public virtual ICollection<StoreManager> ChildManagers { get; set; }
 
+        public string? Username { get; set; }
         //public StoreManager() { }
     }
 }
