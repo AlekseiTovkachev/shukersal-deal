@@ -37,10 +37,7 @@ namespace shukersal_backend.Models
         [JsonIgnore]
         [ForeignKey("RootDiscountId")]
         public long? RootDiscountId { get; set; }
-
         [JsonIgnore]
-        //[ForeignKey("ParentBooleanId")]
-        [DeleteBehavior(DeleteBehavior.NoAction)]
-        public long? ParentBooleanId { get; set; }
+        public bool IsRoot { get; set; }
     }
 }

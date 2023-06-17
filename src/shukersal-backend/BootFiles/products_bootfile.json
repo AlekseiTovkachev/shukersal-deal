@@ -1,13 +1,13 @@
 [
-  //{
-  //  "name": "milk",
-  //  "description": "string",
-  //  "price": 10,
-  //  "unitsInStock": 10,
-  //  "categoryId": 11,
-  //  "storename": "Store1"
-  //},
-  //{
+  {
+    "name": "Apple",
+    "description": "string",
+    "price": 20,
+    "unitsInStock": 10,
+    "categoryId": 11,
+    "storename": "S"
+  }
+  //,{
   //  "name": "apple",
   //  "description": "string",
   //  "price": 10,

@@ -90,13 +90,20 @@ namespace shukersal_backend.Models
                 .HasOne(dr => dr.discountRuleBoolean)
                 .WithOne()
                 .HasForeignKey<DiscountRuleBoolean>(drb => drb.RootDiscountId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Store>()
                 .HasMany(s => s.PurchaseRules)
                 .WithOne()
                 .HasForeignKey(dr => dr.StoreId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DiscountRuleBoolean>()
+                .HasMany(dr => dr.Components)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
+
+
 
 
 

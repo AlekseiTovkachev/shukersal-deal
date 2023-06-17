@@ -39,7 +39,7 @@ namespace shukersal_backend.Models
 
         [JsonIgnore]
         [ForeignKey("StoreId")]
-        [DeleteBehavior(DeleteBehavior.NoAction)]
+        //[DeleteBehavior(DeleteBehavior.Cascade)]
         public long StoreId { get; set; }
 
         [JsonIgnore]

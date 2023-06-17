@@ -152,7 +152,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 conditionLimit = post.conditionLimit,
                 minHour = post.minHour,
                 maxHour = post.maxHour,
-                ParentBooleanId = null,
+                IsRoot = true,
                 RootDiscountId = discountRule.Id
             };
             discountRule.discountRuleBoolean = drb;
@@ -181,7 +181,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     conditionLimit = post.conditionLimit,
                     minHour = post.minHour,
                     maxHour = post.maxHour,
-                    ParentBooleanId = compositeId,
+                    IsRoot = false,
                     //RootDiscountId = composite.RootDiscountId
                 };
                 _context.DiscountRuleBooleans.Add(component);

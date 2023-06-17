@@ -26,6 +26,10 @@ namespace shukersal_backend.DomainLayer.Controllers
         {
             return await _managerObject.GetStoreManager(id, member);
         }
+        public async Task<Response<StoreManager>> GetStoreManager(long id)
+        {
+            return await _managerObject.GetStoreManager(id);
+        }
         public async Task<Response<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long id)
         {
             return await _managerObject.GetStoreManagersByMemberId(id);
