@@ -126,5 +126,16 @@ namespace shukersal_backend.DomainLayer.notifications
             return Response<string>.Success(HttpStatusCode.NoContent, "Deletion of notifications was successful.");
         }
 
+        public async Task<Response<string>> SendBulkNotifications(List<Tuple<long, string>> notificationList, NotificationType notificationType)
+        {
+            foreach (var notification in notificationList)
+            {
+                await SendNotificationToUser(notification.Item1, notificationType, notification.Item2);
+            }
+
+            return Response<string>.Success(HttpStatusCode.OK, "Bulk notifications sent successfully.");
+        }
+
+
     }
 }

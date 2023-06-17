@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Packaging;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.ExternalServices.ExternalDeliveryService;
 using shukersal_backend.ExternalServices.ExternalPaymentService;
@@ -26,14 +27,14 @@ namespace shukersal_backend.DomainLayer.Controllers
         private readonly MemberObject _memberObject;
         private readonly StoreManagerObject _managerObject;
         private ShoppingCartObject _shoppingCartObject;
+        private readonly NotificationController _notificationController;
 
-
-        public TransactionController(MarketDbContext context)
+        public TransactionController(MarketDbContext context, NotificationController notificationController)
         {
             _context = context;
             _marketObject = new MarketObject(context);
-            
-            _memberObject= new MemberObject(context);
+            _notificationController = notificationController;
+            _memberObject = new MemberObject(context);
             _transactionObject = new TransactionObject(context,_marketObject);
             _managerObject = new StoreManagerObject(_context);
             _storeObject = new StoreObject(context, _marketObject, _managerObject);
@@ -284,15 +285,63 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         }
 
+        //TODO: MAY NEED TO CHANGE THE RETURN VALUE
         public async Task<Response<Transaction>> PurchaseAShoppingCart(TransactionPost transactionPost)
         {
-        
+            Response<Transaction> response;
             if (transactionPost.IsMember)
             {
-                return await CreateMemberTransaction(transactionPost);
+                response = await CreateMemberTransaction(transactionPost);
             }
-            else return await CreateGuestTransaction(transactionPost);
+            else
+            {
+                response = await CreateGuestTransaction(transactionPost);
+            }
+
+            if(response.IsSuccess)
+            {
+                SendTransactionNotification(response.Result);
+            }
+            return response;
         }
+        //TODO: im here
+        private async Task<Response<string>> SendTransactionNotification(Transaction transaction)
+        {
+            // Get transaction items related to the transaction
+            var transactionItems = await _context.TransactionItems
+                .Where(ti => ti.TransactionId == transaction.Id)
+                .ToListAsync();
+
+            // Get store ids from transaction items
+            var storeIds = transactionItems.Select(ti => ti.StoreId).Distinct();
+
+            // Get store managers related to the store ids
+            var storeManagers = await _context.Set<StoreManager>()
+                .Where(m => storeIds.Contains(m.StoreId))
+                .ToListAsync();
+
+            // Prepare a list to store pairs of store manager's memberId and transaction items
+            List<Tuple<long, string>> storeManagerTransactionItemsPairs = new List<Tuple<long, string>>();
+
+            // Loop through each store manager
+            foreach (var storeManager in storeManagers)
+            {
+                // Find transaction items related to the store manager's store
+                var items = transactionItems
+                    .Where(ti => ti.StoreId == storeManager.StoreId)
+                    .Select(ti => ti.ProductName);
+
+                // Create a string containing all the product names for the store manager
+                var productNames = "Items: " + string.Join(", ", items);
+
+                // Add to the list as a pair
+                storeManagerTransactionItemsPairs.Add(Tuple.Create(storeManager.MemberId, productNames));
+            }
+            var response = _notificationController.SendBulkNotifications(storeManagerTransactionItemsPairs, NotificationType.ProductPurchased);
+            return response.Result;
+        }
+
+
 
         private async Task Rollback(ICollection<TransactionItem> transactionItems)
         {
