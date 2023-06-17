@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace shukersal_backend.Models
 {
@@ -18,6 +19,7 @@ namespace shukersal_backend.Models
     public class PurchaseRule
     {
         [Required]
+        [Key]
         public long Id { get; set; }
         [Required]
         public PurchaseRuleType purchaseRuleType { get; set; }
@@ -29,5 +31,10 @@ namespace shukersal_backend.Models
         [Range(0, 24)]
         public int maxHour { get; set; }
         //public bool[] weekDays { get; set; }
+        [JsonIgnore]
+        [ForeignKey("StoreId")]
+        public long StoreId { get; set; }
+
+        public bool IsRoot { get; set; }
     }
 }

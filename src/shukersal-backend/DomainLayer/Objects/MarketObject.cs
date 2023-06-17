@@ -91,7 +91,8 @@ namespace shukersal_backend.DomainLayer.Objects
                         MemberId = member.Id,
                         StoreId = store.Id,
                         Store = store,
-                        StorePermissions = new List<StorePermission>()
+                        StorePermissions = new List<StorePermission>(),
+                        Username = member.Username
                     };
                     _context.StoreManagers.Add(storeManager);
                     await _context.SaveChangesAsync(); // Save changes to generate the manager ID
@@ -143,6 +144,12 @@ namespace shukersal_backend.DomainLayer.Objects
             {
                 return Response<bool>.Error(HttpStatusCode.NotFound, "Store not found");
             }
+            if (store.RootManagerId != manager.Id)
+            {
+                return Response<bool>.Error(HttpStatusCode.Unauthorized, "Only the root manager can change the store name");
+            }
+
+
             if (patch.Description != null) store.Description = patch.Description;
             if (patch.Name != null) store.Name = patch.Name;
 

@@ -23,7 +23,7 @@ namespace shukersal_backend.ServiceLayer
         private readonly IConfiguration _configuration;
         private readonly MemberController memberController;
         private readonly ILogger<ControllerBase> logger;
-        public AuthService(IConfiguration configuration, MarketDbContext context, ILogger<ControllerBase> logger)
+        public AuthService(IConfiguration configuration, MarketDbContext context, ILogger<AuthService> logger)
         {
             _context = context;
             _configuration = configuration;
@@ -65,7 +65,7 @@ namespace shukersal_backend.ServiceLayer
                 var response = await memberController.RegisterMember(registerRequest);
                 if (!response.IsSuccess || response.Result == null)
                 {
-                    return BadRequest(ModelState);
+                    return BadRequest(response.ErrorMessage);
                 }
                 var member = response.Result;
                 return CreatedAtAction("GetMember", "MemberService", new { id = member.Id }, member);

@@ -2,11 +2,15 @@ import { Box, Paper } from '@mui/material';
 import { Navigate, Outlet } from 'react-router-dom';
 import { AppLogoFadeIn } from '../../components/AppLogo/AppLogoFadeIn';
 import { useAuth } from '../../hooks/useAuth';
+import { useCart } from '../../hooks/useCart';
 
 // LoginPage component
 export const LoginPage = () => {
     const authData = useAuth();
+    const cartData = useCart();
+    
     if (authData.isLoggedIn) {
+        cartData.getCart();
         return <Navigate to="/" />
     }
 

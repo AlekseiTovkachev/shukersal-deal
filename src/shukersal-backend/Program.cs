@@ -1,11 +1,15 @@
+using Microsoft.AspNet.SignalR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using shukersal_backend.DomainLayer.Controllers;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.Models;
 using System.Text;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,7 +52,7 @@ builder.Services.AddControllers();
 // Old db
 //builder.Services.AddDbContext<MarketDbContext>(opt =>
 //    opt.UseInMemoryDatabase("MarketDbContext"));
-var connectionString = builder.Configuration.GetConnectionString("DockerConnection2");
+var connectionString = builder.Configuration.GetConnectionString("DockerConnection_Shoval");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 
@@ -72,6 +76,7 @@ builder.Services.AddDbContext<MarketDbContext>(opt =>
 // --------------------------- DB -
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -114,6 +119,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     });
+//for the notifiactions
+builder.Services.AddSignalR();
+builder.Services.AddTransient<NotificationController>();
 
 
 var app = builder.Build();
@@ -124,26 +132,36 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
 
-app.UseCors(AllowOrigin);
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 // To automatically migrate the database
-using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+/*using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {
     var dbContext = serviceScope.ServiceProvider.GetService<MarketDbContext>();
     dbContext?.Database.Migrate();
     if (dbContext != null)
         await BootFileRunner.Run(dbContext);
-
-}
+}*/
 
 
 
 app.MapControllers();
+
+app.UseRouting();
+app.UseHttpsRedirection();
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseCors(AllowOrigin);
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapHub<NotificationHub>("/chatHub");
+});
+
 app.Run();
 
 

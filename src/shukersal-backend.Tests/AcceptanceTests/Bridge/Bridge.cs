@@ -21,6 +21,8 @@ namespace shukersal_backend.Tests.AcceptanceTests
         private readonly StoreService storeService;
         public readonly Mock<MarketDbContext> _context;
         public readonly Mock<ILogger<StoreService>> _logger;
+        public readonly Mock<ILogger<ShoppingCartService>> _logger2;
+        public readonly Mock<ILogger<AuthService>> _logger3;
         private readonly IConfiguration _configuration;
         public Bridge()
         {
@@ -31,20 +33,20 @@ namespace shukersal_backend.Tests.AcceptanceTests
 
             //TODO: init configuration
             _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            authService = new AuthService(_configuration, _context.Object, _logger.Object);
+            authService = new AuthService(_configuration, _context.Object, _logger3.Object);
             memberService = new MemberService(_context.Object, _logger.Object);
             TransactionService = new TransactionService(_context.Object, _logger.Object);
-            shoppingCartService = new ShoppingCartService(_context.Object, _logger.Object);
+            shoppingCartService = new ShoppingCartService(_context.Object, _logger2.Object);
 
             storeService = new StoreService(_context.Object, _logger.Object);
         }
-        //Member
+     /*   //Member
         public async Task<ActionResult<Member>> Logout(long id)
         {
 
             return await memberService.Logout(id);
         }
-
+     */
 
         public async Task<ActionResult<IEnumerable<Member>>> GetMembers()
         {

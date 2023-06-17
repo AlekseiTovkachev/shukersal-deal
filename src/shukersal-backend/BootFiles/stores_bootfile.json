@@ -1,17 +1,9 @@
 [
-  [ "john123", "jane456", "smith789" ],
+  [ "U2"],
   [
     {
-      "name": "Store1",
-      "description": "string"
-    },
-    {
-      "name": "Store2",
-      "description": "string"
-    },
-    {
-      "name": "Store3",
-      "description": "string"
+      "name": "S",
+      "description": "Welcome to S, your go-to shop for the freshest and most flavorful apples in town. Discover a wide selection of hand-picked varieties that are juicy, crunchy, and bursting with goodness. From sweet Galas to tangy Granny Smiths, find your perfect apple at Apple Haven. Taste the difference and elevate your snacking or cooking experience with our premium apples."
     }
   ]
 ]
