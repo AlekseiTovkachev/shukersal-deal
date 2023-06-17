@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useMatch, useResolvedPath } from "react-router-dom";
 
 import { Grid, Box, Typography } from "@mui/material";
@@ -17,6 +18,8 @@ import { AppSellerButton } from "../components/AppHeader/AppSellerButton";
 import { AppBuyerButton } from "../components/AppHeader/AppBuyerButton";
 import NiceModal from "@ebay/nice-modal-react";
 import { AppBackButtonBar } from "../components/AppBackButtonBar";
+import { useCart } from "../hooks/useCart";
+import { AppCartButton } from "../components/AppHeader/AppCartButton";
 //import { AppPagePaddingBox } from '../components/AppPagePaddingBox';
 
 export const MainPage = () => {
@@ -33,6 +36,13 @@ export const MainPage = () => {
   const fullscreen = !!loginPageMatch;
   const authData = useAuth();
 
+  const cartData = useCart();
+
+  // setup
+  useEffect(() => {
+    cartData.getCart();
+  }, []);
+
   return (
     <NiceModal.Provider>
       <AppMainPageContainer>
@@ -44,6 +54,7 @@ export const MainPage = () => {
               <AppLogo />
               {sellerPageMatch ? <AppBuyerButton /> : <AppSellerButton />}
               <FlexSpacer />
+              <AppCartButton />
               {authData.isLoggedIn ? <AppLogoutButton /> : <AppLoginButton />}
             </AppHeader>
             <AppPageScrollableContainer>

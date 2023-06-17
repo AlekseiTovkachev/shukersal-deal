@@ -62,12 +62,16 @@ export interface Purchase {
     purchaseItems: PurchaseItem;
 }
 
+
+
 export interface ShoppingItem {
     id: number;
     shoppingBasketId: number;
     productId: number;
     quantity: number
 }
+
+export type CartItem = Omit<ShoppingItem, "id" | "shoppingBasketId">; // for add/edit
 
 export interface ShoppingBasket {
 
@@ -93,8 +97,6 @@ export interface Store {
     name: string;
     description: string;
     rootManagerId: number;
-    //products: Product[]; TODO: Check if removed in BE
-    //discountRules: DiscountRule[]; TODO: Check if removed in BE
 }
 
 export interface StorePermission {

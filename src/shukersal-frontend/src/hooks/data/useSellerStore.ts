@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { demoStores } from './DEMO_DATA_useStores';
-import { demoProducts } from './DEMO_DATA_useProducts';
 import { useAppSelector } from '../useAppSelector';
 import { useAppDispatch } from '../useAppDispatch';
 import { ProductPostFormFields, StorePatchFormFields } from '../../types/formTypes';

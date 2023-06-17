@@ -20,12 +20,16 @@ export interface StoreManagerPostData {
   owner: boolean;
 }
 
+const productServiceName = "products";
 const storeServiceName = "stores";
 const sellerServiceName = "storemanagers";
 
 export const storesApi = {
   getAll: (): Promise<ApiResponseListData<Store>> =>
     apiErrorHandlerWrapper(apiClient.get(`${storeServiceName}/`)),
+
+  getAllMarketProducts: (): Promise<ApiResponseListData<Product>> =>
+    apiErrorHandlerWrapper(apiClient.get(`${productServiceName}/`)),
 
   getMyStores: (memberId: number): Promise<ApiResponseListData<Store>> =>
     apiErrorHandlerWrapper(
