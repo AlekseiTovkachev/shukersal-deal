@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace shukersal_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Init : Migration
+    public partial class Init_yonatan : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -450,7 +450,7 @@ namespace shukersal_backend.Migrations
             migrationBuilder.InsertData(
                 table: "Members",
                 columns: new[] { "Id", "PasswordHash", "Role", "Username" },
-                values: new object[] { 1L, "AFuDXy/pr7moTcHwIaBVJnLZ056lbwSGx0x2NC1ph+4MFTRY+fbxaErdNUUC/YXWZg==", "Administrator", "Admin" });
+                values: new object[] { 1L, "ABvWNvZTAGXOm4HLAoAjpE/jLSYhpO225EQniRq1y0YeSI1CLqc1OsAad0PXOc6/hA==", "Administrator", "Admin" });
 
             migrationBuilder.InsertData(
                 table: "ShoppingCarts",

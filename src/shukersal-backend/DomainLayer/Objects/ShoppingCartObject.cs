@@ -139,16 +139,15 @@ namespace shukersal_backend.DomainLayer.Objects
             var respRemoval = await basket.RemoveItemFromBasketByProductId(productId);
             if (respRemoval.IsSuccess)
             {
-                var basketToRemove = await GetBasket(itemToRemove.Result.ShoppingBasketId);
-                if (basketToRemove.IsSuccess && basketToRemove.Result != null)
+                var updatedbasket = await GetBasket(itemToRemove.Result.ShoppingBasketId);
+                if (updatedbasket.IsSuccess && updatedbasket.Result != null && updatedbasket.Result.ShoppingItems.Count() == 0)
                 {
-                    Context.ShoppingBaskets.Remove(basketToRemove.Result);
+                    Context.ShoppingBaskets.Remove(updatedbasket.Result);
                     Context.SaveChanges();
                     ShoppingBaskets.Remove(basket);
                 }
 
             }
-
             return respRemoval;
         }
         
