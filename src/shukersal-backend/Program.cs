@@ -52,7 +52,7 @@ builder.Services.AddControllers();
 // Old db
 //builder.Services.AddDbContext<MarketDbContext>(opt =>
 //    opt.UseInMemoryDatabase("MarketDbContext"));
-var connectionString = builder.Configuration.GetConnectionString("DockerConnection_Aleksei");
+var connectionString = builder.Configuration.GetConnectionString("DockerConnection_Shoval");
 builder.Services.AddDbContext<MarketDbContext>(opt =>
     opt.UseSqlServer(connectionString));
 
@@ -142,6 +142,7 @@ if (app.Environment.IsDevelopment())
     if (dbContext != null)
         await BootFileRunner.Run(dbContext);
 }*/
+
 
 
 app.MapControllers();

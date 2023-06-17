@@ -144,23 +144,24 @@ namespace shukersal_backend.DomainLayer.Controllers
             Dictionary<long, List<TransactionItem>> TransactionBaskets = new Dictionary<long, List<TransactionItem>>();
             foreach (var item in items)
             {
-                if (!TransactionBaskets.ContainsKey(item.StoreId))
-                {
-                    TransactionBaskets.Add(item.StoreId, new List<TransactionItem>());
-                }
-
-                var productResp = await _storeObject.GetProduct(item.ProductId);
-                if (!productResp.IsSuccess || productResp.Result == null)
+                
+                var product=_context.Products.Where(p=>p.Id==item.ProductId).FirstOrDefault();
+                if (product == null)
                 {
                     return Response<Dictionary<long, List<TransactionItem>>>.Error(HttpStatusCode.NotFound, "Product does not exist");
                 }
-                var product = productResp.Result;
+
+                if (!TransactionBaskets.ContainsKey(product.StoreId))
+                {
+                    TransactionBaskets.Add(product.StoreId, new List<TransactionItem>());
+                }
+
 
                 var transactionItem = new TransactionItem
                 {
                     TransactionId = transaction.Id,
-                    ProductId = item.ProductId,
-                    StoreId = item.StoreId,
+                    ProductId = product.Id,
+                    StoreId = product.StoreId,
                     ProductName = product.Name,
                     ProductDescription = product.Description,
                     Quantity = item.Quantity,
@@ -168,7 +169,7 @@ namespace shukersal_backend.DomainLayer.Controllers
                 };
 
                 await _context.TransactionItems.AddAsync(transactionItem);
-                TransactionBaskets[item.StoreId].Add(transactionItem);
+                TransactionBaskets[product.StoreId].Add(transactionItem);
                 transaction.TransactionItems.Add(transactionItem);
             }
             return Response<Dictionary<long, List<TransactionItem>>>.Success(HttpStatusCode.OK, TransactionBaskets);
@@ -323,8 +324,11 @@ namespace shukersal_backend.DomainLayer.Controllers
         {
             try
             {
+                var product= _context.Products.Where(p=>p.Id==transactionItemPost.ProductId).FirstOrDefault();
+               
+
                 var managers = await _context.StoreManagers
-                    .Where(manager => manager.StoreId == transactionItemPost.StoreId)
+                    .Where(manager => manager.StoreId == product.StoreId)
                     .ToListAsync();
 
                 // Prepare the list of managers' IDs for sending bulk notifications
