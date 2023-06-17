@@ -50,12 +50,22 @@ namespace shukersal_backend.DomainLayer.Objects
             }
             return Response<ShoppingBasket>.Success(HttpStatusCode.OK, ShoppingBasket);
         }
-
+        
         public async Task<Response<ShoppingItem>> GetShoppingItem(long shoppingItemId)
         {
             foreach(ShoppingBasketObject basket in ShoppingBaskets)
             {
                 var item=await basket.GetShoppingItemFromBasket(shoppingItemId);
+                if (item.Result != null) { return item; }
+            }
+            return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
+
+        }
+        public async Task<Response<ShoppingItem>> GetShoppingItemByProductId(long productId)
+        {
+            foreach (ShoppingBasketObject basket in ShoppingBaskets)
+            {
+                var item = await basket.GetShoppingItemFromBasketByProductId(productId);
                 if (item.Result != null) { return item; }
             }
             return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
@@ -113,7 +123,35 @@ namespace shukersal_backend.DomainLayer.Objects
             return respRemoval;
         }
 
+        public async Task<Response<ShoppingItem>> RemoveShoppingItemByProductId(long productId)
+        {
+            var itemToRemove = await GetShoppingItemByProductId(productId);
+            if (itemToRemove == null || itemToRemove.Result == null)
+            {
+                return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Cart does not contain this item.");
+            }
+            var basket = ShoppingBaskets.Where(b => b.Id == itemToRemove.Result.ShoppingBasketId).FirstOrDefault();
+            if (basket == null)
+            {
+                return Response<ShoppingItem>.Error(HttpStatusCode.NotFound, "Basket was not found.");
+            }
 
+            var respRemoval = await basket.RemoveItemFromBasketByProductId(productId);
+            if (respRemoval.IsSuccess)
+            {
+                var basketToRemove = await GetBasket(itemToRemove.Result.ShoppingBasketId);
+                if (basketToRemove.IsSuccess && basketToRemove.Result != null)
+                {
+                    Context.ShoppingBaskets.Remove(basketToRemove.Result);
+                    Context.SaveChanges();
+                    ShoppingBaskets.Remove(basket);
+                }
+
+            }
+
+            return respRemoval;
+        }
+        
         public async Task<Response<ShoppingItem>> AddShoppingItem(ShoppingItemPost shoppingItemPost)
         {
             var basketResp = await GetBasketByStoreId(shoppingItemPost.StoreId);

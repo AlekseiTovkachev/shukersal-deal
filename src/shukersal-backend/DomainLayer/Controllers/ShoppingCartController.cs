@@ -61,7 +61,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
             return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
         }
-
+        
         public async Task<Response<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId, long loggedInMemberId)
         {
             var resp = await GetShoppingCartById(cartId, loggedInMemberId);
@@ -69,6 +69,22 @@ namespace shukersal_backend.DomainLayer.Controllers
             {
                 ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
                 var ToAdditem = await cart.RemoveShoppingItem(shoppingItemId);
+                if (ToAdditem.IsSuccess && ToAdditem.Result != null)
+                {
+                    return Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);
+                }
+                return ToAdditem;
+            }
+            return Response<ShoppingItem>.Error(resp.StatusCode, resp.ErrorMessage);
+        }
+
+        public async Task<Response<ShoppingItem>> RemoveItemFromCartByProductId(long cartId, long productId, long loggedInMemberId)
+        {
+            var resp = await GetShoppingCartById(cartId, loggedInMemberId);
+            if (resp.Result != null && resp.IsSuccess)
+            {
+                ShoppingCartObject cart = new ShoppingCartObject(_context, resp.Result);
+                var ToAdditem = await cart.RemoveShoppingItemByProductId(productId);
                 if (ToAdditem.IsSuccess && ToAdditem.Result != null)
                 {
                     return Response<ShoppingItem>.Success(HttpStatusCode.OK, ToAdditem.Result);

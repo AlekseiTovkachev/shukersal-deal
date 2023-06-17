@@ -73,19 +73,35 @@ namespace shukersal_backend.ServiceLayer
             return BadRequest(itemResp.ErrorMessage);
         }
 
+        //[HttpDelete("{cartId}/items")]
+        //public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId)
+        //{
+        //    logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}", cartId, shoppingItemId);
+        //    var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
+        //    if (currentMember == null) { return Unauthorized(); }
+        //    var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId, shoppingItemId, currentMember.Id);
+        //    if (itemResp.Result != null && itemResp.IsSuccess)
+        //    {
+        //        return itemResp.Result;
+        //    }
+        //    return BadRequest(itemResp.ErrorMessage);
+        //}
+
+
         [HttpDelete("{cartId}/items")]
-        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, long shoppingItemId)
+        public async Task<ActionResult<ShoppingItem>> RemoveItemFromCart(long cartId, long productId)
         {
-            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}", cartId, shoppingItemId);
+            logger.LogInformation("RemoveItemFromCart Called with cart id:{cartId}, item id:{Id}", cartId, productId);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null) { return Unauthorized(); }
-            var itemResp = await _shoppingCartController.RemoveItemFromCart(cartId, shoppingItemId, currentMember.Id);
+            var itemResp = await _shoppingCartController.RemoveItemFromCartByProductId(cartId, productId, currentMember.Id);
             if (itemResp.Result != null && itemResp.IsSuccess)
             {
                 return itemResp.Result;
             }
             return BadRequest(itemResp.ErrorMessage);
         }
+
 
         [HttpPut("{cartId}/items")]
         public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item)
