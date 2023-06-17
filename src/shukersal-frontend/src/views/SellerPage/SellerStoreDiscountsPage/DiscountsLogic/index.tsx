@@ -29,6 +29,7 @@ const TreeNode = ({ node }) => {
     const handleClick = () => {
 
         selected_id = id
+        alert(selected_id)
         var backgroundcolor = '#AACCFF'
 
     };
@@ -78,7 +79,7 @@ const TreeNode = ({ node }) => {
             break;
         case 6:
             // Render display for discountType 5
-            display = <span>Min Discount</span>;
+            display = <span>Additional Discount</span>;
             break;
         default:
             // Render a default display for other discountType values
@@ -157,11 +158,8 @@ const TreeNodeB = ({ node }) => {
     
 };
 
-const InputSelector = ({ option } : string) => {
-    if ({ option } === "new discount")
-        return (<div>a + {option}</div>);
-    else
-        return (<div>{option}</div>);
+const InputSelector = ({ option }: string) => {
+    
 };
 
 
@@ -172,6 +170,8 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
     const [selectedNode, setSelectedNode] = useState<DiscountRule | null>(null);
     const [selectedId, setSelectedId] = useState('Click');
     const [value, setValue] = useState(1);
+    const [value1, setValue1] = useState(1);
+    const [value2, setValue2] = useState(1);
 
     useEffect(() => {
         setIsLoading(true);
@@ -198,6 +198,52 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
     if (isLoading)
         return <AppLoader />;
 
+
+    let discount_options = <div><Listbox
+        dataKey='id'
+        textField='name'
+        data={[
+            { id: 0, name: "simple on store" },
+            { id: 10, name: "simple on category" },
+            { id: 20, name: "simple on product" },
+            { id: 1, name: "conditional on store" },
+            { id: 11, name: "conditional on category" },
+            { id: 21, name: "conditional on product" },
+            { id: 2, name: "xor max" },
+            { id: 3, name: "xor min" },
+            { id: 4, name: "xor conditional" },
+            { id: 5, name: "Max discount" },
+            { id: 6, name: "Additional discount discount" }]}
+        value={value1}
+        onChange={(nextValue) => setValue1(nextValue.id)}
+
+    />
+        {value1 >= 10 ? <div>product or category name<input></input></div> : null}
+        {value1 % 10 <= 1 ? <div>discount amount<input></input></div> : null}
+    </div>;
+
+    let sub_discount_options = <div><Listbox
+        dataKey='id'
+        textField='name'
+        data={[
+            { id: 0, name: "and" },
+            { id: 1, name: "or" },
+            { id: 2, name: "condition" },
+            { id: 3, name: "minimal product count" },
+            { id: 4, name: "maximal product count" },
+            { id: 5, name: "minimal category count" },
+            { id: 6, name: "maximal category count" },
+            { id: 7, name: "timed" }]}
+        value={value2}
+        onChange={(nextValue) => setValue2(nextValue.id)}
+
+    />
+        {value2 >= 3 && value2 <= 6 ? <div>product or category name<input></input>
+            amount <input></input></div> :
+            value2 == 7 ? <div>min hour<input></input>
+                max hour <input></input></div>        :null}
+        
+    </div>;
     return (
         <>
             <Typography variant="h3">Discounts Logic for store {storeId}!</Typography>
@@ -205,14 +251,30 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
             {discounts.map((discount) => (
                 <div key={discount.id}>
                     <TreeNode node={discount} />
-                </div>
+                </div> 
             ))}
             <Listbox
-                data={["new discount", "new purchase rule", "select discount", "select purchase rule", "add sub discount", "add condition", "add sub condition", "add sub purchase rule"]}
+                dataKey='id'
+                textField='name'
+                data={[
+                    { id: 0, name: "new discount" },
+                    { id: 1, name: "new purchase rule" },
+                    { id: 2, name: "select discount" },
+                    { id: 3, name: "select purchase rule" },
+                    { id: 4, name: "add sub discount" },
+                    { id: 5, name: "add condition" },
+                    { id: 6, name: "add sub condition" },
+                    { id: 7, name: "add sub purchase rule" }]}
                 value={value}
-                onChange={(nextValue) => setValue(nextValue)}
+                onChange={(nextValue) => setValue(nextValue.id)}
 
-            />;
+            />
+            {value == 0 || value == 4?
+                discount_options
+
+                : value == 5 || value == 6 ?
+                    sub_discount_options:
+            null}
             <Typography variant="h5" >Selected Node ID: <strong>{value}</strong></Typography>
             <InputSelector option={value}></InputSelector>
             {apiError && <Typography variant="h6" color="error">{apiError}</Typography>}
