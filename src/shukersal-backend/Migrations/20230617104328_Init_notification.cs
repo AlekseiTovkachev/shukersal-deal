@@ -5,21 +5,11 @@
 namespace shukersal_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Init12 : Migration
+    public partial class Init_notification : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Stores",
-                type: "nvarchar(450)",
-                nullable: false,
-                defaultValue: "",
-                oldClrType: typeof(string),
-                oldType: "nvarchar(450)",
-                oldNullable: true);
-
             migrationBuilder.AddColumn<string>(
                 name: "Username",
                 table: "StoreManagers",
@@ -31,7 +21,7 @@ namespace shukersal_backend.Migrations
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "PasswordHash",
-                value: "ABaSVq6uwb1IzMejwX0CULnJFXoA39KzuXZmzLBU/qcnFAHkUFVjfA9GCxo7Xeg0vQ==");
+                value: "AOyR5lI3o24XKue3NTcj+DgxvAC0UebF3GsYrk3LygKGfp6CxJtH6pwOjmMDBcRUCQ==");
         }
 
         /// <inheritdoc />
@@ -41,20 +31,12 @@ namespace shukersal_backend.Migrations
                 name: "Username",
                 table: "StoreManagers");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "Name",
-                table: "Stores",
-                type: "nvarchar(450)",
-                nullable: true,
-                oldClrType: typeof(string),
-                oldType: "nvarchar(450)");
-
             migrationBuilder.UpdateData(
                 table: "Members",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "PasswordHash",
-                value: "ACh/lRDJIhvYetpxSKty4xdICosUENRhK38iSBledxSoGKJewAzDmcyjeLDkgGNA7w==");
+                value: "AMowDf23CA7KezPmWckLGr+Po5BQJ6liL6edIYcM19TPpqR6nYASuWoAfjpgCQYvsw==");
         }
     }
 }

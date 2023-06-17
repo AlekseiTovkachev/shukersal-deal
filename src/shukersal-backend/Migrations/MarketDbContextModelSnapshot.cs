@@ -321,7 +321,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AMowDf23CA7KezPmWckLGr+Po5BQJ6liL6edIYcM19TPpqR6nYASuWoAfjpgCQYvsw==",
+                            PasswordHash = "AOyR5lI3o24XKue3NTcj+DgxvAC0UebF3GsYrk3LygKGfp6CxJtH6pwOjmMDBcRUCQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -601,6 +601,9 @@ namespace shukersal_backend.Migrations
 
                     b.Property<long>("StoreId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

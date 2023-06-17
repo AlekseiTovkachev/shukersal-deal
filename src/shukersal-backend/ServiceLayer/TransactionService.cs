@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Data;
@@ -19,10 +20,11 @@ namespace shukersal_backend.ServiceLayer
         private readonly TransactionController TransactionController;
         private readonly ILogger<ControllerBase> logger;
         private readonly MarketDbContext context;
+        private readonly NotificationController _notificationController;
 
-        public TransactionService(MarketDbContext context, ILogger<ControllerBase> logger)
+        public TransactionService(MarketDbContext context, ILogger<ControllerBase> logger, NotificationController notificationController)
         {
-            TransactionController = new TransactionController(context);
+            TransactionController = new TransactionController(context, notificationController);
             this.logger = logger;
             this.context = context;
             

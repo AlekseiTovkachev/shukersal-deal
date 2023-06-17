@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230616202811_Init12")]
-    partial class Init12
+    [Migration("20230617104328_Init_notification")]
+    partial class Init_notification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -324,7 +324,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "ABaSVq6uwb1IzMejwX0CULnJFXoA39KzuXZmzLBU/qcnFAHkUFVjfA9GCxo7Xeg0vQ==",
+                            PasswordHash = "AOyR5lI3o24XKue3NTcj+DgxvAC0UebF3GsYrk3LygKGfp6CxJtH6pwOjmMDBcRUCQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -338,53 +338,22 @@ namespace shukersal_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
 
                     b.Property<long>("MemberId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("NotificationTypeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Title")
+                    b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.HasIndex("NotificationTypeId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
@@ -789,25 +758,6 @@ namespace shukersal_backend.Migrations
                         .HasForeignKey("DiscountRuleBooleanId");
                 });
 
-            modelBuilder.Entity("shukersal_backend.Models.Notification", b =>
-                {
-                    b.HasOne("shukersal_backend.Models.Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("shukersal_backend.Models.NotificationType", "NotificationType")
-                        .WithMany("Notifications")
-                        .HasForeignKey("NotificationTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Member");
-
-                    b.Navigation("NotificationType");
-                });
-
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
                 {
                     b.HasOne("shukersal_backend.Models.Category", "Category")
@@ -960,11 +910,6 @@ namespace shukersal_backend.Migrations
                 {
                     b.Navigation("ShoppingCart")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
-                {
-                    b.Navigation("Notifications");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.PurchaseRule", b =>
