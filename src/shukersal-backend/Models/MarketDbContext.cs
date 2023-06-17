@@ -98,10 +98,10 @@ namespace shukersal_backend.Models
                 .HasForeignKey(dr => dr.StoreId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<DiscountRuleBoolean>()
-                .HasMany(dr => dr.Components)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Cascade);
+            //modelBuilder.Entity<DiscountRuleBoolean>()
+            //    .HasMany(dr => dr.Components)
+            //    .WithOne()
+            //    .OnDelete(DeleteBehavior.Cascade);
 
 
 
