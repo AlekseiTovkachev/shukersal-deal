@@ -27,11 +27,11 @@ export const cartApi = {
 
   deleteItem: (
     cartId: number,
-    shoppingItemId: number
+    productId: number
   ): Promise<ApiResponse<ShoppingItem>> =>
     apiErrorHandlerWrapper(
       apiClient.delete(
-        `${cartServiceName}/${cartId}/items?shoppingItemId=${shoppingItemId}`
+        `${cartServiceName}/${cartId}/items?productId=${productId}`
       )
     ),
 };
