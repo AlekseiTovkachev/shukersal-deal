@@ -1,5 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Security.Policy;
 
 namespace shukersal_backend.Models
 {
@@ -15,9 +18,11 @@ namespace shukersal_backend.Models
         TIME_HOUR_AT_DAY = 7,
         TIME_DAY_AT_WEEK = 8
     }
+    [Index(nameof(Id))]
     public class DiscountRuleBoolean
     {
         [Required]
+        [Key]
         public long Id { get; set; }
         [Required]
         public DiscountRuleBooleanType discountRuleBooleanType { get; set; }
@@ -29,5 +34,10 @@ namespace shukersal_backend.Models
         [Range(0, 24)]
         public int maxHour { get; set; }
         //public bool[] weekDays { get; set; }
+        [JsonIgnore]
+        [ForeignKey("RootDiscountId")]
+        public long? RootDiscountId { get; set; }
+        [JsonIgnore]
+        public bool IsRoot { get; set; }
     }
 }

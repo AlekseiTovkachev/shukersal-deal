@@ -110,6 +110,21 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<StoreManager>.Success(HttpStatusCode.OK, storeManager);
         }
 
+        public async Task<Response<StoreManager>> GetStoreManager(long id)
+        {
+            //addition for testing
+            var storeManager = await _context.StoreManagers
+                .Include(m => m.StorePermissions)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
+            if (storeManager == null)
+            {
+                return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
+            }
+
+            return Response<StoreManager>.Success(HttpStatusCode.OK, storeManager);
+        }
+
         public async Task<Response<IEnumerable<StoreManager>>> GetStoreManagersByMemberId(long memberId)
         {
             var storeManagers = await _context.StoreManagers

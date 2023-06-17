@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230613153034_Init")]
-    partial class Init
+    [Migration("20230617175356_Init4")]
+    partial class Init4
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -234,18 +234,20 @@ namespace shukersal_backend.Migrations
                     b.Property<long?>("DiscountRuleId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("StoreId")
+                    b.Property<long?>("ParentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("StoreId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StoreId1")
                         .HasColumnType("bigint");
 
                     b.Property<int>("discountOn")
                         .HasColumnType("int");
 
                     b.Property<string>("discountOnString")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<long?>("discountRuleBooleanId")
-                        .HasColumnType("bigint");
 
                     b.Property<int>("discountType")
                         .HasColumnType("int");
@@ -256,7 +258,9 @@ namespace shukersal_backend.Migrations
 
                     b.HasIndex("StoreId");
 
-                    b.HasIndex("discountRuleBooleanId");
+                    b.HasIndex("StoreId1")
+                        .IsUnique()
+                        .HasFilter("[StoreId1] IS NOT NULL");
 
                     b.ToTable("DiscountRules");
                 });
@@ -272,11 +276,16 @@ namespace shukersal_backend.Migrations
                     b.Property<long?>("DiscountRuleBooleanId")
                         .HasColumnType("bigint");
 
+                    b.Property<bool>("IsRoot")
+                        .HasColumnType("bit");
+
+                    b.Property<long?>("RootDiscountId")
+                        .HasColumnType("bigint");
+
                     b.Property<int>("conditionLimit")
                         .HasColumnType("int");
 
                     b.Property<string>("conditionString")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("discountRuleBooleanType")
@@ -291,6 +300,12 @@ namespace shukersal_backend.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DiscountRuleBooleanId");
+
+                    b.HasIndex("Id");
+
+                    b.HasIndex("RootDiscountId")
+                        .IsUnique()
+                        .HasFilter("[RootDiscountId] IS NOT NULL");
 
                     b.ToTable("DiscountRuleBooleans");
                 });
@@ -326,7 +341,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AN/Z43c7smrB86EnswEy3TeRplStPYB7hc0ZOUUIXF4piqxT/hYkJyWA7JO329h6qg==",
+                            PasswordHash = "AO7/MZIh21UC2VHmiaArzoA2uOVSHrDHheS2nXVhFjVcZ30c5fi7mXp6OlzzbGxDyw==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -340,53 +355,22 @@ namespace shukersal_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<string>("Body")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
 
                     b.Property<long>("MemberId")
                         .HasColumnType("bigint");
 
-                    b.Property<long>("NotificationTypeId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Title")
+                    b.Property<string>("Message")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("NotificationType")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("MemberId");
-
-                    b.HasIndex("NotificationTypeId");
 
                     b.ToTable("Notifications");
-                });
-
-            modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
@@ -440,17 +424,22 @@ namespace shukersal_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
+                    b.Property<bool>("IsRoot")
+                        .HasColumnType("bit");
+
                     b.Property<long?>("PurchaseRuleId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("StoreId")
+                    b.Property<long>("StoreId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long?>("StoreId1")
                         .HasColumnType("bigint");
 
                     b.Property<int>("conditionLimit")
                         .HasColumnType("int");
 
                     b.Property<string>("conditionString")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("maxHour")
@@ -467,6 +456,10 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("PurchaseRuleId");
 
                     b.HasIndex("StoreId");
+
+                    b.HasIndex("StoreId1")
+                        .IsUnique()
+                        .HasFilter("[StoreId1] IS NOT NULL");
 
                     b.ToTable("PurchaseRules");
                 });
@@ -591,28 +584,21 @@ namespace shukersal_backend.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
-                    b.Property<long?>("AppliedDiscountRuleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long?>("AppliedPurchaseRuleId")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.Property<long>("RootManagerId")
+                    b.Property<long?>("RootManagerId")
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppliedDiscountRuleId");
-
-                    b.HasIndex("AppliedPurchaseRuleId");
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("RootManagerId");
 
@@ -635,6 +621,9 @@ namespace shukersal_backend.Migrations
 
                     b.Property<long>("StoreId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -675,6 +664,9 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsMember")
+                        .HasColumnType("bit");
 
                     b.Property<long>("MemberId")
                         .HasColumnType("bigint");
@@ -767,13 +759,13 @@ namespace shukersal_backend.Migrations
 
                     b.HasOne("shukersal_backend.Models.Store", null)
                         .WithMany("DiscountRules")
-                        .HasForeignKey("StoreId");
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("shukersal_backend.Models.DiscountRuleBoolean", "discountRuleBoolean")
-                        .WithMany()
-                        .HasForeignKey("discountRuleBooleanId");
-
-                    b.Navigation("discountRuleBoolean");
+                    b.HasOne("shukersal_backend.Models.Store", null)
+                        .WithOne("AppliedDiscountRule")
+                        .HasForeignKey("shukersal_backend.Models.DiscountRule", "StoreId1");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.DiscountRuleBoolean", b =>
@@ -781,25 +773,11 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.DiscountRuleBoolean", null)
                         .WithMany("Components")
                         .HasForeignKey("DiscountRuleBooleanId");
-                });
 
-            modelBuilder.Entity("shukersal_backend.Models.Notification", b =>
-                {
-                    b.HasOne("shukersal_backend.Models.Member", "Member")
-                        .WithMany()
-                        .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("shukersal_backend.Models.NotificationType", "NotificationType")
-                        .WithMany("Notifications")
-                        .HasForeignKey("NotificationTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Member");
-
-                    b.Navigation("NotificationType");
+                    b.HasOne("shukersal_backend.Models.DiscountRule", null)
+                        .WithOne("discountRuleBoolean")
+                        .HasForeignKey("shukersal_backend.Models.DiscountRuleBoolean", "RootDiscountId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>
@@ -827,7 +805,13 @@ namespace shukersal_backend.Migrations
 
                     b.HasOne("shukersal_backend.Models.Store", null)
                         .WithMany("PurchaseRules")
-                        .HasForeignKey("StoreId");
+                        .HasForeignKey("StoreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("shukersal_backend.Models.Store", null)
+                        .WithOne("AppliedPurchaseRule")
+                        .HasForeignKey("shukersal_backend.Models.PurchaseRule", "StoreId1");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.ShoppingBasket", b =>
@@ -855,39 +839,24 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.Product", "Product")
                         .WithMany()
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("shukersal_backend.Models.ShoppingBasket", "ShoppingBasket")
+                    b.HasOne("shukersal_backend.Models.ShoppingBasket", null)
                         .WithMany("ShoppingItems")
                         .HasForeignKey("ShoppingBasketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Product");
-
-                    b.Navigation("ShoppingBasket");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Store", b =>
                 {
-                    b.HasOne("shukersal_backend.Models.DiscountRule", "AppliedDiscountRule")
-                        .WithMany()
-                        .HasForeignKey("AppliedDiscountRuleId");
-
-                    b.HasOne("shukersal_backend.Models.PurchaseRule", "AppliedPurchaseRule")
-                        .WithMany()
-                        .HasForeignKey("AppliedPurchaseRuleId");
-
                     b.HasOne("shukersal_backend.Models.StoreManager", "RootManager")
                         .WithMany()
                         .HasForeignKey("RootManagerId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("AppliedDiscountRule");
-
-                    b.Navigation("AppliedPurchaseRule");
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("RootManager");
                 });
@@ -902,7 +871,8 @@ namespace shukersal_backend.Migrations
 
                     b.HasOne("shukersal_backend.Models.StoreManager", "ParentManager")
                         .WithMany("ChildManagers")
-                        .HasForeignKey("ParentManagerId");
+                        .HasForeignKey("ParentManagerId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("shukersal_backend.Models.Store", "Store")
                         .WithMany()
@@ -945,6 +915,8 @@ namespace shukersal_backend.Migrations
             modelBuilder.Entity("shukersal_backend.Models.DiscountRule", b =>
                 {
                     b.Navigation("Components");
+
+                    b.Navigation("discountRuleBoolean");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.DiscountRuleBoolean", b =>
@@ -956,11 +928,6 @@ namespace shukersal_backend.Migrations
                 {
                     b.Navigation("ShoppingCart")
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("shukersal_backend.Models.NotificationType", b =>
-                {
-                    b.Navigation("Notifications");
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.PurchaseRule", b =>
@@ -980,6 +947,10 @@ namespace shukersal_backend.Migrations
 
             modelBuilder.Entity("shukersal_backend.Models.Store", b =>
                 {
+                    b.Navigation("AppliedDiscountRule");
+
+                    b.Navigation("AppliedPurchaseRule");
+
                     b.Navigation("DiscountRules");
 
                     b.Navigation("Products");

@@ -29,6 +29,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 conditionLimit = post.conditionLimit,
                 minHour = post.minHour,
                 maxHour = post.maxHour,
+                IsRoot = true
 
             };
             s.PurchaseRules.Add(pr);
@@ -57,6 +58,8 @@ namespace shukersal_backend.DomainLayer.Objects
                     conditionLimit = post.conditionLimit,
                     minHour = post.minHour,
                     maxHour = post.maxHour,
+                    StoreId = composite.StoreId,
+                    IsRoot = false
                 };
                 _context.PurchaseRules.Add(component);
                 composite.Components?.Add(component);
@@ -79,9 +82,12 @@ namespace shukersal_backend.DomainLayer.Objects
                 .Include(s => s.PurchaseRules)
                 //.ThenInclude(pr => pr.Components)
                 .FirstOrDefaultAsync();
-            if (store != null)
-                return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, store.PurchaseRules);
-            return Response<ICollection<PurchaseRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+            if (store == null)
+            {
+                return Response<ICollection<PurchaseRule>>.Error(HttpStatusCode.NotFound, "store doesnt exist");
+            }
+            var trees = store.PurchaseRules.Where(pr => pr.IsRoot).ToList();
+            return Response<ICollection<PurchaseRule>>.Success(HttpStatusCode.OK, trees);
         }
 
         public async Task<Response<PurchaseRule>> GetAppliedPurchaseRule(long storeId)

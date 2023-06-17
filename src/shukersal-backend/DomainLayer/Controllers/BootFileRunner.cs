@@ -26,6 +26,7 @@ namespace shukersal_backend.DomainLayer.Controllers
 
             var products = await AddProducts(storeController, managerController, bootFilesFolderPath, members, managers);
 
+
             return true;
 
         }
@@ -58,7 +59,6 @@ namespace shukersal_backend.DomainLayer.Controllers
                         members.Add(res.Result);
                     }
                 }
-
             }
             return members;
         }
@@ -202,9 +202,11 @@ namespace shukersal_backend.DomainLayer.Controllers
                     CategoryId = productBoot.CategoryId,
                     IsListed = true
                 };
-                var manager = managers
-                    .Where(m => m.Id == store.RootManagerId)
-                    .FirstOrDefault();
+                var manager_res = await managerController.GetStoreManager((long)store.RootManagerId);
+                var manager = manager_res.Result;
+                //var manager = managers
+                //    .Where(m => m.Id == store.RootManagerId)
+                //    .FirstOrDefault();
 
                 if (manager == null) continue;
 

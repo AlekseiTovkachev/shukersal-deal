@@ -1,18 +1,28 @@
 [
-  //{
-  //  "Username": "john123",
-  //  "Password": "password123",
-  //  "Role": "Administrator"
-  //},
-  //{
-  //  "Username": "jane456",
-  //  "Password": "secret456",
-  //  "Role": "Member"
-  //},
-  //{
-  //  "Username": "smith789",
-  //  "Password": "pass789",
-  //  "Role": "Member"
-  //}
+  {
+    "Username": "U1",
+    "Password": "password",
+    "Role": "Administrator"
+  },
+  {
+    "Username": "U2",
+    "Password": "password",
+    "Role": "Member"
+  },
+  {
+    "Username": "U3",
+    "Password": "password",
+    "Role": "Member"
+  },
+  {
+    "Username": "U4",
+    "Password": "password",
+    "Role": "Member"
+  },
+  {
+    "Username": "U5",
+    "Password": "password",
+    "Role": "Member"
+  }
 ]
 

@@ -70,92 +70,41 @@ namespace shukersal_backend.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            // Not In Use
-            //// We manually manage the deleting of the comments TODO: Manually delete comments
-            //modelBuilder.Entity<Comment>()
-            //    .HasOne(x => x.ParentComment)
-            //    .WithMany(x => x.ChildComments)
-            //    .HasForeignKey(x => x.ParentCommentId)
-            //    .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Store>()
+                .HasMany(s => s.DiscountRules)
+                .WithOne()
+                .HasForeignKey(dr => dr.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-            //// We manually manage the deleting of the managers TODO: Manually delete managers
-            //modelBuilder.Entity<StoreManager>()
-            //    .HasOne(x => x.ParentManager)
-            //    .WithMany(x => x.ChildManagers)
-            //    .HasForeignKey(x => x.ParentManagerId)
-            //    .OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<Store>()
+                .HasMany(s => s.DiscountRules)
+                .WithOne()
+                .HasForeignKey(dr => dr.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            //modelBuilder.Entity<DiscountRuleBoolean>()
+            //    .HasIndex(drb => drb.RootDiscountId)
+            //    .IsUnique(false);
+
+            modelBuilder.Entity<DiscountRule>()
+                .HasOne(dr => dr.discountRuleBoolean)
+                .WithOne()
+                .HasForeignKey<DiscountRuleBoolean>(drb => drb.RootDiscountId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Store>()
+                .HasMany(s => s.PurchaseRules)
+                .WithOne()
+                .HasForeignKey(dr => dr.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<DiscountRuleBoolean>()
+                .HasMany(dr => dr.Components)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Cascade);
 
 
 
-            //foreach (var foreignKey in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
-            //{
-            //    foreignKey.DeleteBehavior = DeleteBehavior.NoAction;
-            //}
-            //foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-            //{
-            //    var primaryKey = entityType.FindPrimaryKey();
-            //    if (primaryKey != null)
-            //    {
-            //        foreach (var property in primaryKey.Properties)
-            //        {
-            //            // Set ValueGeneratedOnAdd for the primary key property of each entity
-            //            property.ValueGenerated = ValueGenerated.OnAdd;
-            //        }
-            //    }
-            //}
-
-            //modelBuilder.Entity<Product>()
-            //    .HasOne(p => p.Store)
-            //    .WithMany()
-            //    .HasForeignKey(p => p.StoreId)
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<StoreManager>()
-            //    .HasOne(s => s.Store)
-            //    .WithMany()
-            //    .HasForeignKey(p => p.StoreId)
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<Store>()
-            //    .HasMany(s => s.Products)
-            //    .WithOne(p => p.Store)
-            //    .OnDelete(DeleteBehavior.NoAction);
-
-            //modelBuilder.Entity<Store>()
-            //    .HasOne(s => s.RootManager)
-            //    .WithOne(p => p.Store)
-            //    .OnDelete(DeleteBehavior.NoAction);
-
-            //modelBuilder.Entity<Member>()
-            //    .HasOne(m => m.ShoppingCart)
-            //    .WithOne(s => s.Member)
-            //    .OnDelete(DeleteBehavior.NoAction);
-
-            //modelBuilder.Entity<ShoppingCart>()
-            //    .HasOne(m => m.Member)
-            //    .WithOne(s => s.ShoppingCart)
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<PurchaseRule>()
-            //    .HasOne<Store>()
-            //    .WithMany()
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<DiscountRule>()
-            //    .HasOne<Store>()
-            //    .WithMany()
-            //    .OnDelete(DeleteBehavior.Cascade);
-            //modelBuilder.Entity<Store>()
-            //    .HasMany(s => s.DiscountRules)
-            //    .WithOne()
-            //    .HasForeignKey(dr => dr.StoreId)
-            //    .OnDelete(DeleteBehavior.Cascade);
-
-            //modelBuilder.Entity<Store>()
-            //    .HasMany(s => s.PurchaseRules)
-            //    .WithOne()
-            //    .HasForeignKey(pr => pr.StoreId)
-            //    .OnDelete(DeleteBehavior.Cascade);
 
 
             base.OnModelCreating(modelBuilder);
