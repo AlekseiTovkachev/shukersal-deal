@@ -32,23 +32,51 @@ namespace shukersal_backend.DomainLayer.Objects
             return Response<IEnumerable<Store>>.Success(HttpStatusCode.OK, stores);
         }
 
+
         public async Task<Response<Store>> GetStore(long id)
         {
-            if (_context.Stores == null)
+            try
             {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+                if (_context.Stores == null)
+                {
+                    return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores' is null.");
+                }
+                var store = await _context.Stores
+                    //.Include(s => s.Products)
+                    .Include(s => s.DiscountRules)
+                    .Include(s => s.PurchaseRules)
+                    .FirstOrDefaultAsync(s => s.Id == id);
+                if (store == null)
+                {
+                    return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
+                }
+                return Response<Store>.Success(HttpStatusCode.OK, store);
             }
-            var store = await _context.Stores
-                //.Include(s => s.Products)
-                .Include(s => s.DiscountRules)
-                .Include(s => s.PurchaseRules)
-                .FirstOrDefaultAsync(s => s.Id == id);
-            if (store == null)
+            catch (Exception ex)
             {
-                return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
+                // Handle the exception or log the error message
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return Response<Store>.Error(HttpStatusCode.InternalServerError, "An error occurred while processing the request.");
             }
-            return Response<Store>.Success(HttpStatusCode.OK, store);
         }
+
+        //public async Task<Response<Store>> GetStore(long id)
+        //{
+        //    if (_context.Stores == null)
+        //    {
+        //        return Response<Store>.Error(HttpStatusCode.NotFound, "Entity set 'StoreContext.Stores'  is null.");
+        //    }
+        //    var store = await _context.Stores
+        //        //.Include(s => s.Products)
+        //        .Include(s => s.DiscountRules)
+        //        .Include(s => s.PurchaseRules)
+        //        .FirstOrDefaultAsync(s => s.Id == id);
+        //    if (store == null)
+        //    {
+        //        return Response<Store>.Error(HttpStatusCode.NotFound, "Not found");
+        //    }
+        //    return Response<Store>.Success(HttpStatusCode.OK, store);
+        //}
 
         public async Task<Response<Store>> GetStore(string name)
         {
@@ -275,22 +303,49 @@ namespace shukersal_backend.DomainLayer.Objects
             return emptied;
         }
 
+
         public async Task<Response<bool>> CheckPurchasePolicy(long storeId, List<TransactionItem> TransactionItems)
         {
-            var shop = await GetStore(storeId);
-            if (shop.Result == null)
+            try
             {
-                return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+                var shop = await GetStore(storeId);
+                if (shop.Result == null)
+                {
+                    return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+                }
+                var pr = new PurchaseRuleObject(_context);
+                if (!pr.Evaluate((await pr.GetAppliedPurchaseRule(storeId)).Result, TransactionItems))
+                {
+                    return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+                }
+
+                return Response<bool>.Success(HttpStatusCode.NoContent, true);
             }
-            var pr = new PurchaseRuleObject(_context);
-            if (!pr.Evaluate((await pr.GetAppliedPurchaseRule(storeId)).Result, TransactionItems))
+            catch (Exception ex)
             {
-                return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+                // Handle the exception or log the error message
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return Response<bool>.Error(HttpStatusCode.InternalServerError, "An error occurred while processing the request.");
             }
-
-            return Response<bool>.Success(HttpStatusCode.NoContent, true);
-
         }
+
+
+        //public async Task<Response<bool>> CheckPurchasePolicy(long storeId, List<TransactionItem> TransactionItems)
+        //{
+        //    var shop = await GetStore(storeId);
+        //    if (shop.Result == null)
+        //    {
+        //        return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+        //    }
+        //    var pr = new PurchaseRuleObject(_context);
+        //    if (!pr.Evaluate((await pr.GetAppliedPurchaseRule(storeId)).Result, TransactionItems))
+        //    {
+        //        return Response<bool>.Success(HttpStatusCode.BadRequest, false);
+        //    }
+
+        //    return Response<bool>.Success(HttpStatusCode.NoContent, true);
+
+        //}
 
         public async Task<Response<bool>> confirmDeliveryAndPayment(DeliveryDetails deliveryDetails, List<TransactionItem> transactionItems, PaymentDetails paymentDetails)
         {

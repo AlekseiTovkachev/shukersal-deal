@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230617205743_Init")]
-    partial class Init
+    [Migration("20230617221143_Init_1.0")]
+    partial class Init_10
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -341,7 +341,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "AFuDXy/pr7moTcHwIaBVJnLZ056lbwSGx0x2NC1ph+4MFTRY+fbxaErdNUUC/YXWZg==",
+                            PasswordHash = "ADWVEsYuWKNhvdwgLdCdRVgBA/8EaKx7TDPsmbyPGaCujcRGb2qDjMlPLn+OQ+geZA==",
                             Role = "Administrator",
                             Username = "Admin"
                         });

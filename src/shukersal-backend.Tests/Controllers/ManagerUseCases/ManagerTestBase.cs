@@ -21,8 +21,8 @@ namespace shukersal_backend.Tests.Controllers.ManagerUseCases
 
             _context = new Mock<MarketDbContext>();
             _logger= new Mock<ILogger<StoreService>>();
-            _controller = new StoreManagerController(_context.Object);
-            _storeController = new StoreService(_context.Object,_logger.Object);
+            _controller = new StoreManagerController(_context.Object, null);
+            _storeController = new StoreService(_context.Object,_logger.Object, null);
 
 
             var membersList = new List<Member>
