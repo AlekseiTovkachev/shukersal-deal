@@ -27,7 +27,6 @@ namespace shukersal_backend.ServiceLayer
 
         // GET: api/Members
         [HttpGet]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = UserRoles.AdministratorGroup)]
         public async Task<ActionResult<IEnumerable<Models.Member>>> GetMembers()
         {
             logger.LogInformation("GetMemebers Called");
