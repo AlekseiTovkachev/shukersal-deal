@@ -12,8 +12,8 @@ using shukersal_backend.Models;
 namespace shukersal_backend.Migrations
 {
     [DbContext(typeof(MarketDbContext))]
-    [Migration("20230617154035_Init")]
-    partial class Init
+    [Migration("20230617220327_Init_yonatan")]
+    partial class Init_yonatan
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -276,11 +276,10 @@ namespace shukersal_backend.Migrations
                     b.Property<long?>("DiscountRuleBooleanId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("ParentBooleanId")
-                        .HasColumnType("bigint");
+                    b.Property<bool>("IsRoot")
+                        .HasColumnType("bit");
 
                     b.Property<long?>("RootDiscountId")
-                        .IsRequired()
                         .HasColumnType("bigint");
 
                     b.Property<int>("conditionLimit")
@@ -305,7 +304,8 @@ namespace shukersal_backend.Migrations
                     b.HasIndex("Id");
 
                     b.HasIndex("RootDiscountId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[RootDiscountId] IS NOT NULL");
 
                     b.ToTable("DiscountRuleBooleans");
                 });
@@ -341,7 +341,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "ALjIOJWU4k2kmI3uivNcvjT6wtcuqP4byPbq2kouWvl96dueb1/bgts4xr2R8PANSg==",
+                            PasswordHash = "ABvWNvZTAGXOm4HLAoAjpE/jLSYhpO225EQniRq1y0YeSI1CLqc1OsAad0PXOc6/hA==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -423,6 +423,9 @@ namespace shukersal_backend.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<bool>("IsRoot")
+                        .HasColumnType("bit");
 
                     b.Property<long?>("PurchaseRuleId")
                         .HasColumnType("bigint");
@@ -774,8 +777,7 @@ namespace shukersal_backend.Migrations
                     b.HasOne("shukersal_backend.Models.DiscountRule", null)
                         .WithOne("discountRuleBoolean")
                         .HasForeignKey("shukersal_backend.Models.DiscountRuleBoolean", "RootDiscountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.NoAction);
                 });
 
             modelBuilder.Entity("shukersal_backend.Models.Product", b =>

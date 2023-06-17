@@ -5,39 +5,28 @@
 namespace shukersal_backend.Migrations
 {
     /// <inheritdoc />
-    public partial class Init3 : Migration
+    public partial class Init_10 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<bool>(
-                name: "IsRoot",
-                table: "PurchaseRules",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-
             migrationBuilder.UpdateData(
                 table: "Members",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "PasswordHash",
-                value: "AA5rPysPmyfug3rHIUmk9iwUOeZ5rGXhMSg9dwo/Z9EXvHPn+e9+EMVufW2BVd50/g==");
+                value: "ADWVEsYuWKNhvdwgLdCdRVgBA/8EaKx7TDPsmbyPGaCujcRGb2qDjMlPLn+OQ+geZA==");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "IsRoot",
-                table: "PurchaseRules");
-
             migrationBuilder.UpdateData(
                 table: "Members",
                 keyColumn: "Id",
                 keyValue: 1L,
                 column: "PasswordHash",
-                value: "ANeAmz6iD6KRkEL065vLek2ilYcJvEML75lBOmNglrZNTu9x+MrNvPd1jGbt3wltBQ==");
+                value: "ABvWNvZTAGXOm4HLAoAjpE/jLSYhpO225EQniRq1y0YeSI1CLqc1OsAad0PXOc6/hA==");
         }
     }
 }

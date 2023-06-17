@@ -1,7 +1,7 @@
 [
   {
     "name": "Apple",
-    "description": "string",
+    "description": "Experience the perfect combination of taste and nutrition with our hand-picked apples. Bursting with crispness and juiciness, these vibrant fruits are a delicious and healthy snack. From classic Red Delicious to refreshing Granny Smith, we offer a variety of apple choices to suit your palate. Enjoy the natural sweetness and numerous health benefits of apples by visiting our shop today.",
     "price": 20,
     "unitsInStock": 10,
     "categoryId": 11,

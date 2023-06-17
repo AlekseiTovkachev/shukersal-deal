@@ -35,10 +35,10 @@ namespace shukersal_backend.Tests.AcceptanceTests
             _configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
             authService = new AuthService(_configuration, _context.Object, _logger3.Object);
             memberService = new MemberService(_context.Object, _logger.Object);
-            TransactionService = new TransactionService(_context.Object, _logger.Object);
+            TransactionService = new TransactionService(_context.Object, _logger.Object, null);
             shoppingCartService = new ShoppingCartService(_context.Object, _logger2.Object);
 
-            storeService = new StoreService(_context.Object, _logger.Object);
+            storeService = new StoreService(_context.Object, _logger.Object, null);
         }
      /*   //Member
         public async Task<ActionResult<Member>> Logout(long id)

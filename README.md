@@ -68,14 +68,115 @@ I highly suggest you check out [this guide](https://learn.microsoft.com/en-us/ef
   ```ps
   dotnet ef migrations remove
   ```
-#### Working with sql server inside Docker:
-   run `docker-compose up -d`
+
+#### Working with SQL Server inside Docker or a remote server:
+To start the SQL Server instance inside Docker, run the following command: `docker-compose up -d`
 
 #### Connecting through SSMS:
-   server name: localhost, 1433
-   SQL Server Authentication
-   login: sa
-   password: YourStrong@Passw0rd
+- Server name: `localhost, 1433`
+- Authentication: SQL Server Authentication
+- Login: `sa`
+- Password: `YourStrong@Passw0rd`
 
-If the app is working in Docker too - update one of the connection strings in appsettings.json so that ```Server= <your machine ip>``` (you can run `ipconfig` in terminal)
-If running in https set the connection string in `Program.cs` to `DockerConnection2`
+If the application is also running inside Docker, update one of the connection strings in `appsettings.json` to use your machine's IP address. You can find your machine's IP address by running the `ipconfig` command in your terminal. For a remote server, specify the server's IP address in the connection string.
+
+If the application is running over HTTPS, set the connection string in `Program.cs` to `DockerConnection2`.
+
+
+## Boot Files Format
+
+### Members
+
+The boot file for members should be a JSON file named `members_bootfile.json` following the specified format. There are two possible roles: Administrator or Member.
+
+```json
+[
+  {
+    "Username": "Username",
+    "Password": "Password",
+    "Role": "Administrator"
+  },
+  {
+    "Username": "U2",
+    "Password": "password",
+    "Role": "Member"
+  },
+  ...
+]
+```
+
+### Stores
+
+The boot file for stores should be a JSON file named `stores_bootfile.json` following the provided format. The file should contain two arrays: the first array should contain the usernames of the store founders, and the second array should contain store data.
+
+```json
+[
+  ["Store_1_Founder_Name", "Store_2_Founder_Name", "Store_3_Founder_Name", ...],
+  [
+    {
+      "name": "Store_1",
+      "description": "Some description"
+    },
+    {
+      "name": "Store_2",
+      "description": "Some description"
+    },
+    {
+      "name": "Store_3",
+      "description": "Some description"
+    },
+    ...
+  ]
+]
+```
+
+### Products
+
+The boot file for products should be a JSON file named `products_bootfile.json`. It should contain an array of product objects with the following properties:
+
+```json
+[
+  {
+    "name": "Apple",
+    "description": "A string describing the product",
+    "price": 20,
+    "unitsInStock": 10,
+    "categoryId": 11,
+    "storename": "S"
+  },
+  {
+    "name": "apple",
+    "description": "A string describing the product",
+    "price": 10,
+    "unitsInStock": 10,
+    "categoryId": 11,
+    "storename": "Store2"
+  },
+  ...
+]
+```
+
+### Managers
+
+The boot file for managers should be a JSON file named `managers_bootfile.json`. It should contain an array of manager objects with the following properties:
+
+```json
+[
+  {
+    "BossMemberName": "john123",
+    "NewManagerName": "jane456",
+    "StoreName": "Store1",
+    "Owner": true/false
+  },
+  {
+    "BossMemberName": "jane456",
+    "NewManagerName": "john123",
+    "StoreName": "Store2",
+    "Owner": true/false
+  },
+  ...
+]
+```
+"Owner" field marks the type of Store Manager - owner or regular store manager.
+
+Additionally, every store must be assigned to one of the members from the bootfile, and also only one of those members can become a store manager/owner
