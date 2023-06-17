@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
 using System.Data;
@@ -22,13 +23,14 @@ namespace shukersal_backend.ServiceLayer
         private readonly StoreManagerController _controller;
         private readonly Member? currentMember;
         private readonly ILogger<ControllerBase> logger;
-
-        public StoreManagerService(MarketDbContext context, ILogger<ControllerBase> logger)
+        private readonly NotificationController _notificationController;
+        public StoreManagerService(MarketDbContext context, ILogger<ControllerBase> logger, NotificationController notificationController)
         {
             _context = context;
             this.logger = logger;
             //currentMember = ServiceUtilities.GetCurrentMember(context, httpContext);
-            _controller = new StoreManagerController(context);
+            _controller = new StoreManagerController(context, notificationController);
+            _notificationController = notificationController;
         }
 
         // GET: api/StoreManagers

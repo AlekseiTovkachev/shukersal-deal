@@ -1,4 +1,5 @@
-﻿using shukersal_backend.DomainLayer.Objects;
+﻿using shukersal_backend.DomainLayer.notifications;
+using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
@@ -13,14 +14,15 @@ namespace shukersal_backend.DomainLayer.Controllers
         private StoreManagerObject _managerObject;
         private DiscountObject _discountObject;
         private PurchaseRuleObject _purchaseRuleObject;
-
-        public StoreController(MarketDbContext context) : base(context)
+        private readonly NotificationController _notificationController;
+        public StoreController(MarketDbContext context, NotificationController notificationController) : base(context)
         {
             _marketObject = new MarketObject(context);
-            _managerObject = new StoreManagerObject(context);
+            _managerObject = new StoreManagerObject(context, notificationController);
             _storeObject = new StoreObject(context, _marketObject, _managerObject);
             _purchaseRuleObject = new PurchaseRuleObject(context);
             _discountObject = new DiscountObject(context);
+            _notificationController = notificationController;
         }
 
         //Constructor for tests

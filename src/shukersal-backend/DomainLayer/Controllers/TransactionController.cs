@@ -36,7 +36,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             _notificationController = notificationController;
             _memberObject = new MemberObject(context);
             _transactionObject = new TransactionObject(context,_marketObject);
-            _managerObject = new StoreManagerObject(_context);
+            _managerObject = new StoreManagerObject(_context, notificationController);
             _storeObject = new StoreObject(context, _marketObject, _managerObject);
             _shoppingCartObject = null;
             _marketObject.SetDeliveryProvider("https://php-server-try.000webhostapp.com/");
@@ -243,6 +243,7 @@ namespace shukersal_backend.DomainLayer.Controllers
             }
             
             await _marketObject.EmptyCart(member.Id);
+            await SendTransactionPostNotification(transactionPost);
             await _context.SaveChangesAsync();
             return Response<Transaction>.Success(HttpStatusCode.Created, transaction);
         }
@@ -279,7 +280,7 @@ namespace shukersal_backend.DomainLayer.Controllers
                 await _context.SaveChangesAsync();
                 return Response<Transaction>.Error(transactionProcessed.StatusCode, transactionProcessed.ErrorMessage);
             }
-
+            await SendTransactionPostNotification(transactionPost);
             await _context.SaveChangesAsync();
             return Response<Transaction>.Success(HttpStatusCode.Created, transaction);
 
@@ -298,48 +299,104 @@ namespace shukersal_backend.DomainLayer.Controllers
                 response = await CreateGuestTransaction(transactionPost);
             }
 
-            if(response.IsSuccess)
-            {
-                SendTransactionNotification(response.Result);
-            }
+            //if(response.IsSuccess)
+            //{
+            //    SendTransactionNotification(response.Result);
+            //}
             return response;
         }
         //TODO: im here
-        private async Task<Response<string>> SendTransactionNotification(Transaction transaction)
+        public async Task<Response<string>> SendTransactionPostNotification(TransactionPost transactionPost)
         {
-            // Get transaction items related to the transaction
-            var transactionItems = await _context.TransactionItems
-                .Where(ti => ti.TransactionId == transaction.Id)
-                .ToListAsync();
+            var transactionItems = transactionPost.TransactionItems;
 
-            // Get store ids from transaction items
-            var storeIds = transactionItems.Select(ti => ti.StoreId).Distinct();
-
-            // Get store managers related to the store ids
-            var storeManagers = await _context.Set<StoreManager>()
-                .Where(m => storeIds.Contains(m.StoreId))
-                .ToListAsync();
-
-            // Prepare a list to store pairs of store manager's memberId and transaction items
-            List<Tuple<long, string>> storeManagerTransactionItemsPairs = new List<Tuple<long, string>>();
-
-            // Loop through each store manager
-            foreach (var storeManager in storeManagers)
+            foreach (var transactionItem in transactionItems)
             {
-                // Find transaction items related to the store manager's store
-                var items = transactionItems
-                    .Where(ti => ti.StoreId == storeManager.StoreId)
-                    .Select(ti => ti.ProductName);
-
-                // Create a string containing all the product names for the store manager
-                var productNames = "Items: " + string.Join(", ", items);
-
-                // Add to the list as a pair
-                storeManagerTransactionItemsPairs.Add(Tuple.Create(storeManager.MemberId, productNames));
+                await SendTransactionItemPostNotification(transactionItem);
             }
-            var response = _notificationController.SendBulkNotifications(storeManagerTransactionItemsPairs, NotificationType.ProductPurchased);
-            return response.Result;
+
+            return Response<string>.Success(HttpStatusCode.OK, "notifications sent");
         }
+
+
+        public async Task SendTransactionItemPostNotification(TransactionItemPost transactionItemPost)
+        {
+            try
+            {
+                var managers = await _context.StoreManagers
+                    .Where(manager => manager.StoreId == transactionItemPost.StoreId)
+                    .ToListAsync();
+
+                // Prepare the list of managers' IDs for sending bulk notifications
+                var managerIds = managers.Select(manager => manager.Id).ToList();
+
+                var notificationList = new List<Tuple<long, string>>();
+
+                foreach (var managerId in managerIds)
+                {
+                    var notificationMessage = "Item Bought";
+                    notificationList.Add(new Tuple<long, string>(managerId, notificationMessage));
+                }
+                // Send bulk notifications to the managers
+                await _notificationController.SendBulkNotifications(notificationList,NotificationType.ProductPurchased);
+
+                // Additional processing or logging if needed
+
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that occur during the process
+                // Log or handle the error accordingly
+            }
+        }
+
+
+
+
+        //public async Task<Response<string>> SendTransactionNotification(Transaction transaction)
+        //{
+        //    var transactionItems = await _context.Transactions
+        //   .Where(t => t.Id == transaction.Id)
+        //   .SelectMany(t => t.TransactionItems)
+        //   .ToListAsync();
+
+        //    foreach (var transactionItem in transactionItems)
+        //    {
+        //        await SendTransactionNotification(transactionItem);
+        //    }
+        //    return Response<string>.Success(HttpStatusCode.OK, "notifications sent");
+        //}
+
+        //public async Task SendTransactionNotification(TransactionItem transactionItem)
+        //{
+        //    try
+        //    {
+        //        var managers = await _context.StoreManagers
+        //            .Where(manager => manager.StoreId == transactionItem.StoreId)
+        //            .ToListAsync();
+
+        //        // Prepare the list of managers' IDs for sending bulk notifications
+        //        var managerIds = managers.Select(manager => manager.Id).ToList();
+
+        //        var notificationList = new List<Tuple<long, string>>();
+
+        //        foreach (var managerId in managerIds)
+        //        {
+        //            var notificationMessage = "Item Bought";
+        //            notificationList.Add(new Tuple<long, string>(managerId, notificationMessage));
+        //        }
+        //        // Send bulk notifications to the managers
+        //        await _notificationController.SendBulkNotifications(notificationList, NotificationType.ProductPurchased);
+
+        //        // Additional processing or logging if needed
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        // Handle any exceptions that occur during the process
+        //        // Log or handle the error accordingly
+        //    }
+        //}
 
 
 

@@ -15,7 +15,6 @@
         public string Message { get; set; }
         public long MemberId { get; set; }
         public NotificationType NotificationType { get; set; }
-
         public DateTime CreatedAt { get; set; }
     }
 }

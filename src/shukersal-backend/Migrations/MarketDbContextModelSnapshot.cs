@@ -321,7 +321,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "ABk/mJgEvbVUdKwOcRrWAjZcy4pYxmIxTGZYFicWd/t8Ij6lfv4B0azeo8uasCgrFw==",
+                            PasswordHash = "AOyR5lI3o24XKue3NTcj+DgxvAC0UebF3GsYrk3LygKGfp6CxJtH6pwOjmMDBcRUCQ==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
