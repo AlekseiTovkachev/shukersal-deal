@@ -13,6 +13,8 @@ interface DiscountRule {
     // Define your DiscountRule interface here
 }
 
+export interface PurchaseRule { }
+
 interface DiscountsLogicProps {
     storeId: number;
 }
@@ -30,7 +32,7 @@ const TreeNode = ({ node }) => {
     const handleClick = () => {
 
         selected_id = id
-        alert(selected_id)
+        alert("node selected");
         backgroundcolor = '#AACCFF'
 
     };
@@ -63,7 +65,7 @@ const TreeNode = ({ node }) => {
             display = <table><tr><td>
                 Conditional Discount</td></tr>
                 <tr><td>{discountdisplay}</td></tr>
-                <tr><td><ul><TreeNodeB node={discountRuleBoolean} /></ul></td></tr></table >
+                <tr><td><ul>{discountRuleBoolean ? <TreeNodeB node={discountRuleBoolean} /> : null}</ul></td></tr></table >
             break;
         case 2:
             // Render display for discountType 5
@@ -110,6 +112,13 @@ const TreeNode = ({ node }) => {
 const TreeNodeB = ({ node }) => {
     const { id, discountRuleBooleanType, components, conditionString, conditionLimit, minHour, maxHour } = node;
     let display;
+    const handleClick = () => {
+
+        selected_id = id
+        alert("node selected");
+        backgroundcolor = '#AACCFF'
+
+    };
     switch (discountRuleBooleanType) {
         case 0:
             // Render display for discountType 0
@@ -149,11 +158,12 @@ const TreeNodeB = ({ node }) => {
     }
     return (
         <div>
+            <button onClick={handleClick}>Select</button>
             {display}
             <ul>
                 {components.map((component) => (
                     <li key={component.id}>
-                        <TreeNode node={component} onSelect={onSelect} />
+                        <TreeNodeB node={component} onSelect={onSelect} />
                     </li>
                 ))}
             </ul>
@@ -162,6 +172,70 @@ const TreeNodeB = ({ node }) => {
     
 };
 
+const TreeNodeC = ({ node }) => {
+    const { id, purchaseRuleType, components, conditionString, conditionLimit, minHour, maxHour } = node;
+    let display;
+    const handleClick = () => {
+
+        selected_id = id
+        alert("node selected");
+        backgroundcolor = '#AACCFF'
+
+    };
+    switch (purchaseRuleType) {
+        case 0:
+            // Render display for discountType 0
+            display = <span>And Purchase Rule</span>
+            break;
+        case 1:
+            // Render display for discountType 1
+            display = <span>Or Purchase Rule</span>
+            break;
+        case 2:
+            // Render display for discountType 5
+            display = <span>Conditional Purchase Rule</span>;
+            break;
+        case 3:
+            // Render display for discountType 5
+            display = <span>minimal {conditionString} product count : {conditionLimit}</span>;
+            break;
+        case 4:
+            // Render display for discountType 5
+            display = <span>maximal {conditionString} product count : {conditionLimit}</span>;
+            break;
+        case 5:
+            // Render display for discountType 5
+            display = <span>minimal {conditionString} category count : {conditionLimit}</span>;
+            break;
+        case 6:
+            // Render display for discountType 5
+            display = <span>maximal {conditionString} category count : {conditionLimit}</span>;
+            break;
+        case 7:
+            display = <span>applies from {minHour}:00 to {maxHour}:00</span>;
+            break;
+        default:
+            // Render a default display for other discountType values
+            display = <span>please insert a discount condition</span>;
+            break;
+    }
+    return (
+        <div>
+            <button onClick={handleClick}>Select</button>
+            {display}
+            <ul>
+                {components.map((component) => (
+                    <li key={component.id}>
+                        <TreeNodeC node={component} onSelect={onSelect} />
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
+
+};
+
+
 const InputSelector = ({ option }: string) => {
     return <></>
 };
@@ -169,15 +243,26 @@ const InputSelector = ({ option }: string) => {
 
 const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
     const [discounts, setDiscounts] = useState<DiscountRule[]>([]);
+    const [sdiscount, setsDiscount] = useState<DiscountRule[]>([]);
+    const [purchaserules, setPurchaserules] = useState<PurchaseRule[]>([]);
+    const [spurchaserule, setsPurchaserule] = useState<PurchaseRule[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const [selectedNode, setSelectedNode] = useState<DiscountRule | null>(null);
     const [selectedId, setSelectedId] = useState('Click');
-    const [value, setValue] = useState(1);
-    const [value1, setValue1] = useState(1);
-    const [value2, setValue2] = useState(1);
+    const [value, setValue] = useState(0);
+    const [value1, setValue1] = useState(0);
+    const [value2, setValue2] = useState(0);
+    const [value3, setValue3] = useState(0);
+    const [value4, setValue4] = useState(0);
+    const [discount, setDiscount] = useState('10')
+    const [discountOn, setdiscountOn] = useState('')
+    const [discountOnCheck, setdiscountOnCheck] = useState('')
+    const [discountLimit, setdiscountLimit] = useState('1')
+    const [minhour, setminhour] = useState('0')
+    const [maxhour, setmaxhour] = useState('24')
 
-    useEffect(() => {
+    const loaddata = () => {
         setIsLoading(true);
         discountsApi
             .getAll(storeId)
@@ -193,7 +278,54 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
                 setApiError(error.message ?? "Error.");
                 setDiscounts([]);
             });
-    }, []);
+        discountsApi
+            .getSlectedDiscount(storeId)
+            .then((res) => {
+                const responseDiscounts = res as ApiListData<DiscountRule>;
+                setIsLoading(false);
+                setApiError(null);
+                setsDiscount([responseDiscounts]);
+            })
+            .catch((res) => {
+                const error = res as ApiError;
+                setIsLoading(false);
+                setApiError(error.message ?? "Error.");
+                setsDiscount(null);
+            });
+        discountsApi
+            .getAllPR(storeId)
+            .then((res) => {
+                const responseDiscounts = res as ApiListData<PurchaseRule>;
+                setIsLoading(false);
+                setApiError(null);
+                setPurchaserules(responseDiscounts);
+            })
+            .catch((res) => {
+                const error = res as ApiError;
+                setIsLoading(false);
+                setApiError(error.message ?? "Error.");
+                setPurchaserules([]);
+            });
+        discountsApi
+            .getSelectedPR(storeId)
+            .then((res) => {
+                const responseDiscounts = res as ApiListData<PurchaseRule>;
+                setIsLoading(false);
+                setApiError(null);
+                setsPurchaserule([responseDiscounts]);
+            })
+            .catch((res) => {
+                const error = res as ApiError;
+                setIsLoading(false);
+                setApiError(error.message ?? "Error.");
+                setsPurchaserule(null);
+            });
+
+    };
+
+    useEffect(() => loaddata()
+
+    , []);
 
     const handleNodeSelect = (node: DiscountRule) => {
         setSelectedNode(node);
@@ -222,8 +354,14 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
         onChange={(nextValue) => setValue1(nextValue.id)}
 
     />
-        {value1 >= 10 ? <div>product or category name<input></input></div> : null}
-        {value1 % 10 <= 1 ? <div>discount amount<input></input></div> : null}
+        {value1 >= 10 ? <div>product or category name<input
+            value={discountOn}
+            onChange={e => setdiscountOn(e.target.value)}
+        ></input></div> : null}
+        {value1 % 10 <= 1 ? <div>discount amount<input
+            value={discount}
+            onChange={e => setDiscount(e.target.value)}
+            type="number"        ></input></div> : null}
     </div>;
 
     const sub_discount_options = <div><Listbox
@@ -242,21 +380,101 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
         onChange={(nextValue) => setValue2(nextValue.id)}
 
     />
-        {value2 >= 3 && value2 <= 6 ? <div>product or category name<input></input>
-            amount <input></input></div> :
-            value2 == 7 ? <div>min hour<input></input>
-                max hour <input></input></div>        :null}
+        {value2 >= 3 && value2 <= 6 ? <div>product or category name<input
+            value={discountOnCheck}
+            onChange={e => setdiscountOnCheck(e.target.value)}
+        ></input>
+            amount <input
+                value={discountLimit}
+                onChange={e => setdiscountLimit(e.target.value)}
+                type="number"
+            ></input></div> :
+            value2 == 7 ? <div>min hour<input
+                value={minhour}
+                onChange={e => setminhour(e.target.value)}
+                type="number"
+            ></input>
+                max hour <input
+                    value={maxhour}
+                    onChange={e => setmaxhour(e.target.value)}
+                    type="number"
+                ></input></div> : null}
         
+    </div>;
+
+    const pr_options = <div><Listbox
+        dataKey='id'
+        textField='name'
+        data={[
+            { id: 0, name: "and" },
+            { id: 1, name: "or" },
+            { id: 2, name: "condition" },
+            { id: 3, name: "minimal product count" },
+            { id: 4, name: "maximal product count" },
+            { id: 5, name: "minimal category count" },
+            { id: 6, name: "maximal category count" },
+            { id: 7, name: "timed" }]}
+        value={value3}
+        onChange={(nextValue) => setValue3(nextValue.id)}
+
+    />
+        {value3 >= 3 && value3 <= 6 ? <div>product or category name<input
+            value={discountOnCheck}
+            onChange={e => setdiscountOnCheck(e.target.value)}
+        ></input>
+            amount <input
+                value={discountLimit}
+                onChange={e => setdiscountLimit(e.target.value)}
+                type="number"
+            ></input></div> :
+            value3 == 7 ? <div>min hour<input
+                value={minhour}
+                onChange={e => setminhour(e.target.value)}
+                type="number"
+            ></input>
+                max hour <input
+                    value={maxhour}
+                    onChange={e => setmaxhour(e.target.value)}
+                    type="number"
+                ></input></div> : null}
+
     </div>;
     return (
         <>
             <Typography variant="h3">Discounts Logic for store {storeId}!</Typography>
+            <Listbox
+                dataKey='id'
+                textField='name'
+                data={[
+                    { id: 0, name: "all discounts" },
+                    { id: 1, name: "selected discount" },
+                    { id: 2, name: "all purchase rules" },
+                    { id: 3, name: "selected purchase rule" }]}
+                value={value4}
+                onChange={(nextValue) => setValue4(nextValue.id)}
+
+            />
             <Typography variant="h4">Here are your discounts:</Typography>
-            {discounts.map((discount) => (
+            {value4 == 0? discounts.map((discount) => (
                 <div key={discount.id}>
                     <TreeNode node={discount} />
                 </div> 
-            ))}
+            )) :
+            value4 == 1 ? sdiscount.map((discount) => (
+                <div key={discount.id}>
+                    {discount ? <TreeNode node={discount} /> : null}
+                </div>
+                )) :
+            value4 == 2 ? purchaserules.map((pr) => (
+                <div key={pr.id}>
+                    <TreeNodeC node={pr} />
+                </div>
+            )) :
+            value4 == 3 ? spurchaserule.map((pr) => (
+                <div key={pr.id}>
+                    {pr ? <TreeNodeC node={pr} /> : error}
+                </div>
+        )): null}
             <Listbox
                 dataKey='id'
                 textField='name'
@@ -274,12 +492,22 @@ const DiscountsLogic = ({ storeId }: DiscountsLogicProps) => {
 
             />
             {value == 0 || value == 4?
-                discount_options
-
-                : value == 5 || value == 6 ?
-                    sub_discount_options:
+                discount_options:
+             value == 5 || value == 6 ?
+                sub_discount_options :
+             value == 1 || value == 7 ?
+                pr_options:
             null}
-            <Typography variant="h5" >Selected Node ID: <strong>{value}</strong></Typography>
+            {
+                value == 0 ? <button onClick={() => { discountsApi.createNewDiscount(storeId, value1, discount, discountOn); window.location.reload(); }}>Add</button> :
+                value == 1 ? <button onClick={() => { discountsApi.createPR(storeId, value3, discountLimit, discountOnCheck, minhour, maxhour); window.location.reload(); }}>Add</button> :
+                value == 2 ? <button onClick={() => { discountsApi.selectDiscount(storeId, selected_id); window.location.reload();}} >Select</button  > :
+                value == 3 ? <button onClick={() => { discountsApi.selectPRule(storeId, selected_id); window.location.reload();}}>Select</button> :
+                value == 4 ? <button onClick={() => { discountsApi.createChildDiscount(storeId, value1, discount, discountOn, selected_id); window.location.reload();}}>Add</button> :
+                value == 5 ? <button onClick={() => { discountsApi.createConditionalDiscount(storeId, value2, discountLimit, discountOnCheck, minhour, maxhour, selected_id); window.location.reload();}}>Add</button> :
+                value == 6 ? <button onClick={() => { discountsApi.createConditionalChildDiscount(storeId, value2, discountLimit, discountOnCheck, minhour, maxhour, selected_id); window.location.reload();}}>Add</button> :
+                value == 7 ? <button onClick={() => { discountsApi.createChildPR(storeId, value3, discountLimit, discountOnCheck, minhour, maxhour, selected_id); window.location.reload(); }}>Add</button> :
+            null}
             <InputSelector option={value}></InputSelector>
             {apiError && <Typography variant="h6" color="error">{apiError}</Typography>}
         </>
