@@ -3,6 +3,7 @@ import { useAppDispatch } from './useAppDispatch';
 import { useAppSelector } from './useAppSelector';
 import { LoginFormFields, RegisterFormFields } from '../types/formTypes';
 import { login, register, logout } from '../redux/authSlice';
+import { clearCart } from '../redux/cartSlice';
 
 export const useAuth = () => {
     const dispatch = useAppDispatch();
@@ -30,6 +31,7 @@ export const useAuth = () => {
 
     const logoutCallback = useCallback(async () => {
         const response = await dispatch(logout());
+        await dispatch(clearCart());
         if (response.meta.requestStatus === 'fulfilled') {
             return true;
         }

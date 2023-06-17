@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.DomainLayer.Objects;
 using shukersal_backend.Models;
 using shukersal_backend.Utility;
@@ -9,11 +11,13 @@ namespace shukersal_backend.DomainLayer.Controllers
     public class StoreManagerController : AbstractController
     {
         private StoreManagerObject _managerObject;
+        private readonly NotificationController _notificationController;
 
-        public StoreManagerController(MarketDbContext context) : base(context)
+        public StoreManagerController(MarketDbContext context, NotificationController notificationController) : base(context)
         {
 
-            _managerObject = new StoreManagerObject(context);
+            _managerObject = new StoreManagerObject(context, notificationController);
+            _notificationController = notificationController;
 
         }
 
@@ -21,6 +25,13 @@ namespace shukersal_backend.DomainLayer.Controllers
         {
             return await _managerObject.GetStoreManagers();
         }
+
+
+        public async Task<Response<IEnumerable<StoreManager>>> GetStoreOwnersByStoreId(long id)
+        {
+            return await _managerObject.GetStoreOwnersByStoreId(id);
+        }
+
 
         public async Task<Response<StoreManager>> GetStoreManager(long id, Member member)
         {

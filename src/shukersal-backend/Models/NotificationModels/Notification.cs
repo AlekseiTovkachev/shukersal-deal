@@ -18,7 +18,6 @@ namespace shukersal_backend.Models
         [ForeignKey("Member")]
         public long MemberId { get; set; }
         public NotificationType NotificationType { get; set; }
-
         public DateTime CreatedAt { get; set; }
     }
 }

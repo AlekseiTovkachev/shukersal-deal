@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using shukersal_backend.DomainLayer.Controllers;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.Models;
 using shukersal_backend.Models.StoreModels;
 using shukersal_backend.Utility;
@@ -22,10 +23,12 @@ namespace shukersal_backend.ServiceLayer
         private readonly StoreController storeController;
         private readonly ILogger<ControllerBase> logger;
         private readonly MarketDbContext context;
+        private readonly NotificationController _notificationController;
 
-        public StoreService(MarketDbContext context, ILogger<StoreService> logger)
+        public StoreService(MarketDbContext context, ILogger<StoreService> logger, NotificationController notificationController)
         {
-            storeController = new StoreController(context);
+            _notificationController = notificationController;
+            storeController = new StoreController(context, notificationController);
             this.context = context;
             this.logger = logger;
             logger.LogInformation("testing the log");

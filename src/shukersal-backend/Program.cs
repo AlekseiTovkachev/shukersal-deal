@@ -77,8 +77,6 @@ builder.Services.AddDbContext<MarketDbContext>(opt =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
-
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -137,13 +135,13 @@ if (app.Environment.IsDevelopment())
 
 
 // To automatically migrate the database
-using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
+/*using (var serviceScope = app.Services.GetRequiredService<IServiceScopeFactory>().CreateScope())
 {
     var dbContext = serviceScope.ServiceProvider.GetService<MarketDbContext>();
     dbContext?.Database.Migrate();
     if (dbContext != null)
         await BootFileRunner.Run(dbContext);
-}
+}*/
 
 
 app.MapControllers();

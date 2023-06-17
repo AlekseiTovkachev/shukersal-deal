@@ -12,15 +12,15 @@ export interface Member {
 }
 
 export enum PermissionType {
-    ManagerPermission = 0, // SPECIAL - for delete store (check if parent is null)
-    ManageProductsPermission = 1, // for products table
-    ManageDiscountsPermission = 3, // for discouts button
-    AppointOwnerPermission = 4, // 
-    RemoveOwnerPermission = 5, // IGNORE 
-    AppointManagerPermission = 6, // add manager
-    EditManagerPermissionsPermission = 7, // 
-    RemoveManagerPermission = 8, //
-    GetManagerInfoPermission = 11, // for 
+    IsOwner = 0, // SPECIAL - for delete store (check if parent is null)
+    ManageProducts = 1, // for products table
+    ManageDiscounts = 3, // for discouts button
+    AppointOwner = 4, // 
+    RemoveOwner = 5, // IGNORE 
+    AppointManager = 6, // add manager
+    EditManagerPermissions = 7, // 
+    RemoveManager = 8, //
+    GetManagerInfo = 11, // for 
     ReplyPermission = 12, // IGNORE
     GetHistoryPermission = 13 // transaction history /api/transactions/store/{storeId}
 }
@@ -62,12 +62,16 @@ export interface Purchase {
     purchaseItems: PurchaseItem;
 }
 
+
+
 export interface ShoppingItem {
     id: number;
     shoppingBasketId: number;
     productId: number;
     quantity: number
 }
+
+export type CartItem = Omit<ShoppingItem, "id" | "shoppingBasketId">; // for add/edit
 
 export interface ShoppingBasket {
 
@@ -93,8 +97,6 @@ export interface Store {
     name: string;
     description: string;
     rootManagerId: number;
-    //products: Product[]; TODO: Check if removed in BE
-    //discountRules: DiscountRule[]; TODO: Check if removed in BE
 }
 
 export interface StorePermission {
@@ -107,6 +109,7 @@ export interface StoreManager {
     id: number;
     storeId: number;
     memberId: number;
-    parentManagerId: number;
+    parentManagerId: number | null;
     storePermissions: StorePermission[];
+    childManagers: StoreManager[];
 }

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using shukersal_backend.DomainLayer.notifications;
 using shukersal_backend.Models;
 
 namespace shukersal_backend.DomainLayer.Controllers
@@ -7,13 +8,12 @@ namespace shukersal_backend.DomainLayer.Controllers
 
     public class BootFileRunner
     {
-
         public static async Task<bool> Run(MarketDbContext context)
         {
             MarketDbContext _context = context;
             MemberController memberController = new MemberController(context);
-            StoreManagerController managerController = new StoreManagerController(context);
-            StoreController storeController = new StoreController(context);
+            StoreManagerController managerController = new StoreManagerController(context, null);
+            StoreController storeController = new StoreController(context, null);
 
             string projectFolderPath = AppDomain.CurrentDomain.BaseDirectory;
             string bootFilesFolderPath = Path.Combine(projectFolderPath, "BootFiles");

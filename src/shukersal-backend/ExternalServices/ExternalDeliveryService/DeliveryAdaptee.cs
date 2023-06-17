@@ -22,10 +22,11 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
                 if (response.StatusCode==HttpStatusCode.OK)
                 {
@@ -55,10 +56,11 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -87,10 +89,11 @@ namespace shukersal_backend.ExternalServices.ExternalDeliveryService
             };
 
             var content = new FormUrlEncodedContent(postContent);
+            var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
             try
             {
-                HttpResponseMessage response = await httpClient.PostAsync(url, content);
+                HttpResponseMessage response = await httpClient.PostAsync(url, content,tokenSource.Token);
 
                 if (response.IsSuccessStatusCode)
                 {
