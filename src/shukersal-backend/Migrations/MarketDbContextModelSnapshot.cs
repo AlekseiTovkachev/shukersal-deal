@@ -338,7 +338,7 @@ namespace shukersal_backend.Migrations
                         new
                         {
                             Id = 1L,
-                            PasswordHash = "ABmdeX+c55rS/DUj4eGfRGkb6RedbOUGioYbbX4zn3atEVEkijAx/6Js9Ji2k67LCw==",
+                            PasswordHash = "AFuDXy/pr7moTcHwIaBVJnLZ056lbwSGx0x2NC1ph+4MFTRY+fbxaErdNUUC/YXWZg==",
                             Role = "Administrator",
                             Username = "Admin"
                         });
@@ -769,8 +769,7 @@ namespace shukersal_backend.Migrations
                 {
                     b.HasOne("shukersal_backend.Models.DiscountRuleBoolean", null)
                         .WithMany("Components")
-                        .HasForeignKey("DiscountRuleBooleanId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("DiscountRuleBooleanId");
 
                     b.HasOne("shukersal_backend.Models.DiscountRule", null)
                         .WithOne("discountRuleBoolean")
