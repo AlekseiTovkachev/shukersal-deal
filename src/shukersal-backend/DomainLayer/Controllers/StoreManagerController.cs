@@ -48,13 +48,13 @@ namespace shukersal_backend.DomainLayer.Controllers
 
         public async Task<Response<StoreManager>> GetStoreManagersByStoreId(long storeId, Member member)
         {
-            bool hasPermission = await _managerObject
-                .CheckPermission(storeId, member.Id, PermissionType.Get_manager_info_permission);
+            //bool hasPermission = await _managerObject
+            //    .CheckPermission(storeId, member.Id, PermissionType.Get_manager_info_permission);
 
-            if (!hasPermission)
-            {
-                return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
-            }
+            //if (!hasPermission)
+            //{
+            //    return Response<StoreManager>.Error(HttpStatusCode.Unauthorized, "");
+            //}
             return await _managerObject.GetStoreManagersByStoreId(storeId);
         }
 
