@@ -204,8 +204,8 @@ namespace shukersal_backend.ServiceLayer
 
 
         // Add a permission to a shop manager
-        [HttpPost("{id}/permissions")]
-        public async Task<IActionResult> AddPermissionToManager(long id, [FromBody] PermissionType permission)
+        [HttpPost("{id}/permissions/{permissionId}")]
+        public async Task<IActionResult> AddPermissionToManager(long id, PermissionType permissionId)
         {
             logger.LogInformation("AddPermission method called for managerid = {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
@@ -213,7 +213,7 @@ namespace shukersal_backend.ServiceLayer
             {
                 return Unauthorized();
             }
-            var response = await _controller.AddPermissionToManager(id, permission, currentMember);
+            var response = await _controller.AddPermissionToManager(id, permissionId, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
@@ -222,8 +222,8 @@ namespace shukersal_backend.ServiceLayer
         }
 
         // Remove a permission from a shop manager
-        [HttpDelete("{id}/permissions")]
-        public async Task<IActionResult> RemovePermissionFromManager(long id, [FromBody] PermissionType permission)
+        [HttpDelete("{id}/permissions/{permissionId}")]
+        public async Task<IActionResult> RemovePermissionFromManager(long id, PermissionType permissionId)
         {
             logger.LogInformation("RemovePermission method called for managerid = {id}", id);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
@@ -231,7 +231,7 @@ namespace shukersal_backend.ServiceLayer
             {
                 return Unauthorized();
             }
-            var response = await _controller.RemovePermissionFromManager(id, permission, currentMember);
+            var response = await _controller.RemovePermissionFromManager(id, permissionId, currentMember);
             if (!response.IsSuccess)
             {
                 return NotFound();
