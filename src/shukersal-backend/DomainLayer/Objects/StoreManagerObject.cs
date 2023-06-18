@@ -77,7 +77,7 @@ namespace shukersal_backend.DomainLayer.Objects
         }
 
 
-        public async Task<Response<IEnumerable<StoreManager>>> GetStoreOwnersByStoreId ()
+        public async Task<Response<IEnumerable<StoreManager>>> GetStoreOwnersByStoreId()
         {
             var managersOfStroe = await _context.StoreManagers.ToListAsync();
 
@@ -232,7 +232,7 @@ namespace shukersal_backend.DomainLayer.Objects
                 return Response<StoreManager>.Error(HttpStatusCode.NotFound, "");
             }
 
-            var appointer = _context.StoreManagers.FirstOrDefault(m => m.Id == appointerId);
+            var appointer = _context.StoreManagers.FirstOrDefault(m => m.MemberId == appointerId);
             var boss = _context.StoreManagers.FirstOrDefault(m => m.Id == post.BossId);
             if (appointer == null || boss == null)
             {
@@ -413,7 +413,7 @@ namespace shukersal_backend.DomainLayer.Objects
                     return false;
                 }
             }
-            
+
             await _notificationController.SendNotificationToUser(manager.MemberId, NotificationType.RemovedFromStore, "you have been removed from the store");
             _context.StoreManagers.Remove(manager);
             return true;
