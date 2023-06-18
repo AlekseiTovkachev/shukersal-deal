@@ -51,7 +51,7 @@ export const AppAreYouSureDialog = NiceModal.create(
           {bodyText && (
             <>
               <DialogContentText>{bodyText}</DialogContentText>
-              <FlexSpacer minHeight={100} />
+              <FlexSpacer minHeight={50} />
             </>
           )}
           <DialogActions>

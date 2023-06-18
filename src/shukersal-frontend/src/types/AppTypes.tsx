@@ -1,3 +1,6 @@
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import SellIcon from "@mui/icons-material/Sell";
+
 export interface Category {
   id: number;
   name: string;
@@ -110,4 +113,65 @@ export interface StoreManager {
   storePermissions: StorePermission[];
   childManagers: StoreManager[];
   username: string;
+}
+
+export interface TransactionItem {
+  id: number;
+  transactionId: number;
+  productId: number;
+  storeId: number;
+  productName: string;
+  productDescription: string;
+  quantity: number;
+  fullPrice: number;
+  finalPrice: number;
+}
+
+export interface Transaction {
+  id: number;
+  isMember: boolean;
+  memberId: number;
+  transactionDate: string; //datetime
+  totalPrice: number;
+  transactionItems: TransactionItem[];
+}
+
+export enum NotificationType {
+  ProductPurchased = 1,
+  RemovedFromStore = 2,
+  AddedToStore = 3,
+}
+
+export interface NotificationDisplay {
+  title: string;
+  icon: React.ReactNode;
+  color: string;
+}
+
+export const ntTypeData: {
+  [key: number]: NotificationDisplay;
+} = {
+  [NotificationType.ProductPurchased]: {
+    title: "Product Purchased",
+    icon: <SellIcon />,
+    color: "success",
+  },
+  [NotificationType.RemovedFromStore]: {
+    title: "Removed from Store",
+    icon: <PersonRemoveIcon />,
+    color: "warning",
+  },
+  [NotificationType.AddedToStore]: {
+    title: "Added to Store",
+    icon: <></>,
+    color: "info",
+  },
+};
+
+export interface Notification {
+  id: number;
+  message: string;
+  memberId: number;
+  notificationType: NotificationType;
+  createdAt: string;
 }

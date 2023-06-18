@@ -60,6 +60,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpPost("{cartId}/items")]
         public async Task<ActionResult<ShoppingItem>> AddItemToCart(long cartId, ShoppingItemPost shoppingItemPost)
         {
+            // FIX FOR MISSING STORE ID!
+            var product = _context.Products.FirstOrDefault(p => p.Id == shoppingItemPost.ProductId);
+            shoppingItemPost.StoreId = product.StoreId;
+            // FIX FOR MISSING STORE ID!
+
             logger.LogInformation("AddItemToCart Called with cart id:{cartId}, product id:{ProductId}, store id:{StoreId}, quantity:{Quantity}", cartId, shoppingItemPost.ProductId, shoppingItemPost.StoreId, shoppingItemPost.Quantity);
 
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
@@ -106,6 +111,11 @@ namespace shukersal_backend.ServiceLayer
         [HttpPut("{cartId}/items")]
         public async Task<ActionResult<ShoppingItem>> EditItemQuantity(long cartId, ShoppingItemPost item)
         {
+            // FIX FOR MISSING STORE ID!
+            var product = _context.Products.FirstOrDefault(p => p.Id == item.ProductId);
+            item.StoreId = product.StoreId;
+            // FIX FOR MISSING STORE ID!
+
             logger.LogInformation("PutStoreManager Called with cart id:{cartId}, product id:{ProductId}, quantity:{Quantity}", cartId, item.ProductId, item.Quantity);
             var currentMember = ServiceUtilities.GetCurrentMember(_context, HttpContext);
             if (currentMember == null) { return Unauthorized(); }

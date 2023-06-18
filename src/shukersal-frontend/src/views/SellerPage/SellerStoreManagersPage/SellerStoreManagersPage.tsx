@@ -9,14 +9,14 @@ import { TreeView } from "@mui/lab";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { Paper, Grid, Button, Typography } from "@mui/material";
-import { makeTree } from "./util";
+import { makeTree, managerHasPermission } from "./util";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import { useIsMobile } from "../../../hooks/mediaHooks";
 import { useAuth } from "../../../hooks/useAuth";
 import { useCallback, useMemo } from "react";
-import { StoreManager } from "../../../types/appTypes";
+import { PermissionType, StoreManager } from "../../../types/appTypes";
 import { AddManagerDialog } from "./AddManagerDialog";
 import NiceModal from "@ebay/nice-modal-react";
 import { getStore } from "../../../redux/storeSlice";
@@ -32,11 +32,11 @@ export const SellerStoreManagersPage = () => {
   const managersData = useManagers(fixedStoreId);
 
   const authData = useAuth();
-  const loggedManagerId = useMemo(() => {
+  const loggedManager = useMemo(() => {
     if (!managersData.rootManager) return null;
     const memberId = authData.currentMemberData?.currentMember.id;
     function f(m: StoreManager) {
-      if (m.memberId === memberId) return m.id;
+      if (m.memberId === memberId) return m;
       let returnValue = null;
       m.childManagers.forEach((c) => {
         const res = f(c);
@@ -48,26 +48,35 @@ export const SellerStoreManagersPage = () => {
     }
     return f(managersData.rootManager);
   }, [authData.currentMemberData, managersData.rootManager]);
+  const loggedManagerId = loggedManager?.id ?? null;
 
   const isLoading = sellerStoreData.isLoading || managersData.isLoading;
 
-  const handleAddManager = useCallback((asOwner: boolean) => {
-    if (loggedManagerId)
-      NiceModal.show(AddManagerDialog, {
-        storeId: fixedStoreId,
-        bossId: loggedManagerId,
-        asOwner: asOwner
-      }).then(() => {
-        window.location.reload(); // getto af
-        dispatch(getStore(fixedStoreId));
-      });
-  }, [loggedManagerId, fixedStoreId]);
+  const handleAddManager = useCallback(
+    (asOwner: boolean) => {
+      if (loggedManagerId)
+        NiceModal.show(AddManagerDialog, {
+          storeId: fixedStoreId,
+          bossId: loggedManagerId,
+          asOwner: asOwner,
+        }).then(() => {
+          window.location.reload(); // getto af
+          dispatch(getStore(fixedStoreId));
+        });
+    },
+    [loggedManagerId, fixedStoreId]
+  );
 
   if (isLoading) {
     return <AppLoader />;
   }
 
-  if (!sellerStoreData.store || !managersData.rootManager || !loggedManagerId) {
+  if (
+    !sellerStoreData.store ||
+    !managersData.rootManager ||
+    !loggedManager ||
+    !loggedManagerId
+  ) {
     // Invalid store
     return <NotFoundPage />;
   }
@@ -81,35 +90,37 @@ export const SellerStoreManagersPage = () => {
           width: "100%",
         }}
       >
-        <Grid item xs={isMobile ? 12 : 6}>
-          <Button
-            onClick={() => {
-              handleAddManager(false);
-            }}
-            fullWidth={isMobile}
-            variant="contained"
-            startIcon={<AccountCircleIcon />}
-          >
-            Add Manager
-          </Button>
-        </Grid>
-        <Grid item xs={isMobile ? 12 : 6}>
-          <Button
-            onClick={() => {
-              handleAddManager(true);
-            }}
-            fullWidth={isMobile}
-            variant="contained"
-            startIcon={<AdminPanelSettingsIcon />}
-          >
-            Add Owner
-          </Button>
-        </Grid>
-
+        {managerHasPermission(loggedManager, PermissionType.AppointManager) && (
+          <Grid item xs={isMobile ? 12 : 6}>
+            <Button
+              onClick={() => {
+                handleAddManager(false);
+              }}
+              fullWidth={isMobile}
+              variant="contained"
+              startIcon={<AccountCircleIcon />}
+            >
+              Add Manager
+            </Button>
+          </Grid>
+        )}
+        {managerHasPermission(loggedManager, PermissionType.AppointOwner) && (
+          <Grid item xs={isMobile ? 12 : 6}>
+            <Button
+              onClick={() => {
+                handleAddManager(true);
+              }}
+              fullWidth={isMobile}
+              variant="contained"
+              startIcon={<AdminPanelSettingsIcon />}
+            >
+              Add Owner
+            </Button>
+          </Grid>
+        )}
         <Grid item xs={12}>
           <Typography variant="h5">Store Managers:</Typography>
         </Grid>
-
         <Grid item xs={12}>
           <Paper sx={{ width: "100%", minHeight: 200 }} variant="outlined">
             <TreeView
@@ -118,7 +129,7 @@ export const SellerStoreManagersPage = () => {
               defaultExpandIcon={<ChevronRightIcon />}
               sx={{ height: "100%", p: 1, mr: 2 }}
             >
-              {makeTree(loggedManagerId, managersData.rootManager)}
+              {makeTree(loggedManager, managersData.rootManager)}
             </TreeView>
           </Paper>
         </Grid>

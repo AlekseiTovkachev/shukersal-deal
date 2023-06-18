@@ -10,20 +10,22 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { EditPermissionsDialog } from "./EditPermissionsDialog";
 import NiceModal from "@ebay/nice-modal-react";
 import { managerHasPermission } from "./util";
+import { storeManagersApi } from "../../../api/storesApi";
 
 interface ManagerTreeItemProps {
-  loggedManagerId: number;
+  loggedManager: StoreManager;
   nodeId: string;
   manager: StoreManager;
   children?: React.ReactNode;
 }
 
 export const ManagerTreeItem = ({
-  loggedManagerId,
+  loggedManager,
   nodeId,
   manager,
   children,
 }: ManagerTreeItemProps) => {
+  const loggedManagerId = loggedManager.id;
   const handleEdit = useCallback(() => {
     NiceModal.show(EditPermissionsDialog, { manager: manager }).then(() => {
       window.location.reload(); // getto af
@@ -31,7 +33,9 @@ export const ManagerTreeItem = ({
   }, [manager]);
 
   const handleDelete = useCallback(() => {
-    console.log("delete");
+    storeManagersApi.delete(manager.id).then(() => {
+      window.location.reload();
+    });
   }, [manager]);
 
   return (
@@ -47,9 +51,9 @@ export const ManagerTreeItem = ({
             my: 1,
           }}
         >
-          {manager.storePermissions.some(
-            (p) => p.permissionType === PermissionType.IsOwner
-          ) && <AdminPanelSettingsIcon color="error" aria-label="Owner" />}
+          {managerHasPermission(manager, PermissionType.IsOwner) && (
+            <AdminPanelSettingsIcon color="error" aria-label="Owner" />
+          )}
           <Typography>{manager.username}</Typography>
           <FlexSpacer />
           {!managerHasPermission(manager, PermissionType.IsOwner) && (
@@ -58,11 +62,17 @@ export const ManagerTreeItem = ({
             </IconButton>
           )}
           {/* Allow only the direct parent to delete */}
-          {loggedManagerId === manager.parentManagerId && (
-            <IconButton onClick={handleDelete}>
-              <DeleteIcon />
-            </IconButton>
-          )}
+          {loggedManagerId === manager.parentManagerId &&
+            managerHasPermission(
+              loggedManager,
+              managerHasPermission(manager, PermissionType.IsOwner)
+                ? PermissionType.RemoveOwner
+                : PermissionType.RemoveManager
+            ) && (
+              <IconButton onClick={handleDelete}>
+                <DeleteIcon />
+              </IconButton>
+            )}
         </Stack>
       }
     >

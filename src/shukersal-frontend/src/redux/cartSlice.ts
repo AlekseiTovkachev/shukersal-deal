@@ -1,9 +1,11 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 import { localStorageValues } from "../_configuration";
 import {
   CartItem,
   Member,
+  NotificationType,
+  Notification,
   ShoppingCart,
   ShoppingItem,
 } from "../types/appTypes";
@@ -85,13 +87,20 @@ interface CartState {
   cartId?: number;
   cartItems: CartItem[];
   error?: ApiError;
+
+  notificationTrigger: Notification | null; // stuck it here to not create another slice
 }
 
 const localStorageCartItems = (() => {
-  if(window.localStorage.getItem(localStorageValues.auth.currentMemberData.name)) return [];
+  if (
+    window.sessionStorage.getItem(
+      localStorageValues.auth.currentMemberData.name
+    )
+  )
+    return [];
   try {
     return JSON.parse(
-      window.localStorage.getItem(localStorageValues.cartItems.name) ?? "[]"
+      window.sessionStorage.getItem(localStorageValues.cartItems.name) ?? "[]"
     );
   } catch (err) {
     console.error("Can't parse data: ", err);
@@ -101,6 +110,8 @@ const localStorageCartItems = (() => {
 const initialState: CartState = {
   isLoading: false,
   cartItems: localStorageCartItems,
+
+  notificationTrigger: null,
 };
 
 export const cartSlice = createSlice({
@@ -111,7 +122,11 @@ export const cartSlice = createSlice({
       state.cartId = undefined;
       state.cartItems = [];
       setLocalCart([]);
-    }
+    },
+
+    updateNotification: (state, { payload }: PayloadAction<Notification>) => {
+      state.notificationTrigger = payload;
+    },
   },
 
   extraReducers: (builder) => {
@@ -201,6 +216,6 @@ export const cartSlice = createSlice({
   },
 });
 
-export const { clearCart } = cartSlice.actions
+export const { clearCart, updateNotification } = cartSlice.actions;
 
 export default cartSlice.reducer;

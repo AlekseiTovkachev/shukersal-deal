@@ -68,7 +68,7 @@ export const SellerPage = () => {
           sellerData.stores.map((store, index) => (
             <Grid key={index} xs={12} item>
               <Paper
-              variant="outlined"
+                variant="outlined"
                 sx={(theme) => ({
                   width: "100%",
                 })}

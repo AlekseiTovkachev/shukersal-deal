@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 import PercentIcon from "@mui/icons-material/Percent";
@@ -29,20 +29,33 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import CheckIcon from "@mui/icons-material/Check";
 
 import { FlexSpacer } from "../../components/FlexSpacer";
-import { useCallback } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import NiceModal from "@ebay/nice-modal-react";
 import { AppAreYouSureDialog } from "../../components/AppAreYouSureDialog";
 import { NotFoundPage } from "../NotFoundPage/NotFoundPage";
 import { AddProductDialog } from "./AddProduct/AddProductDialog";
 import { APP_CATEGORIES } from "../../constants";
 import { storeProductsApi } from "../../api/storesApi";
-import { EditProductDialog } from './EditProduct/EditProductDialog';
+import { EditProductDialog } from "./EditProduct/EditProductDialog";
+import {
+  NotificationType,
+  PermissionType,
+  StoreManager,
+} from "../../types/appTypes";
+import { managerHasPermission } from "./SellerStoreManagersPage/util";
+import { useAuth } from "../../hooks/useAuth";
+import { useManagers } from "./SellerStoreManagersPage/useManagers";
+import { useAppSelector } from "../../hooks/useAppSelector";
 
 const handleEditProduct = async (params: GridCellParams) => {
   const productId = params.row.id;
   const storeId = params.row.storeId;
 
-  NiceModal.show(EditProductDialog, { initProduct: params.row, productId: productId, storeId: storeId }).then(() => {
+  NiceModal.show(EditProductDialog, {
+    initProduct: params.row,
+    productId: productId,
+    storeId: storeId,
+  }).then(() => {
     window.location.reload();
   });
 };
@@ -60,7 +73,7 @@ const handleDeleteProduct = async (params: GridCellParams) => {
   });
 };
 
-const columns: GridColDef[] = [
+const viewerColumns: GridColDef[] = [
   {
     field: "isListed",
     headerName: "Listed",
@@ -82,6 +95,10 @@ const columns: GridColDef[] = [
     headerName: "Image URL",
     flex: 1, // Stretch to fill available width
   },
+];
+
+const editorColumns: GridColDef[] = [
+  ...viewerColumns,
   {
     field: "EDIT_BUTTON",
     headerName: "",
@@ -103,7 +120,6 @@ const columns: GridColDef[] = [
     ),
   },
 ];
-
 
 export const SellerStorePage = () => {
   const theme = useTheme();
@@ -135,6 +151,40 @@ export const SellerStorePage = () => {
     });
   }, [sellerStoreData.deleteStore]);
 
+  const managersData = useManagers(fixedStoreId);
+  const authData = useAuth();
+
+  const loggedManager = useMemo(() => {
+    if (!managersData.rootManager) return null;
+    const memberId = authData.currentMemberData?.currentMember.id;
+    function f(m: StoreManager) {
+      if (m.memberId === memberId) return m;
+      let returnValue = null;
+      m.childManagers.forEach((c) => {
+        const res = f(c);
+        if (res) {
+          returnValue = res;
+        }
+      });
+      return returnValue;
+    }
+    return f(managersData.rootManager);
+  }, [authData.currentMemberData, managersData.rootManager]);
+
+  const notificationTrigger = useAppSelector(
+    (state) => state.cart.notificationTrigger
+  );
+
+  // Kick effect on notification
+  useEffect(() => {
+    if (
+      notificationTrigger &&
+      notificationTrigger.notificationType == NotificationType.RemovedFromStore
+    ) {
+      window.location.reload();
+    }
+  }, [notificationTrigger]);
+
   if (isLoading) {
     return <AppLoader />;
   }
@@ -148,14 +198,20 @@ export const SellerStorePage = () => {
     <Grid container spacing={2}>
       <Grid xs={12} item>
         <Stack spacing={2} direction={isMobile ? "column" : "row"}>
-          <Button
-            fullWidth={isMobile}
-            startIcon={<AddIcon />}
-            variant="contained"
-            onClick={handleAddProduct}
-          >
-            Add Product
-          </Button>
+          {loggedManager &&
+            managerHasPermission(
+              loggedManager,
+              PermissionType.ManageProducts
+            ) && (
+              <Button
+                fullWidth={isMobile}
+                startIcon={<AddIcon />}
+                variant="contained"
+                onClick={handleAddProduct}
+              >
+                Add Product
+              </Button>
+            )}
           <FlexSpacer />
           {/* <Button
             fullWidth={isMobile}
@@ -170,33 +226,47 @@ export const SellerStorePage = () => {
       </Grid>
       <Grid xs={12} item>
         <Paper sx={{ height: 300, width: "100%" }}>
-          <DataGrid rows={sellerStoreData.products} columns={columns} />
+          <DataGrid
+            rows={sellerStoreData.products}
+            columns={
+              loggedManager &&
+              managerHasPermission(loggedManager, PermissionType.ManageProducts)
+                ? editorColumns
+                : viewerColumns
+            }
+          />
         </Paper>
       </Grid>
-      <Grid xs={isMobile ? 12 : 6} item>
-        <Button
-          fullWidth
-          startIcon={<ManageAccountsIcon />}
-          variant="contained"
-          onClick={() => {
-            navigate("managers");
-          }}
-        >
-          Managers
-        </Button>
-      </Grid>
-      <Grid xs={isMobile ? 12 : 6} item>
-        <Button
-          fullWidth
-          startIcon={<PercentIcon />}
-          variant="contained"
-          onClick={() => {
-            navigate("discounts");
-          }}
-        >
-          Discounts
-        </Button>
-      </Grid>
+      {loggedManager &&
+        managerHasPermission(loggedManager, PermissionType.GetManagerInfo) && (
+          <Grid xs={isMobile ? 12 : 6} item>
+            <Button
+              fullWidth
+              startIcon={<ManageAccountsIcon />}
+              variant="contained"
+              onClick={() => {
+                navigate("managers");
+              }}
+            >
+              Managers
+            </Button>
+          </Grid>
+        )}
+      {loggedManager &&
+        managerHasPermission(loggedManager, PermissionType.ManageDiscounts) && (
+          <Grid xs={isMobile ? 12 : 6} item>
+            <Button
+              fullWidth
+              startIcon={<PercentIcon />}
+              variant="contained"
+              onClick={() => {
+                navigate("discounts");
+              }}
+            >
+              Discounts
+            </Button>
+          </Grid>
+        )}
     </Grid>
   );
 };

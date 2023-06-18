@@ -13,10 +13,13 @@ import { FlexSpacer } from "../../components/FlexSpacer";
 import ShoppingCartCheckoutIcon from "@mui/icons-material/ShoppingCartCheckout";
 import { CheckoutDialog } from "./Checkout/CheckoutDialog";
 import NiceModal from "@ebay/nice-modal-react";
+import { useAuth } from "../../hooks/useAuth";
 
 export const CartPage = () => {
   const productsData = useProducts();
   const cartData = useCart();
+
+  const authData = useAuth();
 
   const productMap: { [id: number]: Product } = {};
   productsData.products.forEach((p) => {
@@ -30,8 +33,11 @@ export const CartPage = () => {
   );
 
   const handleCheckout = useCallback(() => {
-    NiceModal.show(CheckoutDialog);
-  }, []);
+    NiceModal.show(CheckoutDialog, {
+      cartItems: cartData.cartItems,
+      totalPrice,
+    });
+  }, [cartData, totalPrice]);
 
   if (productsData.isLoading) return <AppLoader />;
 
@@ -57,14 +63,16 @@ export const CartPage = () => {
             <Grid xs={12} item>
               <Typography variant="h4">Cart Items: </Typography>
             </Grid>
-            <Grid xs={12} item>
-              <Typography
-                variant="subtitle1"
-                sx={(theme) => ({ color: theme.palette.warning.main })}
-              >
-                Warning! You may want to login to save your cart.{" "}
-              </Typography>
-            </Grid>
+            {!authData.isLoggedIn && (
+              <Grid xs={12} item>
+                <Typography
+                  variant="subtitle1"
+                  sx={(theme) => ({ color: theme.palette.warning.main })}
+                >
+                  Warning! You may want to login to save your cart.{" "}
+                </Typography>
+              </Grid>
+            )}
             {cartData.cartItems.map((item, idx) => {
               const p = productMap[item.productId];
               if (!p) return <React.Fragment key={idx}></React.Fragment>;

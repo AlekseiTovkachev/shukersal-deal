@@ -105,7 +105,7 @@ export const LoginFormLayout = () => {
                 }}
             />
         </Grid>
-        <Grid item xs={12}>
+        {/* <Grid item xs={12}>
             <Controller
                 control={form.control}
                 name={'rememberMe'}
@@ -134,6 +134,6 @@ export const LoginFormLayout = () => {
                     />
                 }}
             />
-        </Grid>
+        </Grid> */}
     </>);
 };

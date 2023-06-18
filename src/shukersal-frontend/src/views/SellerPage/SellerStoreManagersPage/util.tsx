@@ -5,9 +5,12 @@ import {
 } from "../../../types/appTypes";
 import { ManagerTreeItem } from "./ManagerTreeItem";
 
-export const makeTree = (loggedManagerId: number, manager: StoreManager) => {
+export const makeTree = (
+  loggedManager: StoreManager,
+  manager: StoreManager
+) => {
   const treeItemProps = {
-    loggedManagerId: loggedManagerId,
+    loggedManager: loggedManager,
     nodeId: manager.id.toString(),
     manager: manager,
   };
@@ -16,7 +19,7 @@ export const makeTree = (loggedManagerId: number, manager: StoreManager) => {
   }
   return (
     <ManagerTreeItem key={treeItemProps.nodeId} {...treeItemProps}>
-      {manager.childManagers.map((m) => makeTree(loggedManagerId, m))}
+      {manager.childManagers.map((m) => makeTree(loggedManager, m))}
     </ManagerTreeItem>
   );
 };
@@ -36,7 +39,13 @@ export const getManagerMemberIds = (rootManager: StoreManager): Set<number> => {
   return memberIds;
 };
 
-
-export const managerHasPermission = (manager: StoreManager, permissionType: PermissionType) => {
-  return manager.storePermissions.some(p => p.permissionType === permissionType)
-}
+export const managerHasPermission = (
+  manager: StoreManager,
+  permissionType: PermissionType
+) => {
+  return manager.storePermissions.some(
+    (p) =>
+      p.permissionType === permissionType ||
+      p.permissionType === PermissionType.IsOwner
+  );
+};

@@ -332,11 +332,11 @@ namespace shukersal_backend.DomainLayer.Controllers
                     .ToListAsync();
 
                 // Prepare the list of managers' IDs for sending bulk notifications
-                var managerIds = managers.Select(manager => manager.Id).ToList();
+                var managerMemberIds = managers.Select(manager => manager.MemberId).ToList();
 
                 var notificationList = new List<Tuple<long, string>>();
 
-                foreach (var managerId in managerIds)
+                foreach (var managerId in managerMemberIds)
                 {
                     var notificationMessage = "Item Bought";
                     notificationList.Add(new Tuple<long, string>(managerId, notificationMessage));

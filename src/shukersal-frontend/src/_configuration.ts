@@ -1,5 +1,9 @@
-export const API_URL = "https://localhost:7258/api/";
-export const API_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ssZ";
+const BASE_URL = "https://localhost:7258/";
+// const BASE_URL = "http://localhost:5130/";
+export const CHAT_URL = `${BASE_URL}chatHub`;
+export const API_URL = `${BASE_URL}api/`;
+export const API_DATE_TIME_FORMAT = "YYYY-MM-DDTHH:mm:ss.SSSZ";
+export const DISPLAY_DATE_TIME_FORMAT = "DD/MM/YYYY - HH:mm:ss";
 export const APP_CURRENCY_SIGN = "$";
 
 export interface LocalStorageEntry<T> {
@@ -29,7 +33,7 @@ export const localStorageValues: LocalStorage = {
   },
   cartItems: {
     name: "cartItems",
-    defaultValue: '[]',
+    defaultValue: "[]",
   },
   // settings: {
   //     loginPage: {

@@ -105,6 +105,11 @@ export const storeManagersApi = {
   ): Promise<ApiResponse<StoreManager>> =>
     apiErrorHandlerWrapper(apiClient.post(`${sellerServiceName}/`, postData)),
 
+  delete: (managerId: number): Promise<ApiResponse<any>> =>
+    apiErrorHandlerWrapper(
+      apiClient.delete(`${sellerServiceName}/${managerId}/`)
+    ),
+
   addPermission: (
     managerId: number,
     permissionId: number

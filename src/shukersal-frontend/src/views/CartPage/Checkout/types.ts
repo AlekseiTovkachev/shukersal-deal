@@ -1,30 +1,17 @@
-interface CheckoutData {
-  isMember: true;
-  memberId: 1;
-  transactionDate: string;
-  billingDetails: {
-    holderFirstName: string;
-    holderLastName: string;
-    holderID: string; // length: 9
-    cardNumber: string; // length: 16
-    expirationDate: string; // format: "2023-06-17"
-    cvc: string; // length: 3
-  };
-  deliveryDetails: {
-    receiverFirstName: string;
-    receiverLastName: string;
-    receiverAddress: string;
-    receiverCity: string;
-    receiverCountry: string;
-    receiverPostalCode: string; // length: 7
-  };
-  transactionItems: {
-    productId: number; // THIS
-    storeId: number;
-    productName: string;
-    productDescription: string;
-    quantity: number; // THIS
-    fullPrice: number;
-  }[];
-  totalPrice: number;
+import { CartItem } from "../../../types/appTypes";
+
+export interface CheckoutFormData {
+  billingDetails_holderFirstName: string;
+  billingDetails_holderLastName: string;
+  billingDetails_holderID: string; // length: 9
+  billingDetails_cardNumber: string; // length: 16
+  billingDetails_expirationDate: string; // format: "2023-06-17"
+  billingDetails_cvc: string; // length: 3
+
+  deliveryDetails_receiverFirstName: string;
+  deliveryDetails_receiverLastName: string;
+  deliveryDetails_receiverAddress: string;
+  deliveryDetails_receiverCity: string;
+  deliveryDetails_receiverCountry: string;
+  deliveryDetails_receiverPostalCode: string; // length: 7
 }

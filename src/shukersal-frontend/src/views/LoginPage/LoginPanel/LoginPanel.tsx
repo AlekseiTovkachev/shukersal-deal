@@ -16,7 +16,7 @@ export const LoginPanel = () => {
         defaultValues: {
             username: '',
             password: '',
-            rememberMe: false
+            rememberMe: true
         }
     });
     const { isLoading, login, error } = useAuth();

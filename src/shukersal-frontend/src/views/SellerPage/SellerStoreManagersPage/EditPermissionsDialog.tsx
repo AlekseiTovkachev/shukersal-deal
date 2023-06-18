@@ -41,10 +41,10 @@ const PermissionEntries = ({
     [PermissionType.AppointOwner]: "Appoint Owner",
     [PermissionType.RemoveOwner]: "Remove Owner",
     [PermissionType.AppointManager]: "Appoint Manager",
-    [PermissionType.EditManagerPermissions]: "EditManager Permissions",
+    [PermissionType.EditManagerPermissions]: "Edit Manager Permissions",
     [PermissionType.RemoveManager]: "Remove Manager",
     [PermissionType.GetManagerInfo]: "Get Manager Info",
-    [PermissionType.GetHistoryPermission]: "GetHistory Permission",
+    // [PermissionType.GetHistoryPermission]: "Get History Permission",
   };
   return (
     <>

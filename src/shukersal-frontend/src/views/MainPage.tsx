@@ -20,6 +20,8 @@ import NiceModal from "@ebay/nice-modal-react";
 import { AppBackButtonBar } from "../components/AppBackButtonBar";
 import { useCart } from "../hooks/useCart";
 import { AppCartButton } from "../components/AppHeader/AppCartButton";
+import { NotificationSnackbar } from "./NotificationsPage/NotificationsSnackbar";
+import { AppNotificationsButton } from "../components/AppHeader/AppNotificationsButton";
 //import { AppPagePaddingBox } from '../components/AppPagePaddingBox';
 
 export const MainPage = () => {
@@ -45,6 +47,7 @@ export const MainPage = () => {
 
   return (
     <NiceModal.Provider>
+      <NotificationSnackbar />
       <AppMainPageContainer>
         {fullscreen ? (
           <Outlet />
@@ -54,6 +57,7 @@ export const MainPage = () => {
               <AppLogo />
               {sellerPageMatch ? <AppBuyerButton /> : <AppSellerButton />}
               <FlexSpacer />
+              {authData.isLoggedIn && <AppNotificationsButton />}
               <AppCartButton />
               {authData.isLoggedIn ? <AppLogoutButton /> : <AppLoginButton />}
             </AppHeader>
