@@ -56,11 +56,16 @@ export const ManagerTreeItem = ({
           )}
           <Typography>{manager.username}</Typography>
           <FlexSpacer />
-          {!managerHasPermission(manager, PermissionType.IsOwner) && (
-            <IconButton onClick={handleEdit}>
-              <EditIcon />
-            </IconButton>
-          )}
+          {managerHasPermission(
+            loggedManager,
+            PermissionType.EditManagerPermissions
+          ) &&
+            loggedManagerId === manager.parentManagerId && // Allows to edit only direct children
+            !managerHasPermission(manager, PermissionType.IsOwner) && (
+              <IconButton onClick={handleEdit}>
+                <EditIcon />
+              </IconButton>
+            )}
           {/* Allow only the direct parent to delete */}
           {loggedManagerId === manager.parentManagerId &&
             managerHasPermission(

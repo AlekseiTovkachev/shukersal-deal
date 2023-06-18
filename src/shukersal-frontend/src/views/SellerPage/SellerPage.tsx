@@ -16,10 +16,12 @@ import {
   Typography,
   useTheme,
   useMediaQuery,
+  Divider,
 } from "@mui/material";
 import { AppStoreCard } from "../../components/AppCarousel/AppStoreCard";
 import { useCallback, useEffect } from "react";
 import { OpenNewStoreDialog } from "./OpenNewStore/OpenNewStoreDialog";
+import { FlexSpacer } from "../../components/FlexSpacer";
 
 export const SellerPage = () => {
   const theme = useTheme();
@@ -45,20 +47,26 @@ export const SellerPage = () => {
   return (
     <>
       <Grid container spacing={2}>
-        <Grid xs={12} sm={6} md={4} lg={3} item>
-          <Button
-            fullWidth={isMobile}
-            startIcon={<AddIcon />}
-            variant="contained"
-            onClick={() => {
-              handleOpenNewStore();
-            }}
-          >
-            Open New Store
-          </Button>
+        <Grid xs={12} item>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Typography variant="h3">My Stores</Typography>
+            <FlexSpacer />
+            <Box>
+              <Button
+                fullWidth={isMobile}
+                startIcon={<AddIcon />}
+                variant="contained"
+                onClick={() => {
+                  handleOpenNewStore();
+                }}
+              >
+                Open New Store
+              </Button>
+            </Box>
+          </Box>
         </Grid>
         <Grid xs={12} item>
-          <Typography variant="h3">My Stores</Typography>
+          <Divider orientation="horizontal" />
         </Grid>
         {sellerData.stores?.length < 1 ? (
           <Grid xs={12} item>

@@ -8,7 +8,7 @@ import { TreeView } from "@mui/lab";
 
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { Paper, Grid, Button, Typography } from "@mui/material";
+import { Paper, Grid, Button, Typography, Divider } from "@mui/material";
 import { makeTree, managerHasPermission } from "./util";
 
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
@@ -90,6 +90,14 @@ export const SellerStoreManagersPage = () => {
           width: "100%",
         }}
       >
+        <Grid item xs={12}>
+          <Typography variant="h4">
+            {sellerStoreData.store.name}: Managers
+          </Typography>
+        </Grid>
+        <Grid item xs={12}>
+          <Divider orientation="horizontal" />
+        </Grid>
         {managerHasPermission(loggedManager, PermissionType.AppointManager) && (
           <Grid item xs={isMobile ? 12 : 6}>
             <Button

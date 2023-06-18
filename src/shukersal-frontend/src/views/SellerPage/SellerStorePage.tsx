@@ -11,10 +11,12 @@ import {
 } from "@mui/x-data-grid";
 import {
   Button,
+  Divider,
   Grid,
   IconButton,
   Paper,
   Stack,
+  Typography,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -196,6 +198,12 @@ export const SellerStorePage = () => {
 
   return (
     <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Typography variant="h4">{sellerStoreData.store.name}</Typography>
+      </Grid>
+      <Grid item xs={12}>
+        <Divider orientation="horizontal" />
+      </Grid>
       <Grid xs={12} item>
         <Stack spacing={2} direction={isMobile ? "column" : "row"}>
           {loggedManager &&
@@ -225,7 +233,7 @@ export const SellerStorePage = () => {
         </Stack>
       </Grid>
       <Grid xs={12} item>
-        <Paper sx={{ height: 300, width: "100%" }}>
+        <Paper sx={{ width: "100%" }}>
           <DataGrid
             rows={sellerStoreData.products}
             columns={
@@ -237,21 +245,23 @@ export const SellerStorePage = () => {
           />
         </Paper>
       </Grid>
-      {loggedManager &&
-        managerHasPermission(loggedManager, PermissionType.GetManagerInfo) && (
-          <Grid xs={isMobile ? 12 : 6} item>
-            <Button
-              fullWidth
-              startIcon={<ManageAccountsIcon />}
-              variant="contained"
-              onClick={() => {
-                navigate("managers");
-              }}
-            >
-              Managers
-            </Button>
-          </Grid>
-        )}
+      {loggedManager && (
+        /*managerHasPermission(loggedManager, PermissionType.GetManagerInfo) &&*/ <Grid
+          xs={isMobile ? 12 : 6}
+          item
+        >
+          <Button
+            fullWidth
+            startIcon={<ManageAccountsIcon />}
+            variant="contained"
+            onClick={() => {
+              navigate("managers");
+            }}
+          >
+            Managers
+          </Button>
+        </Grid>
+      )}
       {loggedManager &&
         managerHasPermission(loggedManager, PermissionType.ManageDiscounts) && (
           <Grid xs={isMobile ? 12 : 6} item>
